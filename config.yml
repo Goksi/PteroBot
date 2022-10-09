@@ -1,0 +1,7 @@
+BotInfo:
+  Token: OTEzODMyNTE0MDA1NjQzMzE0.Go5CgU.Kuta4iQ66QBSDZFI_K8NtgZDBE5kyk5rGM4xWQ
+  Status: ONLINE # DND, ONLINE, IDLE, INVISIBLE
+  EnableActivity: true
+  Activity: PLAYING # PLAYING LISTENING and WATCHING
+  ActivityName: Pterodactyl !
+  ServerID: '488294781194338305'
