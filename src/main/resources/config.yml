@@ -1,12 +1,13 @@
 BotInfo:
   Token: "YOUR TOKEN HERE"
   ServerID: "YOUR DISCORD SERVER ID HERE"
+  PterodactylUrl: "YOUR URL HERE"
   Status: "ONLINE" # DND, ONLINE, IDLE, INVISIBLE
   EnableActivity: true
   Activity: "PLAYING" # PLAYING LISTENING and WATCHING
   ActivityName: "Pterodactyl !"
 Messages:
   Commands:
-    Register:
+    Link:
       Description: "Connect your pterodactyl account using this command !"
       OptionDescription: "Enter your pterodactyl api key here !"
