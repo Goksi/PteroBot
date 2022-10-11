@@ -1,0 +1,42 @@
+
+{
+  "type": "IMAGE",
+  "title": "Node info",
+  "color": 39129,
+  "fields": [
+    {
+      "name": "Status",
+      "value": "🟢 Online, Running servers: %runningServers",
+      "inline": false
+    },
+    {
+      "name": "Location id",
+      "value": "%locationId",
+      "inline": true
+    },
+    {
+      "name": "Maintenance mode ",
+      "value": "%maintenance",
+      "inline": true
+    },
+    {
+      "name": "Allocations",
+      "value": "%allocationsCount",
+      "inline": true
+    },
+    {
+      "name": "Memory usage",
+      "value": "%usedMb MB %memoryUsageBar %maxMb MB",
+      "inline": false
+    }
+      ],
+  "footer": {
+    "icon_url": "https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png",
+    "text": "PteroBot | Node"
+  },
+  "author": {
+    "name": "PteroBot"
+  },
+  "description": "Node name\nNode description",
+  "timestamp": "2022-10-12T12:02:00.000Z"
+}

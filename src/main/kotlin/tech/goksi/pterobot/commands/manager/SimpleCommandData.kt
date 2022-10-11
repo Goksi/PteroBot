@@ -27,7 +27,7 @@ class SimpleCommandData {
             if(!command.enableDefault){
                 cmdData.defaultPermissions = DefaultMemberPermissions.enabledFor(command.enabledPermissions)
             }
-            cmdData.addOptions(command.options)
+            if(command.options.isNotEmpty()) cmdData.addOptions(command.options)
             data.add(cmdData)
         }
         return data

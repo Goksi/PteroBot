@@ -1,5 +1,6 @@
 package tech.goksi.pterobot.database.impl
 
+import com.mattmalec.pterodactyl4j.client.entities.Account
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
 import net.dv8tion.jda.api.entities.UserSnowflake
 import org.slf4j.LoggerFactory
@@ -11,12 +12,14 @@ import java.sql.SQLException
 import kotlin.system.exitProcess
 /*TODO: test*/
 class SQLiteImpl: DataStorage {
-    private val connection: Connection = DriverManager.getConnection("jdbc:sqlite:database.db")
+    private val connection: Connection
     private val logger = LoggerFactory.getLogger(DataStorage::class.java)
 
     init {
+        Class.forName("org.sqlite.JDBC");
+        connection = DriverManager.getConnection("jdbc:sqlite:database.db")
         val statement = connection.prepareStatement(
-            "CREATE TABLE IF NOT EXIST Keys(ID INTEGER AUTO_INCREMENT PRIMARY KEY, DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
+            "CREATE TABLE IF NOT EXISTS Keys(DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
         )
         try{
             statement.executeUpdate()
@@ -55,7 +58,7 @@ class SQLiteImpl: DataStorage {
     }
 
     @Throws(LoginException::class, SQLException::class)
-    override fun link(snowflake: UserSnowflake, apiKey: String)  {
+    override fun link(snowflake: UserSnowflake, apiKey: String): Account  {
         val statement = connection.prepareStatement(
             "INSERT INTO Keys (DiscordID, ApiKey, isAdmin) VALUES (?,?,?)"
         )
@@ -64,7 +67,7 @@ class SQLiteImpl: DataStorage {
         statement.setString(2, apiKey)
         statement.setBoolean(3, pteroUser.isRootAdmin)
         statement.executeUpdate() //should catch SQLException later in command
-
+        return pteroUser
     }
 
     override fun unlink(id: Long) {
@@ -76,6 +79,20 @@ class SQLiteImpl: DataStorage {
             statement.executeUpdate()
         }catch (exception: SQLException){
             logger.error("Failed to delete api key for $id", exception)
+        }
+    }
+
+    override fun isLinked(id: Long): Boolean {
+        val statement = connection.prepareStatement(
+            "SELECT DiscordID FROM Keys WHERE DiscordID = ?"
+        )
+        statement.setLong(1, id)
+        return try {
+            val resultSet = statement.executeQuery()
+            resultSet.next()
+        } catch (exception: SQLException){
+            logger.error("Failed to check linked status for $id", exception)
+            false;
         }
     }
 }

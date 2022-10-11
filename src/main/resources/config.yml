@@ -11,3 +11,14 @@ Messages:
     Link:
       Description: "Connect your pterodactyl account using this command !"
       OptionDescription: "Enter your pterodactyl api key here !"
+      LinkSuccess: "You successfully linked your discord account with %pteroName pterodactyl account"
+      LinkExist: "Sorry, but you already have pterodactyl account linked !"
+      LinkWrongKey: "Sorry, that api key is wrong !"
+    NodeInfo:
+      Description: "Shows specific node info or all nodes online status (depends on options)"
+      OptionDescription: "ID of node you want to show info of"
+      NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
+      OnlineEmoji: "🟢"
+      OfflineEmoji: "🔴"
+  Embeds:
+    UnexpectedError: "Unexpected error happened, check console for more details !"

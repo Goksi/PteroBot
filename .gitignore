@@ -2,3 +2,5 @@
 target/
 PteroBot.iml
 config.yml
+database.db
+/embeds

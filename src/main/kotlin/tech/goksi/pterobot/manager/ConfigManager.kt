@@ -1,4 +1,4 @@
-package tech.goksi.pterobot.config
+package tech.goksi.pterobot.manager
 
 import org.simpleyaml.configuration.file.YamlFile
 import org.slf4j.LoggerFactory

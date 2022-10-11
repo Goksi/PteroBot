@@ -2,7 +2,7 @@ package tech.goksi.pterobot.util
 
 import com.mattmalec.pterodactyl4j.PteroBuilder
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient
-import tech.goksi.pterobot.config.ConfigManager
+import tech.goksi.pterobot.manager.ConfigManager
 
 object Common  {
     inline fun <T> checkInput(currentInput: T, defaultValue: T,message: String , expression: () -> T): Pair<T, Boolean> {
