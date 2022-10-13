@@ -1,12 +1,10 @@
 package tech.goksi.pterobot.util
 
+import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.utils.MiscUtil
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.util.regex.Pattern
 
 object Checks  {
-    val logger: Logger = LoggerFactory.getLogger(Checks::class.java)
+    val logger by SLF4J
 
     fun arguments(expression: Boolean, message: String) {
         if(!expression) throw IllegalArgumentException(message)

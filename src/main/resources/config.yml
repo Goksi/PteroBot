@@ -2,6 +2,7 @@ BotInfo:
   Token: "YOUR TOKEN HERE"
   ServerID: "YOUR DISCORD SERVER ID HERE"
   PterodactylUrl: "YOUR URL HERE"
+  AdminApiKey: "YOUR PTERODACTYL ADMIN CLIENT KEY HERE"
   Status: "ONLINE" # DND, ONLINE, IDLE, INVISIBLE
   EnableActivity: true
   Activity: "PLAYING" # PLAYING LISTENING and WATCHING
@@ -17,6 +18,8 @@ Messages:
     NodeInfo:
       Description: "Shows specific node info or all nodes online status (depends on options)"
       OptionDescription: "ID of node you want to show info of"
+      OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new info, be careful because of rate-limit"
+      NodeNotFound: "Sorry, requested node is not found"
       NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
       OnlineEmoji: "🟢"
       OfflineEmoji: "🔴"

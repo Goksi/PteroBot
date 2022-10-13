@@ -2,18 +2,17 @@ package tech.goksi.pterobot.database.impl
 
 import com.mattmalec.pterodactyl4j.client.entities.Account
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
+import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.entities.UserSnowflake
-import org.slf4j.LoggerFactory
 import tech.goksi.pterobot.database.DataStorage
 import tech.goksi.pterobot.util.Common
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
 import kotlin.system.exitProcess
-/*TODO: test*/
 class SQLiteImpl: DataStorage {
     private val connection: Connection
-    private val logger = LoggerFactory.getLogger(DataStorage::class.java)
+    private val logger by SLF4J
 
     init {
         Class.forName("org.sqlite.JDBC");

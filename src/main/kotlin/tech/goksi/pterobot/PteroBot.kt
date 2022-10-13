@@ -3,9 +3,11 @@ package tech.goksi.pterobot
 import org.slf4j.LoggerFactory
 import tech.goksi.pterobot.manager.ConfigManager
 import dev.minn.jda.ktx.jdabuilder.default
+import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import tech.goksi.pterobot.commands.Link
 import tech.goksi.pterobot.commands.NodeInfo
@@ -20,8 +22,9 @@ import tech.goksi.pterobot.manager.EmbedManager
 const val DEFAULT_NO_TOKEN_MSG = "YOUR TOKEN HERE"
 const val DEFAULT_NO_ID_MSG = "YOUR DISCORD SERVER ID HERE"
 const val DEFAULT_NO_URL_MSG = "YOUR URL HERE"
+const val DEFAULT_NO_API_KEY_MSG = "YOUR PTERODACTYL ADMIN CLIENT KEY HERE"
 class PteroBot(args: Array<String>) {
-    private val logger = LoggerFactory.getLogger(PteroBot::class.java)
+    private val logger by SLF4J
     private val jda: JDA
     private val dataStorage: DataStorage
 
@@ -55,6 +58,18 @@ class PteroBot(args: Array<String>) {
             }
             input
         }
+        val apiKeyPair = Common.checkInput(
+            ConfigManager.config.getString("BotInfo.AdminApiKey"), DEFAULT_NO_API_KEY_MSG,
+            "You didn't provide admin key for actions like register and node info, please input it right-now:"
+        ){
+            var input: String
+            while(true){
+                input = readLine()?:""
+                if(input.startsWith("ptlc_")) break
+                else logger.warn("Invalid url, please try again !")
+            }
+            input
+        }
         if(tokenPair.second){
             ConfigManager.config.set("BotInfo.Token", tokenPair.first)
         }
@@ -64,9 +79,13 @@ class PteroBot(args: Array<String>) {
         if(appUrlPair.second){
             ConfigManager.config.set("BotInfo.PterodactylUrl", appUrlPair.first)
         }
+        if(apiKeyPair.second){
+            ConfigManager.config.set("BotInfo.AdminApiKey", apiKeyPair.first)
+            ConfigManager.config.set("BotInfo.AdminApiKey", apiKeyPair.first)
+        }
         ConfigManager.save()
         EmbedManager.init()
-        jda = default(tokenPair.first!!, enableCoroutines = true, intents = emptyList()){
+        jda = default(tokenPair.first!!, enableCoroutines = true, intents = listOf(GatewayIntent.GUILD_MESSAGES)){
             disableCache(listOf(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.EMOJI))
             val statusStr = ConfigManager.config.getString("BotInfo.Status")?:"".uppercase()
             setStatus(when (statusStr) {

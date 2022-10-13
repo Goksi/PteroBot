@@ -1,14 +1,14 @@
 package tech.goksi.pterobot.manager
 
+import dev.minn.jda.ktx.util.SLF4J
 import org.simpleyaml.configuration.file.YamlFile
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import kotlin.system.exitProcess
 
 object ConfigManager {
     private val configFile: File = File("config.yml")
-    private val logger = LoggerFactory.getLogger(ConfigManager::class.java)
+    private val logger by SLF4J
     val config: YamlFile
 
     init {

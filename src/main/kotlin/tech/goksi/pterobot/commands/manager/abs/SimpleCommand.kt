@@ -8,8 +8,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 abstract class SimpleCommand: ListenerAdapter() {
     lateinit var name: String
     lateinit var description: String
-    var options: List<OptionData> = listOf()
-    lateinit var enabledPermissions: List<Permission>
+    var options: List<OptionData> = emptyList()
+    var enabledPermissions: List<Permission> = emptyList()
     var enableDefault: Boolean = true
 
     abstract fun execute(event: SlashCommandInteractionEvent)

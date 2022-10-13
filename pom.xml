@@ -82,6 +82,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -151,9 +159,9 @@
         </dependency>
         <!--Ptero thingy-->
         <dependency>
-            <groupId>com.mattmalec</groupId>
+            <groupId>com.github.mattmalec</groupId>
             <artifactId>Pterodactyl4J</artifactId>
-            <version>2.BETA_134</version>
+            <version>df5904a</version>
         </dependency>
     </dependencies>
 

@@ -1,12 +1,13 @@
 package tech.goksi.pterobot.commands
 
 import com.mattmalec.pterodactyl4j.exceptions.HttpException
+import dev.minn.jda.ktx.messages.SendDefaults
+import dev.minn.jda.ktx.messages.reply_
+import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.database.DataStorage
@@ -16,11 +17,12 @@ import java.sql.SQLException
 
 private const val CONFIG_PREFIX = "Messages.Commands.Link."
 class Link(private val dataStorage: DataStorage): SimpleCommand() {
-    private val logger: Logger = LoggerFactory.getLogger(Link::class.java)
+    private val logger by SLF4J
     init {
         this.name = "link"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
         this.options = listOf(OptionData(OptionType.STRING, "apikey", ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"), true))
+        SendDefaults.ephemeral = true
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
@@ -45,6 +47,6 @@ class Link(private val dataStorage: DataStorage): SimpleCommand() {
             response = EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "LinkExist"))
                 .toEmbed(event.jda)
         }
-        event.replyEmbeds(response).setEphemeral(true).queue()
+        event.reply_(embeds = listOf(response)).queue()
     }
 }
