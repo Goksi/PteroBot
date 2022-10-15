@@ -29,6 +29,11 @@
       "inline": true
     },
     {
+      "name": "CPU usage",
+      "value": "%cpuUsed %",
+      "inline": false
+    },
+    {
       "name": "Disk usage",
       "value": "%diskUsed GB / %diskMax GB",
       "inline": false

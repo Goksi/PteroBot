@@ -6,7 +6,6 @@ import com.mattmalec.pterodactyl4j.exceptions.HttpException
 import com.mattmalec.pterodactyl4j.exceptions.NotFoundException
 import dev.minn.jda.ktx.util.SLF4J
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.JDA
@@ -60,7 +59,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
                 when(exception){
                     is HttpException, is NotFoundException -> {
                         success = false
-                        logger.info("Erro: ", exception)
+                        logger.debug("Thrown exception: ", exception)
                         EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeNotFound")).toEmbed(event.jda)
                     } //shame that kotlin doesn't have multi catch
                     else -> throw exception
@@ -72,7 +71,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         }
         event.hook.sendMessageEmbeds(response).queue {
             if(success && update){
-                val timer = fixedRateTimer(name = "NodeInfoDaemon#${mapping.size}", daemon = true, period = 300_000){
+                val timer = fixedRateTimer(name = "NodeInfoDaemon#${mapping.size}", daemon = true, period = 300_000, initialDelay = 300_000){
                     it.editMessageEmbeds(runBlocking {
                         withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
                     }).queue() } /*TODO: fixed 5 minutes delay, make configurable*/
@@ -90,6 +89,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         val node = ptero.first.retrieveNodeById(id.toLong()).execute()
         var memoryUsed: Long = 0
         var diskSpaceUsed = 0f
+        var cpuUsed = 0.0
         var status = NodeStatus.ONLINE
         val runningServers = ptero.second.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
             if(it.isInstalling) return@filter false
@@ -102,6 +102,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
                 }
                 memoryUsed += utilization.memory / 1024 / 1024 //mb
                 diskSpaceUsed += utilization.disk.toFloat() / 1024 / 1024 / 1024 //gb
+                cpuUsed += utilization.cpu
                 return@filter utilization.state == UtilizationState.RUNNING || utilization.state == UtilizationState.STARTING
 
             } else return@filter false
@@ -119,7 +120,8 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
             memoryBar = MemoryBar(memoryUsed, node.memoryLong).toString(),
             nodeStatus = status,
             diskMax = (node.diskLong.toFloat()) / 1024,
-            diskUsed = diskSpaceUsed
+            diskUsed = diskSpaceUsed,
+            cpuUsed = cpuUsed
         ).toEmbed(jda)
 
     }
