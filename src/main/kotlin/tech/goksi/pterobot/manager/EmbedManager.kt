@@ -41,7 +41,6 @@ object EmbedManager {
         }
         return rawGeneric.replace("%message", message)
     }
-    /*TODO: statuses of node*/
     fun getNodeInfo(nodeName: String,
                     nodeDescription: String,
                     nodeStatus: NodeStatus,
@@ -51,6 +50,8 @@ object EmbedManager {
                     allocationCount: Int,
                     maxMb: Long,
                     usedMb: Long,
+                    diskMax: Float,
+                    diskUsed: Float,
                     memoryBar: String): String {
 
         val rawNodeInfo by lazy {
@@ -59,10 +60,12 @@ object EmbedManager {
         }
         val localTime = LocalDateTime.now()
         val offsetData = OffsetDateTime.of(localTime, OffsetDateTime.now().offset)
+
         return rawNodeInfo.replace("%runningServers" to runningServers.toString(), "%location" to location,
         "%maintenance" to if(maintenance) "On" else "Off", "%allocationsCount" to allocationCount.toString(), "%maxMb" to maxMb.toString(),
         "%usedMb" to usedMb.toString(), "%memoryUsageBar" to memoryBar, "%nodeName" to nodeName, "%nodeDescription" to nodeDescription,
-        "%timestamp" to offsetData.format(DateTimeFormatter.ISO_DATE_TIME), "%statusEmoji" to nodeStatus.emoji, "%status" to nodeStatus.message)
+        "%timestamp" to offsetData.format(DateTimeFormatter.ISO_DATE_TIME), "%statusEmoji" to nodeStatus.emoji, "%status" to nodeStatus.message,
+        "%diskMax" to String.format("%.2f", diskMax), "%diskUsed" to String.format("%.2f", diskUsed))
     }
 
     fun String.toEmbed(jda: JDA): MessageEmbed {
@@ -72,7 +75,7 @@ object EmbedManager {
 
     private fun String.replace(vararg replacements: Pair<String, String>): String {
         var result = this
-        replacements.forEach { (l, r) -> result = result.replace(l, r) }
+        replacements.forEach { (first, second) -> result = result.replace(first, second) }
         return result
     }
 }

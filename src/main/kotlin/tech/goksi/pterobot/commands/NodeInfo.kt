@@ -5,7 +5,10 @@ import com.mattmalec.pterodactyl4j.UtilizationState
 import com.mattmalec.pterodactyl4j.exceptions.HttpException
 import com.mattmalec.pterodactyl4j.exceptions.NotFoundException
 import dev.minn.jda.ktx.util.SLF4J
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -14,17 +17,16 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
-import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.database.DataStorage
+import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.MemoryBar
-import java.io.IOException
-import java.net.URL
-import java.util.Timer
+import java.util.*
 import kotlin.concurrent.fixedRateTimer
-/*TODO: more info like cpu usage or disk usage*/
+
+/*TODO: more info like cpu usage*/
 private const val CONFIG_PREFIX = "Messages.Commands.NodeInfo."
 class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
     private val logger by SLF4J
@@ -45,17 +47,20 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
     override fun execute(event: SlashCommandInteractionEvent) {
         event.deferReply().queue()
         val nodeId = event.getOption("id")!!.asInt
-        val update = if(event.getOption("update") != null) event.getOption("update")!!.asBoolean else false
+        val update = event.getOption("update")?.asBoolean ?: false
         val response: MessageEmbed
         var success = false
         if(dataStorage.isPteroAdmin(event.user)){
             success = true
             response = try{
-                getNodeInfoEmbed(nodeId, event.jda)
+                runBlocking {
+                    withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
+                }
             } catch (exception: Exception){
                 when(exception){
                     is HttpException, is NotFoundException -> {
                         success = false
+                        logger.info("Erro: ", exception)
                         EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeNotFound")).toEmbed(event.jda)
                     } //shame that kotlin doesn't have multi catch
                     else -> throw exception
@@ -68,36 +73,39 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         event.hook.sendMessageEmbeds(response).queue {
             if(success && update){
                 val timer = fixedRateTimer(name = "NodeInfoDaemon#${mapping.size}", daemon = true, period = 300_000){
-                    it.editMessageEmbeds(getNodeInfoEmbed(nodeId, event.jda)).queue() } /*TODO: fixed 5 minutes delay, make configurable*/
+                    it.editMessageEmbeds(runBlocking {
+                        withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
+                    }).queue() } /*TODO: fixed 5 minutes delay, make configurable*/
                 mapping[it.idLong] = timer
             }
         }
+
     }
 
     private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
         val ptero by lazy {
-            Pair(Common.createApplication(ConfigManager.config.getString("BotInfo.AdminApiKey")),
-                Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey")))
+            Common.createApplication(ConfigManager.config.getString("BotInfo.AdminApiKey")) to
+                Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
         }
         val node = ptero.first.retrieveNodeById(id.toLong()).execute()
         var memoryUsed: Long = 0
+        var diskSpaceUsed = 0f
+        var status = NodeStatus.ONLINE
         val runningServers = ptero.second.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
             if(it.isInstalling) return@filter false
-            val utilization = it.retrieveUtilization().execute()
-            memoryUsed += utilization.memory / 1024 / 1024
-            return@filter utilization.state == UtilizationState.RUNNING || utilization.state == UtilizationState.STARTING
-        }
-        val nodeUrl = "${node.scheme}://${node.fqdn}:${node.daemonListenPort}"
-        val url = URL(nodeUrl)
-        val status = try{
-            if(url.readText() == "{\"error\":\"The required authorization heads were not present in the request.\"}") NodeStatus.ONLINE
-            else NodeStatus.OFFLINE
-        } catch (exception: IOException){
-            if(exception.message?.contains("401") == true) NodeStatus.ONLINE
-            else NodeStatus.OFFLINE
-        }
+            if(status == NodeStatus.ONLINE){
+                val utilization = try {
+                    it.retrieveUtilization().execute()
+                }catch (exception: HttpException){
+                    status = NodeStatus.OFFLINE
+                    return@filter false
+                }
+                memoryUsed += utilization.memory / 1024 / 1024 //mb
+                diskSpaceUsed += utilization.disk.toFloat() / 1024 / 1024 / 1024 //gb
+                return@filter utilization.state == UtilizationState.RUNNING || utilization.state == UtilizationState.STARTING
 
-
+            } else return@filter false
+        }
 
         return EmbedManager.getNodeInfo(
             nodeName = node.name,
@@ -109,7 +117,9 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
             runningServers = runningServers.size,
             usedMb = memoryUsed,
             memoryBar = MemoryBar(memoryUsed, node.memoryLong).toString(),
-            nodeStatus = status
+            nodeStatus = status,
+            diskMax = (node.diskLong.toFloat()) / 1024,
+            diskUsed = diskSpaceUsed
         ).toEmbed(jda)
 
     }
