@@ -23,5 +23,8 @@ Messages:
       NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
       OnlineEmoji: "🟢"
       OfflineEmoji: "🔴"
+    Register:
+      Description: "Registers new account to pterodactyl panel !"
+      AllowedAccounts: 1
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
