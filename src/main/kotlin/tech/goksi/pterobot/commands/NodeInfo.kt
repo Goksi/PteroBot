@@ -25,7 +25,6 @@ import tech.goksi.pterobot.util.MemoryBar
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
-/*TODO: more info like cpu usage*/
 private const val CONFIG_PREFIX = "Messages.Commands.NodeInfo."
 class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
     private val logger by SLF4J
