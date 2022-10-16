@@ -31,11 +31,11 @@ class PteroBot(args: Array<String>) {
 
     init {
         dataStorage = SQLiteImpl() /*TODO: more types*/
-        val tokenPair = Common.checkInput(
+        val tokenPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.Token"), DEFAULT_NO_TOKEN_MSG,
         "You didn't provide your bot token, please input it right-now: "
         ) { readLine() }
-        val guildPair = Common.checkInput(
+        val guildPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.ServerID"), DEFAULT_NO_ID_MSG,
             "You didn't provide your discord server id, please input it right-now: "
         ) {
@@ -47,7 +47,7 @@ class PteroBot(args: Array<String>) {
             }
             input
         }
-        val appUrlPair = Common.checkInput(
+        val appUrlPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.PterodactylUrl"), DEFAULT_NO_URL_MSG,
             "You didn't provide your pterodactyl url, please input it right-now:"
         ){
@@ -59,7 +59,7 @@ class PteroBot(args: Array<String>) {
             }
             input
         }
-        val apiKeyPair = Common.checkInput(
+        val apiKeyPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.AdminApiKey"), DEFAULT_NO_API_KEY_MSG,
             "You didn't provide admin key for actions like register and node info, please input it right-now:"
         ){
