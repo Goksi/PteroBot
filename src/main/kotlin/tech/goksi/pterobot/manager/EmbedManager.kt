@@ -75,7 +75,7 @@ object EmbedManager {
         return jdaImpl.entityBuilder.createMessageEmbed(DataObject.fromJson(this))
     }
 
-    private fun String.replace(vararg replacements: Pair<String, String>): String {
+    fun String.replace(vararg replacements: Pair<String, String>): String {
         var result = this
         replacements.forEach { (first, second) -> result = result.replace(first, second) }
         return result

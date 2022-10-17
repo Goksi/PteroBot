@@ -18,13 +18,21 @@ class SQLiteImpl: DataStorage {
         Class.forName("org.sqlite.JDBC");
         connection = DriverManager.getConnection("jdbc:sqlite:database.db")
         val statement = connection.prepareStatement(
-            "CREATE TABLE IF NOT EXISTS Keys(DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
+            "CREATE TABLE IF NOT EXISTS Keys(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
         )
-        try{
-            statement.executeUpdate()
-        }catch (exception: SQLException){
-            logger.error("Failed to initialize SQLite database... exiting", exception)
-            exitProcess(1)
+        val statement2 = connection.prepareStatement(
+            "CREATE TABLE IF NOT EXISTS Registered(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, DiscordID BIGINT, RegisteredAmount INTEGER DEFAULT 0, Accounts VARCHAR)"
+        )
+        statement.use {
+            try{
+                it.executeUpdate()
+                statement2.executeUpdate()
+            } catch (exception: SQLException){
+                logger.error("Failed to initialize SQLite database... exiting", exception)
+                exitProcess(1)
+            } finally {
+                statement2.close()
+            }
         }
     }
 
@@ -33,13 +41,15 @@ class SQLiteImpl: DataStorage {
             "SELECT ApiKey FROM Keys WHERE DiscordID = ?"
         )
         statement.setLong(1, id)
-        try{
-            val resultSet = statement.executeQuery()
-            if(resultSet.next()) return resultSet.getString("ApiKey")
-        }catch (exception: SQLException){
-            logger.error("Failed to get api key for $id", exception)
+        statement.use {
+            try{
+                val resultSet = it.executeQuery()
+                if(resultSet.next()) return resultSet.getString("ApiKey")
+            }catch (exception: SQLException){
+                logger.error("Failed to get api key for $id", exception)
+            }
+            return null
         }
-        return null
     }
 
     override fun isPteroAdmin(id: Long): Boolean {
@@ -47,13 +57,15 @@ class SQLiteImpl: DataStorage {
             "SELECT isAdmin FROM Keys WHERE DiscordID = ?"
         )
         statement.setLong(1, id)
-        try{
-            val resultSet = statement.executeQuery()
-            if(resultSet.next()) return resultSet.getBoolean("isAdmin")
-        }catch (exception: SQLException){
-            logger.error("Failed to get admin status of $id", exception)
+        statement.use {
+            try{
+                val resultSet = it.executeQuery()
+                if(resultSet.next()) return resultSet.getBoolean("isAdmin")
+            }catch (exception: SQLException){
+                logger.error("Failed to get admin status of $id", exception)
+            }
+            return false
         }
-        return false
     }
 
     @Throws(LoginException::class, SQLException::class)
@@ -65,7 +77,7 @@ class SQLiteImpl: DataStorage {
         statement.setLong(1, snowflake.idLong)
         statement.setString(2, apiKey)
         statement.setBoolean(3, pteroUser.isRootAdmin)
-        statement.executeUpdate() //should catch SQLException later in command
+        statement.use { it.executeUpdate()} //should catch SQLException later in command
         return pteroUser
     }
 
@@ -74,10 +86,12 @@ class SQLiteImpl: DataStorage {
             "DELETE FROM Keys WHERE DiscordID = ?"
         )
         statement.setLong(1, id)
-        try{
-            statement.executeUpdate()
-        }catch (exception: SQLException){
-            logger.error("Failed to delete api key for $id", exception)
+        statement.use {
+            try{
+                it.executeUpdate()
+            }catch (exception: SQLException){
+                logger.error("Failed to delete api key for $id", exception)
+            }
         }
     }
 
@@ -86,12 +100,14 @@ class SQLiteImpl: DataStorage {
             "SELECT DiscordID FROM Keys WHERE DiscordID = ?"
         )
         statement.setLong(1, id)
-        return try {
-            val resultSet = statement.executeQuery()
-            resultSet.next()
-        } catch (exception: SQLException){
-            logger.error("Failed to check linked status for $id", exception)
-            false;
+        statement.use {
+            return try {
+                val resultSet = it.executeQuery()
+                resultSet.next()
+            } catch (exception: SQLException){
+                logger.error("Failed to check linked status for $id", exception)
+                false;
+            }
         }
     }
 }

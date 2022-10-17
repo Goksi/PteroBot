@@ -25,6 +25,16 @@ Messages:
       OfflineEmoji: "🔴"
     Register:
       Description: "Registers new account to pterodactyl panel !"
-      AllowedAccounts: 1
+      InvalidEmail: "Sorry, this doesn't look like valid email address :("
+      PasswordRequired: true # set this to false only if your panel is able to send mails (this will send random password to user)
+      Success: "You successfully created account named %pteroName"
+      FieldTaken: "Sorry, but provided %takenField is already taken"
+      Modal:
+        Name: "PteroBot registration"
+        EmailPlaceholder: "Please enter your email here"
+        UsernamePlaceholder: "Enter your username here"
+        PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
+        FirstNamePlaceholder: "Enter your first name here"
+        LastNamePlaceholder: "Enter your last name here"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"

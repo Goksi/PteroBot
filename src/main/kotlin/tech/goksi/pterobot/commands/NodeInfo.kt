@@ -82,7 +82,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
 
     private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
         val ptero by lazy {
-            Common.createApplication(ConfigManager.config.getString("BotInfo.AdminApiKey")) to
+            Common.getDefaultApplication() to
                 Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
         }
         val node = ptero.first.retrieveNodeById(id.toLong()).execute()

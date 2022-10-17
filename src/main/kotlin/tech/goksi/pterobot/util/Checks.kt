@@ -37,4 +37,12 @@ object Checks  {
         )
         return urlRegex.matches(url)
     }
+
+    fun validEmail(email: String): Boolean {
+        val emailRegex by lazy {
+            Regex("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,8}\$")
+        }
+
+        return emailRegex.matches(email)
+    }
 }

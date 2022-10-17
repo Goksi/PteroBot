@@ -12,8 +12,15 @@ object Common  {
         return PteroBuilder.createClient(appUrl, apiKey)
     }
 
-    fun createApplication(apiKey: String): PteroApplication {
+    private fun createApplication(apiKey: String): PteroApplication {
         val appUrl: String by lazy { ConfigManager.config.getString("BotInfo.PterodactylUrl") }
         return PteroBuilder.createApplication(appUrl, apiKey)
+    }
+
+    fun getDefaultApplication(): PteroApplication {
+        val app by lazy {
+            createApplication(ConfigManager.config.getString("BotInfo.AdminApiKey"))
+        }
+        return app
     }
 }
