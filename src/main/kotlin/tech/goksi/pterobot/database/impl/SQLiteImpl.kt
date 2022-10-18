@@ -15,7 +15,7 @@ class SQLiteImpl: DataStorage {
     private val logger by SLF4J
 
     init {
-        Class.forName("org.sqlite.JDBC");
+        Class.forName("org.sqlite.JDBC")
         connection = DriverManager.getConnection("jdbc:sqlite:database.db")
         val statement = connection.prepareStatement(
             "CREATE TABLE IF NOT EXISTS Keys(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
@@ -106,7 +106,7 @@ class SQLiteImpl: DataStorage {
                 resultSet.next()
             } catch (exception: SQLException){
                 logger.error("Failed to check linked status for $id", exception)
-                false;
+                false
             }
         }
     }

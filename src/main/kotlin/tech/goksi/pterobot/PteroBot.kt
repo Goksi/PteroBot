@@ -1,6 +1,5 @@
 package tech.goksi.pterobot
 
-import org.slf4j.LoggerFactory
 import tech.goksi.pterobot.manager.ConfigManager
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.minn.jda.ktx.util.SLF4J
@@ -12,12 +11,12 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag
 import tech.goksi.pterobot.commands.Link
 import tech.goksi.pterobot.commands.NodeInfo
 import tech.goksi.pterobot.commands.Register
+import tech.goksi.pterobot.commands.Servers
 import tech.goksi.pterobot.commands.manager.SimpleCommandData
 import tech.goksi.pterobot.database.DataStorage
 import tech.goksi.pterobot.database.impl.SQLiteImpl
 import tech.goksi.pterobot.events.NodeStatusDelete
 import tech.goksi.pterobot.util.Checks
-import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.manager.EmbedManager
 
 const val DEFAULT_NO_TOKEN_MSG = "YOUR TOKEN HERE"
@@ -108,8 +107,8 @@ class PteroBot(args: Array<String>) {
         }.awaitReady()
 
         val commandData = SimpleCommandData()
-        commandData.addCommands(Link(dataStorage), NodeInfo(dataStorage), Register())
-        val guild = jda.getGuildById(guildPair.first!!)
+        commandData.addCommands(Link(dataStorage), NodeInfo(dataStorage), Register(), Servers(dataStorage))
+        val guild = jda.getGuildById(guildPair.first!!) //what if wrong guild id ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())
         commandData.registerListeners(jda)

@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.internal.utils.PermissionUtil
 import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.database.DataStorage
@@ -48,7 +49,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         val update = event.getOption("update")?.asBoolean ?: false
         val response: MessageEmbed
         var success = false
-        if(dataStorage.isPteroAdmin(event.user)){
+        if(dataStorage.isPteroAdmin(event.user) || PermissionUtil.checkPermission(event.member, Permission.ADMINISTRATOR)){
             success = true
             response = try{
                 runBlocking {
@@ -79,7 +80,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         }
 
     }
-
+    /*TODO: catch login exception ?*/
     private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
         val ptero by lazy {
             Common.getDefaultApplication() to

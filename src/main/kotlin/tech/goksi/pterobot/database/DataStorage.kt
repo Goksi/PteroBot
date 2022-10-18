@@ -1,7 +1,9 @@
 package tech.goksi.pterobot.database
 
 import com.mattmalec.pterodactyl4j.client.entities.Account
+import com.mattmalec.pterodactyl4j.client.entities.PteroClient
 import net.dv8tion.jda.api.entities.UserSnowflake
+import tech.goksi.pterobot.util.Common
 
 interface DataStorage {
 
@@ -9,6 +11,10 @@ interface DataStorage {
 
     fun getApiKey(snowflake: UserSnowflake): String? {
         return getApiKey(snowflake.idLong)
+    }
+
+    fun getClient(snowflake: UserSnowflake): PteroClient{
+        return Common.createClient(getApiKey(snowflake)!!)
     }
 
     fun isPteroAdmin(id: Long): Boolean

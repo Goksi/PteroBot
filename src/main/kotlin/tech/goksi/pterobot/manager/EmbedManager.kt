@@ -1,7 +1,6 @@
 package tech.goksi.pterobot.manager
 
 import dev.minn.jda.ktx.util.SLF4J
-import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.utils.data.DataObject
@@ -11,8 +10,6 @@ import tech.goksi.pterobot.EmbedType
 import tech.goksi.pterobot.NodeStatus
 import java.io.File
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 object EmbedManager {
@@ -62,12 +59,23 @@ object EmbedManager {
             val file = File(EmbedType.NODE_INFO.path)
             file.readText()
         }
-        val timestampString = Helpers.toOffsetDateTime(Instant.now()).format(DateTimeFormatter.ISO_INSTANT)
         return rawNodeInfo.replace("%runningServers" to runningServers.toString(), "%location" to location,
         "%maintenance" to if(maintenance) "On" else "Off", "%allocationsCount" to allocationCount.toString(), "%maxMb" to maxMb.toString(),
         "%usedMb" to usedMb.toString(), "%memoryUsageBar" to memoryBar, "%nodeName" to nodeName, "%nodeDescription" to nodeDescription,
-        "%timestamp" to timestampString, "%statusEmoji" to nodeStatus.emoji, "%status" to nodeStatus.message,
+        "%timestamp" to getCurrentTimestamp(), "%statusEmoji" to nodeStatus.emoji, "%status" to nodeStatus.message,
         "%diskMax" to String.format("%.2f", diskMax), "%diskUsed" to String.format("%.2f", diskUsed), "%cpuUsed" to String.format("%.2f", cpuUsed))
+    }
+
+    fun getServersCommand(username: String,
+                          fullName: String,
+                          rootAdmin: Boolean,
+                          email: String): String {
+        val rawServersSuccess by lazy {
+            val file = File(EmbedType.SERVERS_COMMAND.path)
+            file.readText()
+        }
+        return rawServersSuccess.replace("%pteroName" to username, "%pteroFullName" to fullName, "%isAdmin" to rootAdmin.toString(),
+        "%pteroEmail" to email, "%timestamp" to getCurrentTimestamp())
     }
 
     fun String.toEmbed(jda: JDA): MessageEmbed {
@@ -80,4 +88,6 @@ object EmbedManager {
         replacements.forEach { (first, second) -> result = result.replace(first, second) }
         return result
     }
+
+    private fun getCurrentTimestamp() : String = Helpers.toOffsetDateTime(Instant.now()).format(DateTimeFormatter.ISO_INSTANT)
 }

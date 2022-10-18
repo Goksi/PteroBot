@@ -36,5 +36,10 @@ Messages:
         PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
         FirstNamePlaceholder: "Enter your first name here"
         LastNamePlaceholder: "Enter your last name here"
+    Servers:
+      Description: "Select server you want to interact with"
+      NotLinked: "Sorry, your discord isn't linked with any pterodactyl account, link one using /link"
+      NotFound: "Sorry, but your account isn't found anymore (deleted apy key) ?"
+      MenuPlaceholder: "Please select server you would like"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"

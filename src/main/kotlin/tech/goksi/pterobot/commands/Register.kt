@@ -1,7 +1,6 @@
 package tech.goksi.pterobot.commands
 
 import dev.minn.jda.ktx.messages.SendDefaults
-import dev.minn.jda.ktx.messages.reply_
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -29,7 +28,9 @@ class Register: SimpleCommand() {
         this.enableDefault = false;
         this.enabledPermissions = listOf(Permission.ADMINISTRATOR)
         SendDefaults.ephemeral = true
-
+    }
+    /*modal init*/
+    init {
         val email = TextInput.create("email", "Email", TextInputStyle.SHORT)
             .setRequired(true).setRequiredRange(9, 100).setPlaceholder(ConfigManager.config.getString(CONFIG_PREFIX + "Modal.EmailPlaceholder")).build()
         val username = TextInput.create("username", "Username", TextInputStyle.SHORT)
@@ -55,7 +56,7 @@ class Register: SimpleCommand() {
         val email = event.getValue("email")!!.asString
         if(!Checks.validEmail(email)){
             event.hook.sendMessageEmbeds(listOf(EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "InvalidEmail")).toEmbed(event.jda)))
-                .setEphemeral(true).queue()
+                .queue()
             return
         }
         val pteroApplication = Common.getDefaultApplication()
@@ -71,7 +72,6 @@ class Register: SimpleCommand() {
         userBuilder.executeAsync({
             event.hook.sendMessageEmbeds(EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "Success")!!.
             replace("%pteroName" to it.userName)).toEmbed(event.jda))
-                .setEphemeral(true)
                 .complete()
         }, {
             val errorMessage = it.message?:""
@@ -80,11 +80,9 @@ class Register: SimpleCommand() {
 
                 event.hook.sendMessageEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "FieldTaken")
                     .replace("%takenField" to takenField)).toEmbed(event.jda))
-                    .setEphemeral(true)
                     .complete()
 
             }else event.hook.sendMessageEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError")).toEmbed(event.jda))
-                .setEphemeral(true)
                 .complete()
         })
 
