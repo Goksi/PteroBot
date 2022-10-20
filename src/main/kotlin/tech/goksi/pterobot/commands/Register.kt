@@ -51,8 +51,8 @@ class Register: SimpleCommand() {
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {
-        event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         if(event.modalId != "pterobot:register") return
+        event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         val email = event.getValue("email")!!.asString
         if(!Checks.validEmail(email)){
             event.hook.sendMessageEmbeds(listOf(EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "InvalidEmail")).toEmbed(event.jda)))
