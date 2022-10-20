@@ -1,0 +1,47 @@
+{
+  "type": "IMAGE",
+  "color": 39129,
+  "author": {
+    "icon_url": "",
+    "name": ""
+  },
+  "footer": {
+    "icon_url": "https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png",
+    "text": "PteroBot | %serverId"
+  },
+  "timestamp": "%timestamp",
+  "title": "PteroBot",
+  "description": "%serverName",
+  "fields": [
+    {
+      "name": "Status",
+      "value": "%statusEmoji %status",
+      "inline": true
+    },
+    {
+      "name": "Node",
+      "value": "%nodeName",
+      "inline": true
+    },
+    {
+      "name": "Allocation",
+      "value": "%primaryAllocation",
+      "inline": false
+    },
+    {
+      "name": "CPU usage",
+      "value": "%cpuUsed %",
+      "inline": true
+    },
+    {
+      "name": "Disk usage",
+      "value": "%diskUsed GB / %diskMax GB",
+      "inline": true
+    },
+    {
+      "name": "Memory usage",
+      "value": "%usedMb MB %memoryUsageBar %maxMb MB",
+      "inline": false
+    }
+  ]
+}

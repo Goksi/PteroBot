@@ -87,13 +87,8 @@ class PteroBot(args: Array<String>) {
         EmbedManager.init()
         jda = default(tokenPair.first!!, enableCoroutines = true, intents = listOf(GatewayIntent.GUILD_MESSAGES)){
             disableCache(listOf(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.EMOJI))
-            val statusStr = ConfigManager.config.getString("BotInfo.Status")?:"".uppercase()
-            setStatus(when (statusStr) {
-                "INVISIBLE" -> OnlineStatus.INVISIBLE
-                "DND" -> OnlineStatus.DO_NOT_DISTURB
-                "IDLE" -> OnlineStatus.IDLE
-                else -> OnlineStatus.ONLINE
-                })
+            val statusStr = ConfigManager.config.getString("BotInfo.Status")?:"ONLINE".uppercase()
+            setStatus(OnlineStatus.valueOf(statusStr))
             if(ConfigManager.config.getBoolean("BotInfo.EnableActivity")){
                 val activityString = ConfigManager.config.getString("BotInfo.ActivityName")?:""
                 val activityName = ConfigManager.config.getString("BotInfo.Activity")?:"".uppercase()
@@ -120,7 +115,7 @@ class PteroBot(args: Array<String>) {
         while(true){
             if((readLine()?.lowercase()) == "stop"){
                 jda.shutdown()
-                break;
+                break
             }else logger.warn("Wrong command ! You mean \"stop\" ?")
         }
     }

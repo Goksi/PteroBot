@@ -22,7 +22,7 @@ class Link(private val dataStorage: DataStorage): SimpleCommand() {
         this.name = "link"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
         this.options = listOf(OptionData(OptionType.STRING, "apikey", ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"), true))
-        SendDefaults.ephemeral = true
+        SendDefaults.ephemeral = ConfigManager.config.getBoolean("BotInfo.Ephemeral")
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {

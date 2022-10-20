@@ -36,7 +36,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
     init {
         this.name = "nodeinfo"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-        this.enableDefault = false;
+        this.enableDefault = false
         this.enabledPermissions = listOf(Permission.ADMINISTRATOR)
         this.options = listOf(OptionData(OptionType.INTEGER, "id", ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"), true),
         OptionData(OptionType.BOOLEAN, "update", ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"), false)

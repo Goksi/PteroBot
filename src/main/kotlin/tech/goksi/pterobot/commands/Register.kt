@@ -25,7 +25,7 @@ class Register: SimpleCommand() {
     init {
         this.name = "register"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-        this.enableDefault = false;
+        this.enableDefault = false
         this.enabledPermissions = listOf(Permission.ADMINISTRATOR)
         SendDefaults.ephemeral = true
     }
@@ -51,7 +51,7 @@ class Register: SimpleCommand() {
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {
-        event.deferReply(true).queue()
+        event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         if(event.modalId != "pterobot:register") return
         val email = event.getValue("email")!!.asString
         if(!Checks.validEmail(email)){

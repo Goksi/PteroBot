@@ -25,7 +25,7 @@ object Checks  {
     fun validSnowflake(snowflake: String): Boolean {
         return try{
             MiscUtil.parseSnowflake(snowflake)
-            true;
+            true
         }catch (exception: Exception){
             false
         }

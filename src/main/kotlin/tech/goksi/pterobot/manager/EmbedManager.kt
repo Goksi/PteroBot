@@ -8,6 +8,8 @@ import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.utils.Helpers
 import tech.goksi.pterobot.EmbedType
 import tech.goksi.pterobot.NodeStatus
+import tech.goksi.pterobot.entities.ServerInfo
+import tech.goksi.pterobot.util.MemoryBar
 import java.io.File
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -41,6 +43,7 @@ object EmbedManager {
         }
         return rawGeneric.replace("%message", message)
     }
+    /*TODO: cleanup this mess a bit*/
     fun getNodeInfo(nodeName: String,
                     nodeDescription: String,
                     nodeStatus: NodeStatus,
@@ -76,6 +79,17 @@ object EmbedManager {
         }
         return rawServersSuccess.replace("%pteroName" to username, "%pteroFullName" to fullName, "%isAdmin" to rootAdmin.toString(),
         "%pteroEmail" to email, "%timestamp" to getCurrentTimestamp())
+    }
+
+    fun getServerInfo(server: ServerInfo): String {
+        val rawServerInfo by lazy {
+            val file = File(EmbedType.SERVER_INFO.path)
+            file.readText()
+        }
+        return rawServerInfo.replace("%serverId" to server.identifier, "%timestamp" to getCurrentTimestamp(), "%serverName" to server.name,
+        "%nodeName" to server.node, "%primaryAllocation" to server.primaryAllocation, "%cpuUsed" to String.format("%.2f", server.cpuUsed), "%diskMax" to String.format("%.2f", server.diskMax),
+            "%diskUsed" to String.format("%.2f", server.diskUsed), "%usedMb" to server.ramUsed.toString(), "%maxMb" to server.ramMax.toString(),
+            "%memoryUsageBar" to MemoryBar(server.ramUsed, server.ramMax).toString(),"%statusEmoji" to server.emoji, "%status" to server.status)
     }
 
     fun String.toEmbed(jda: JDA): MessageEmbed {
