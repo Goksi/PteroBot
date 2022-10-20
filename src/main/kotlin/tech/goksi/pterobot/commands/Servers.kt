@@ -118,13 +118,17 @@ class Servers(private val dataStorage: DataStorage): SimpleCommand() {
 
             }
         }
+        val commandButton = event.jda.button(style = ButtonStyle.valueOf(getButtonSetting("CommandType")),
+        user = event.user, label = getButtonSetting("Command"), emoji = Emoji.fromUnicode(getButtonSetting("CommandEmoji"))){
+            /*TODO: somehow handle commands*/
+        }
 
         val closeButton = event.jda.button(style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
             user = event.user, label = getButtonSetting("Close"), emoji = Emoji.fromUnicode(getButtonSetting("CloseEmoji"))){
             val original = it.hook.retrieveOriginal().await()
             if(!original.isEphemeral) original.delete().queue()
         }
-        event.hook.sendMessageEmbeds(response).addActionRow(changeStateButton, restartButton, closeButton).queue()
+        event.hook.sendMessageEmbeds(response).addActionRow(changeStateButton, commandButton, restartButton, closeButton).queue()
     }
 
     private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
