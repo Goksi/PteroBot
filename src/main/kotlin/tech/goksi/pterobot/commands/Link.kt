@@ -28,6 +28,7 @@ class Link(private val dataStorage: DataStorage): SimpleCommand() {
     override fun execute(event: SlashCommandInteractionEvent) {
         val key = event.getOption("apikey")!!.asString
         val response: MessageEmbed
+        /*TODO: check if key is linked*/
         if(!dataStorage.isLinked(event.user)){
             response = try{
                 if( key.split("_")[0] != "ptlc" || key.length != 48) throw HttpException("Wrong key format !")
