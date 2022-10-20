@@ -102,7 +102,7 @@ class PteroBot(args: Array<String>) {
         }.awaitReady()
 
         val commandData = SimpleCommandData()
-        commandData.addCommands(Link(dataStorage), NodeInfo(dataStorage), Register(), Servers(dataStorage))
+        commandData.addCommands(Link(dataStorage), NodeInfo(dataStorage), Register(), Servers(dataStorage, jda))
         val guild = jda.getGuildById(guildPair.first!!) //what if wrong guild id ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())

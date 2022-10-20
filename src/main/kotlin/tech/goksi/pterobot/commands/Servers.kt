@@ -1,15 +1,23 @@
 package tech.goksi.pterobot.commands
 
 import com.mattmalec.pterodactyl4j.PowerAction
+import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
 import dev.minn.jda.ktx.coroutines.await
+import dev.minn.jda.ktx.events.listener
+import dev.minn.jda.ktx.events.onComponent
+import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.SelectMenu
 import dev.minn.jda.ktx.interactions.components.button
 import dev.minn.jda.ktx.interactions.components.option
 import dev.minn.jda.ktx.util.SLF4J
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.emoji.Emoji
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
+import net.dv8tion.jda.api.interactions.ModalInteraction
+import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.database.DataStorage
@@ -17,15 +25,33 @@ import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
+import kotlin.time.Duration.Companion.minutes
 
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
 private const val SELECTION_ID = "pterobot:servers-selector"
 
-class Servers(private val dataStorage: DataStorage): SimpleCommand() {
+class Servers(private val dataStorage: DataStorage, jda: JDA): SimpleCommand() {
     private val logger by SLF4J
+    private val serverMapping = HashMap<String, ClientServer>()
     init {
         this.name = "servers"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
+    }
+    /*LISTENER FOR COMMAND*/
+    init {
+        jda.listener<ModalInteractionEvent>(timeout = 2.minutes){
+            val id = it.modalId
+            if(id.startsWith("pterobot:command")){
+                val server = serverMapping[id.split(":")[2]]!!.also { serverMapping.remove(id.split(":")[2]) }
+                server.sendCommand(it.getValue("command")!!.asString).executeAsync({_ ->
+                    /*TODO: configure*/
+                    it.replyEmbeds(EmbedManager.getGenericSuccess("bravo").toEmbed(it.jda)).setEphemeral(true).queue()
+                }){throwable ->
+                    it.replyEmbeds(EmbedManager.getGenericFailure("grijeska").toEmbed(it.jda)).setEphemeral(true).queue()
+                    logger.error("Error while sending command to ${server.name}", throwable)
+                }
+            }
+        }
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
@@ -77,58 +103,65 @@ class Servers(private val dataStorage: DataStorage): SimpleCommand() {
         }
         val serverInfo = ServerInfo(server)
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
-
+        /*START OR STOP BTN*/
         val changeStateButton = when(serverInfo.status){
             "RUNNING", "STARTING" -> event.jda.button(style = ButtonStyle.valueOf(getButtonSetting("StopType")),
-                user = event.user, label = getButtonSetting("Stop"), emoji = Emoji.fromUnicode(getButtonSetting("StopEmoji"))){
+                user = event.user, label = getButtonSetting("Stop"), emoji = Emoji.fromUnicode(getButtonSetting("StopEmoji"))){buttonEvent ->
                 server.setPower(PowerAction.STOP).executeAsync({
-                    event.replyEmbeds(EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessStop")).toEmbed(event.jda))
+                    buttonEvent.hook.sendMessageEmbeds(EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessStop")).toEmbed(event.jda))
                         .setEphemeral(true).queue()
                 }) {
-                    event.replyEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError")).toEmbed(event.jda))
+                    buttonEvent.hook.sendMessageEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError")).toEmbed(event.jda))
                         .setEphemeral(true).queue().also {_ ->
                             logger.error("Error while changing server state !", it)
                         }
                 }
             }
             else -> event.jda.button(style = ButtonStyle.valueOf(getButtonSetting("StartType")),
-                user = event.user, label = getButtonSetting("Start"), emoji = Emoji.fromUnicode(getButtonSetting("StartEmoji"))){
+                user = event.user, label = getButtonSetting("Start"), emoji = Emoji.fromUnicode(getButtonSetting("StartEmoji"))){buttonEvent ->
                 server.setPower(PowerAction.START).executeAsync({
-                    event.replyEmbeds(EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessStart")).toEmbed(event.jda))
+                    buttonEvent.hook.sendMessageEmbeds(EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessStart")).toEmbed(event.jda))
                         .setEphemeral(true).queue()
                 }) {
-                    event.replyEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError")).toEmbed(event.jda))
+                    buttonEvent.hook.sendMessageEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError")).toEmbed(event.jda))
                         .setEphemeral(true).queue().also {_ ->
                             logger.error("Error while changing server state !", it)
                         }
                 }
             }
         }
-
+        /*RESTART BTN*/
         val restartButton = event.jda.button(style = ButtonStyle.valueOf(getButtonSetting("RestartType")),
-            user = event.user, label = getButtonSetting("Restart"), emoji = Emoji.fromUnicode(getButtonSetting("RestartEmoji"))){
+            user = event.user, label = getButtonSetting("Restart"), emoji = Emoji.fromUnicode(getButtonSetting("RestartEmoji"))){buttonEvent ->
             server.setPower(PowerAction.RESTART).executeAsync({
-                event.replyEmbeds(EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessRestart")).toEmbed(event.jda))
+                buttonEvent.hook.sendMessageEmbeds(EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessRestart")).toEmbed(event.jda))
                     .setEphemeral(true).queue()
             }) {
-                event.replyEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError")).toEmbed(event.jda))
+                buttonEvent.hook.sendMessageEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError")).toEmbed(event.jda))
                     .setEphemeral(true).queue().also {_ ->
                         logger.error("Error while changing server state !", it)
                     }
 
             }
         }
+        /*COMMAND BTN*/
         val commandButton = event.jda.button(style = ButtonStyle.valueOf(getButtonSetting("CommandType")),
-        user = event.user, label = getButtonSetting("Command"), emoji = Emoji.fromUnicode(getButtonSetting("CommandEmoji"))){
-            /*TODO: somehow handle commands*/
+        user = event.user, label = getButtonSetting("Command"), emoji = Emoji.fromUnicode(getButtonSetting("CommandEmoji"))){ buttonEvent ->
+            /*TODO: config*/
+            val commandModal = Modal(id = "pterobot:command:${server.identifier}", title = "Send command"){
+                this.short("command", "Command", true, null, "Please enter your command here")
+            }
+            buttonEvent.replyModal(commandModal).queue()
+            serverMapping[server.identifier] = server
         }
-
+        /*CLOSE BTN*/
         val closeButton = event.jda.button(style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
             user = event.user, label = getButtonSetting("Close"), emoji = Emoji.fromUnicode(getButtonSetting("CloseEmoji"))){
+            it.deferEdit().queue()
             val original = it.hook.retrieveOriginal().await()
             if(!original.isEphemeral) original.delete().queue()
         }
-        event.hook.sendMessageEmbeds(response).addActionRow(changeStateButton, commandButton, restartButton, closeButton).queue()
+        event.hook.sendMessageEmbeds(response).addActionRow(changeStateButton, restartButton, if(serverInfo.status == "RUNNING") commandButton else commandButton.asDisabled(), closeButton).queue()
     }
 
     private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
