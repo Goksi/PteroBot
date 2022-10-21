@@ -47,6 +47,7 @@ Messages:
       SuccessStart: "You successfully sent start signal !"
       SuccessStop: "You successfully sent stop signal !"
       SuccessRestart: "You successfully sent restart signal !"
+      SuccessCommand: "You successfully sent command to server !"
       Buttons:
         Stop: "Stop"
         StopType: "DANGER" # https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
@@ -63,5 +64,8 @@ Messages:
         Close: "Close"
         CloseType: "DANGER"
         CloseEmoji: "❌"
+      Modal:
+        Name: "Send command"
+        Placeholder: "Please input your command here"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
