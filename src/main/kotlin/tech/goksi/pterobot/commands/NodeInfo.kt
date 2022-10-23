@@ -91,7 +91,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         var diskSpaceUsed = 0f
         var cpuUsed = 0.0
         var status = NodeStatus.ONLINE
-        val runningServers = ptero.second.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
+        val runningServers = ptero.second!!.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
             if(it.isInstalling) return@filter false
             if(status == NodeStatus.ONLINE){
                 val utilization = try {

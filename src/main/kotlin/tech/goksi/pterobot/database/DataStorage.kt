@@ -13,8 +13,8 @@ interface DataStorage {
         return getApiKey(snowflake.idLong)
     }
 
-    fun getClient(snowflake: UserSnowflake): PteroClient{
-        return Common.createClient(getApiKey(snowflake)!!)
+    fun getClient(snowflake: UserSnowflake): PteroClient? {
+        return Common.createClient(getApiKey(snowflake))
     }
 
     fun isPteroAdmin(id: Long): Boolean

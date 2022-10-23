@@ -7,7 +7,8 @@ import tech.goksi.pterobot.manager.ConfigManager
 
 object Common  {
 
-    fun createClient(apiKey: String): PteroClient {
+    fun createClient(apiKey: String?): PteroClient? {
+        if(apiKey == null) return null
         val appUrl: String by lazy { ConfigManager.config.getString("BotInfo.PterodactylUrl") }
         return PteroBuilder.createClient(appUrl, apiKey)
     }

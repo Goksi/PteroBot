@@ -73,7 +73,7 @@ class SQLiteImpl: DataStorage {
         val statement = connection.prepareStatement(
             "INSERT INTO Keys (DiscordID, ApiKey, isAdmin) VALUES (?,?,?)"
         )
-        val pteroUser = Common.createClient(apiKey).retrieveAccount().execute() //throws LoginException
+        val pteroUser = Common.createClient(apiKey)!!.retrieveAccount().execute() //throws LoginException
         statement.setLong(1, snowflake.idLong)
         statement.setString(2, apiKey)
         statement.setBoolean(3, pteroUser.isRootAdmin)

@@ -52,9 +52,8 @@ class Servers(private val dataStorage: DataStorage, jda: JDA): SimpleCommand() {
 
     override fun execute(event: SlashCommandInteractionEvent) {
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
-        /*TODO: probably remove this, shouldn't require two database calls*/
-        if(dataStorage.isLinked(event.user)){
-            val pteroClient = dataStorage.getClient(event.user)
+        val pteroClient = dataStorage.getClient(event.user)
+        if(pteroClient != null){
             val servers = try{
                 pteroClient.retrieveServers().execute()
             } catch (exception: LoginException){
@@ -71,15 +70,15 @@ class Servers(private val dataStorage: DataStorage, jda: JDA): SimpleCommand() {
             val pteroAccount = pteroClient.retrieveAccount().execute()
 
             val response = EmbedManager.getServersCommand(username = pteroAccount.userName,
-            fullName = pteroAccount.fullName, rootAdmin = pteroAccount.isRootAdmin, email = pteroAccount.email).toEmbed(event.jda)
+                fullName = pteroAccount.fullName, rootAdmin = pteroAccount.isRootAdmin, email = pteroAccount.email).toEmbed(event.jda)
 
             event.hook.sendMessageEmbeds(response).addActionRow(selectMenu).queue()
-
         } else {
             event.hook.sendMessageEmbeds(EmbedManager
                 .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotLinked")).toEmbed(event.jda)).queue()
         }
     }
+    /**/
 
     override fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
         if(!event.componentId.startsWith(SELECTION_ID)) return
@@ -91,6 +90,11 @@ class Servers(private val dataStorage: DataStorage, jda: JDA): SimpleCommand() {
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         if(!event.message.isEphemeral) event.message.delete().queue()
         val pteroClient = dataStorage.getClient(event.user)
+        if(pteroClient == null) {
+            event.hook.sendMessageEmbeds(EmbedManager
+                .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotLinked")).toEmbed(event.jda)).setEphemeral(true).queue()
+            return
+        }
         val server =  try {
             pteroClient.retrieveServerByIdentifier(event.selectedOptions[0].value).execute()
         }catch (exception: LoginException){
