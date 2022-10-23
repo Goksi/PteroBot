@@ -16,6 +16,10 @@ Messages:
       LinkSuccess: "You successfully linked your discord account with %pteroName pterodactyl account"
       LinkExist: "Sorry, but you already have pterodactyl account linked !"
       LinkWrongKey: "Sorry, that api key is wrong !"
+    Unlink:
+      Description: "Unlink your linked pterodactyl api key !"
+      NotLinked: "You don't have any pterodactyl key linked, link one using /link"
+      SuccessUnlink: "You successfully unlinked your pterodactyl account"
     NodeInfo:
       Description: "Shows specific node info or all nodes online status (depends on options)"
       OptionDescription: "ID of node you want to show info of"
