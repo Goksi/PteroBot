@@ -20,18 +20,12 @@ class SQLiteImpl: DataStorage {
         val statement = connection.prepareStatement(
             "CREATE TABLE IF NOT EXISTS Keys(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
         )
-        val statement2 = connection.prepareStatement(
-            "CREATE TABLE IF NOT EXISTS Registered(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, DiscordID BIGINT, RegisteredAmount INTEGER DEFAULT 0, Accounts VARCHAR)"
-        )
         statement.use {
             try{
                 it.executeUpdate()
-                statement2.executeUpdate()
             } catch (exception: SQLException){
                 logger.error("Failed to initialize SQLite database... exiting", exception)
                 exitProcess(1)
-            } finally {
-                statement2.close()
             }
         }
     }

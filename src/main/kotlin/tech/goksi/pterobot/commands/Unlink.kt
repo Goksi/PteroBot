@@ -9,7 +9,7 @@ import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 
-private const val CONFIG_PREFIX = "Messages.Commands.Unlink"
+private const val CONFIG_PREFIX = "Messages.Commands.Unlink."
 class Unlink(private val dataStorage: DataStorage): SimpleCommand() {
 
     init {
