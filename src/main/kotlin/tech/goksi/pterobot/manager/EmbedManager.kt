@@ -92,6 +92,14 @@ object EmbedManager {
             "%memoryUsageBar" to MemoryBar(server.ramUsed, server.ramMax).toString(),"%statusEmoji" to server.emoji, "%status" to server.status)
     }
 
+    fun getNodeStatus(): String {
+        val rawServerStatus by lazy {
+            val file = File(EmbedType.NODE_STATUS.path)
+            file.readText()
+        }
+        return rawServerStatus.replace("%timestamp" to getCurrentTimestamp())
+    }
+
     fun String.toEmbed(jda: JDA): MessageEmbed {
         val jdaImpl: JDAImpl = jda as JDAImpl
         return jdaImpl.entityBuilder.createMessageEmbed(DataObject.fromJson(this))

@@ -71,5 +71,8 @@ Messages:
       Modal:
         Name: "Send command"
         Placeholder: "Please input your command here"
+    NodeStatus:
+      Description: "Display online or offline status of all nodes !"
+      OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new status,be careful because of rate-limit"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
