@@ -49,7 +49,7 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         val update = event.getOption("update")?.asBoolean ?: false
         val response: MessageEmbed
         var success = false
-        if(dataStorage.isPteroAdmin(event.user) || PermissionUtil.checkPermission(event.member, Permission.ADMINISTRATOR)){
+        if(dataStorage.isPteroAdmin(event.user) || event.member!!.hasPermission(Permission.ADMINISTRATOR)) {
             success = true
             response = try{
                 runBlocking {

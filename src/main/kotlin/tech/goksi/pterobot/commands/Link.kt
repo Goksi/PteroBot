@@ -13,6 +13,7 @@ import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.database.DataStorage
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
+import tech.goksi.pterobot.util.Checks
 import java.sql.SQLException
 
 private const val CONFIG_PREFIX = "Messages.Commands.Link."
@@ -31,7 +32,7 @@ class Link(private val dataStorage: DataStorage): SimpleCommand() {
         /*TODO: check if key is linked*/
         if(!dataStorage.isLinked(event.user)){
             response = try{
-                if( key.split("_")[0] != "ptlc" || key.length != 48) throw HttpException("Wrong key format !")
+                if(Checks.validClientKey(key)) throw HttpException("Wrong key format !")
                 val account = dataStorage.link(event.user, key)
                 logger.info("User ${event.user.asTag} linked his discord with ${account.userName} pterodactyl account !")
                 EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "LinkSuccess").replace("%pteroName", account.userName))

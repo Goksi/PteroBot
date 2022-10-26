@@ -62,8 +62,8 @@ class PteroBot(args: Array<String>) {
             var input: String
             while(true){
                 input = readLine()?:""
-                if(input.startsWith("ptlc_")) break
-                else logger.warn("Invalid url, please try again !")
+                if(Checks.validClientKey(input)) break
+                else logger.warn("Invalid api key, please try again !")
             }
             input
         }
@@ -99,7 +99,7 @@ class PteroBot(args: Array<String>) {
         }.awaitReady()
 
         val commandData = SimpleCommandData()
-        commandData.addCommands(Link(dataStorage), NodeInfo(dataStorage), Register(), Servers(dataStorage, jda), Unlink(dataStorage))
+        commandData.addCommands(Link(dataStorage), NodeInfo(dataStorage), Register(), Servers(dataStorage, jda), Unlink(dataStorage), NodeStatusCmd())
         val guild = jda.getGuildById(guildPair.first!!) //what if wrong guild id ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())
