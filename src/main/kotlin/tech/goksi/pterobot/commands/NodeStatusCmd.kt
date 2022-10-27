@@ -57,12 +57,12 @@ class NodeStatusCmd : SimpleCommand() {
                     period = 300_000,
                     initialDelay = 300_000
                 ) {//hardcoded 5 minutes, probably wrong to use mapping.size
-                    it.editMessageEmbeds(runBlocking { withContext(Dispatchers.IO) { getInfoEmbed(event.jda) } })
+                    it.editMessageEmbeds(getInfoEmbed(event.jda))
                         .queue()
                 }
                 mapping[it.idLong] = timer
             }
-        } //update
+        }
     }
 
     private fun getInfoEmbed(jda: JDA): MessageEmbed {

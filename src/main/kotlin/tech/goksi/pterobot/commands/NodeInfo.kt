@@ -91,9 +91,7 @@ class NodeInfo(private val dataStorage: DataStorage) : SimpleCommand() {
                     period = 300_000,
                     initialDelay = 300_000
                 ) {
-                    it.editMessageEmbeds(runBlocking {
-                        withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
-                    }).queue()
+                    it.editMessageEmbeds(getNodeInfoEmbed(nodeId, event.jda)).queue()
                 } /*TODO: fixed 5 minutes delay, make configurable*/
                 mapping[it.idLong] = timer
             }
