@@ -5,10 +5,10 @@ import com.mattmalec.pterodactyl4j.application.entities.PteroApplication
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient
 import tech.goksi.pterobot.manager.ConfigManager
 
-object Common  {
+object Common {
 
     fun createClient(apiKey: String?): PteroClient? {
-        if(apiKey == null) return null
+        if (apiKey == null) return null
         val appUrl: String by lazy { ConfigManager.config.getString("BotInfo.PterodactylUrl") }
         return PteroBuilder.createClient(appUrl, apiKey)
     }

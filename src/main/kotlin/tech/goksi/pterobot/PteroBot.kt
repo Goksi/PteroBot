@@ -20,6 +20,7 @@ const val DEFAULT_NO_TOKEN_MSG = "YOUR TOKEN HERE"
 const val DEFAULT_NO_ID_MSG = "YOUR DISCORD SERVER ID HERE"
 const val DEFAULT_NO_URL_MSG = "YOUR URL HERE"
 const val DEFAULT_NO_API_KEY_MSG = "YOUR PTERODACTYL ADMIN CLIENT KEY HERE"
+
 class PteroBot(args: Array<String>) {
     private val logger by SLF4J
     private val jda: JDA
@@ -29,16 +30,16 @@ class PteroBot(args: Array<String>) {
         dataStorage = SQLiteImpl() /*TODO: more types*/
         val tokenPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.Token"), DEFAULT_NO_TOKEN_MSG,
-        "You didn't provide your bot token, please input it right-now: "
+            "You didn't provide your bot token, please input it right-now: "
         ) { readLine() }
         val guildPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.ServerID"), DEFAULT_NO_ID_MSG,
             "You didn't provide your discord server id, please input it right-now: "
         ) {
             var input: String
-            while(true){
-                input = readLine()?:""
-                if(Checks.validSnowflake(input)) break
+            while (true) {
+                input = readLine() ?: ""
+                if (Checks.validSnowflake(input)) break
                 else logger.warn("Invalid server id, please try again !")
             }
             input
@@ -46,11 +47,11 @@ class PteroBot(args: Array<String>) {
         val appUrlPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.PterodactylUrl"), DEFAULT_NO_URL_MSG,
             "You didn't provide your pterodactyl url, please input it right-now:"
-        ){
+        ) {
             var input: String
-            while(true){
-                input = readLine()?:""
-                if(Checks.validUrl(input)) break
+            while (true) {
+                input = readLine() ?: ""
+                if (Checks.validUrl(input)) break
                 else logger.warn("Invalid url, please try again !")
             }
             input
@@ -58,48 +59,57 @@ class PteroBot(args: Array<String>) {
         val apiKeyPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.AdminApiKey"), DEFAULT_NO_API_KEY_MSG,
             "You didn't provide admin key for actions like register and node info, please input it right-now:"
-        ){
+        ) {
             var input: String
-            while(true){
-                input = readLine()?:""
-                if(Checks.validClientKey(input)) break
+            while (true) {
+                input = readLine() ?: ""
+                if (Checks.validClientKey(input)) break
                 else logger.warn("Invalid api key, please try again !")
             }
             input
         }
-        if(tokenPair.second){
+        if (tokenPair.second) {
             ConfigManager.config.set("BotInfo.Token", tokenPair.first)
         }
-        if(guildPair.second){
+        if (guildPair.second) {
             ConfigManager.config.set("BotInfo.ServerID", guildPair.first)
         }
-        if(appUrlPair.second){
+        if (appUrlPair.second) {
             ConfigManager.config.set("BotInfo.PterodactylUrl", appUrlPair.first)
         }
-        if(apiKeyPair.second){
+        if (apiKeyPair.second) {
             ConfigManager.config.set("BotInfo.AdminApiKey", apiKeyPair.first)
             ConfigManager.config.set("BotInfo.AdminApiKey", apiKeyPair.first)
         }
         ConfigManager.save()
         EmbedManager.init()
-        jda = default(tokenPair.first!!, enableCoroutines = true, intents = listOf(GatewayIntent.GUILD_MESSAGES)){
+        jda = default(tokenPair.first!!, enableCoroutines = true, intents = listOf(GatewayIntent.GUILD_MESSAGES)) {
             disableCache(listOf(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.EMOJI))
-            val statusStr = ConfigManager.config.getString("BotInfo.Status")?:"ONLINE".uppercase()
+            val statusStr = ConfigManager.config.getString("BotInfo.Status") ?: "ONLINE".uppercase()
             setStatus(OnlineStatus.valueOf(statusStr))
-            if(ConfigManager.config.getBoolean("BotInfo.EnableActivity")){
-                val activityString = ConfigManager.config.getString("BotInfo.ActivityName")?:""
-                val activityName = ConfigManager.config.getString("BotInfo.Activity")?:"".uppercase()
-                setActivity(when (activityName){
-                    "LISTENING" -> Activity.listening(activityString)
-                    "WATCHING" -> Activity.watching(activityString)
-                    else -> Activity.playing(activityString)
-                })
+            if (ConfigManager.config.getBoolean("BotInfo.EnableActivity")) {
+                val activityString = ConfigManager.config.getString("BotInfo.ActivityName") ?: ""
+                val activityName = ConfigManager.config.getString("BotInfo.Activity") ?: "".uppercase()
+                setActivity(
+                    when (activityName) {
+                        "LISTENING" -> Activity.listening(activityString)
+                        "WATCHING" -> Activity.watching(activityString)
+                        else -> Activity.playing(activityString)
+                    }
+                )
             }
 
         }.awaitReady()
 
         val commandData = SimpleCommandData()
-        commandData.addCommands(Link(dataStorage), NodeInfo(dataStorage), Register(), Servers(dataStorage, jda), Unlink(dataStorage), NodeStatusCmd())
+        commandData.addCommands(
+            Link(dataStorage),
+            NodeInfo(dataStorage),
+            Register(),
+            Servers(dataStorage, jda),
+            Unlink(dataStorage),
+            NodeStatusCmd()
+        )
         val guild = jda.getGuildById(guildPair.first!!) //what if wrong guild id ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())
@@ -109,11 +119,11 @@ class PteroBot(args: Array<String>) {
 
     private fun listenStdin() {
         logger.info("PteroBot has successfully started, you can stop it by typing \"stop\"")
-        while(true){
-            if((readLine()?.lowercase()) == "stop"){
+        while (true) {
+            if ((readLine()?.lowercase()) == "stop") {
                 jda.shutdown()
                 break
-            }else logger.warn("Wrong command ! You mean \"stop\" ?")
+            } else logger.warn("Wrong command ! You mean \"stop\" ?")
         }
     }
 }
