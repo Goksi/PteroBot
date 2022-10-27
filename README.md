@@ -2,7 +2,7 @@
 PteroBot is simple discord bot utilizing pterodactyl api made using [JDA](https://github.com/DV8FromTheWorld/JDA) and [Pterodactyl4J](https://github.com/mattmalec/Pterodactyl4J).
 ## First time running
 You run this bot like any other Java application, simple `java -jar PteroBot.jar`.  
-On first startup you will be asked for some basic information that bot require to function normally.
+On first startup you will be asked for some basic information that bot requires to function normally.
 
 
 ![Setup](https://media.discordapp.net/attachments/976766831182368768/1033771478870663228/unknown.png)
@@ -71,7 +71,7 @@ For creating embeds, you can use site like [Embed Builder](https://glitchii.gith
 ![Node Info](https://cdn.discordapp.com/attachments/976766831182368768/1033774324743667752/unknown.png)  
 It also comes with an option to automatically update message every 5 minutes.
 > **Warning**
-> Be careful while using auto update option, bot might get ratelimited (Discord API being very strict for editing messages)
+> Be careful while using auto update option, bot might get rate-limited (Discord API being very strict for editing messages)
 ### Nodes status
 ### Managing servers
 <pre>
