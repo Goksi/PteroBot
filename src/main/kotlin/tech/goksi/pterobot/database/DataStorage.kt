@@ -19,7 +19,7 @@ interface DataStorage {
 
     fun isPteroAdmin(id: Long): Boolean
 
-    fun isPteroAdmin(snowflake: UserSnowflake): Boolean{
+    fun isPteroAdmin(snowflake: UserSnowflake): Boolean {
         return isPteroAdmin(snowflake.idLong)
     }
 
@@ -27,13 +27,13 @@ interface DataStorage {
 
     fun unlink(id: Long)
 
-    fun unlink(snowflake: UserSnowflake){
+    fun unlink(snowflake: UserSnowflake) {
         unlink(snowflake.idLong)
     }
 
     fun isLinked(id: Long): Boolean
 
-    fun isLinked(snowflake: UserSnowflake): Boolean{
+    fun isLinked(snowflake: UserSnowflake): Boolean {
         return isLinked(snowflake.idLong)
     }
 }

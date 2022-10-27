@@ -10,7 +10,8 @@ import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 
 private const val CONFIG_PREFIX = "Messages.Commands.Unlink."
-class Unlink(private val dataStorage: DataStorage): SimpleCommand() {
+
+class Unlink(private val dataStorage: DataStorage) : SimpleCommand() {
 
     init {
         this.name = "unlink"
@@ -19,13 +20,23 @@ class Unlink(private val dataStorage: DataStorage): SimpleCommand() {
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
-       if(dataStorage.isLinked(event.user)){
-           dataStorage.unlink(event.user)
-           event.reply_(embeds = listOf(EmbedManager
-               .getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessUnlink")).toEmbed(event.jda))).queue()
-       } else {
-           event.reply_(embeds = listOf(EmbedManager
-               .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotLinked")).toEmbed(event.jda))).queue()
-       }
+        if (dataStorage.isLinked(event.user)) {
+            dataStorage.unlink(event.user)
+            event.reply_(
+                embeds = listOf(
+                    EmbedManager
+                        .getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessUnlink"))
+                        .toEmbed(event.jda)
+                )
+            ).queue()
+        } else {
+            event.reply_(
+                embeds = listOf(
+                    EmbedManager
+                        .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotLinked"))
+                        .toEmbed(event.jda)
+                )
+            ).queue()
+        }
     }
 }

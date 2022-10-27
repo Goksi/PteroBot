@@ -1,6 +1,6 @@
 package tech.goksi.pterobot
 
-enum class EmbedType(val path: String){
+enum class EmbedType(val path: String) {
     GENERIC_ERROR("embeds/generic_error.json"),
     GENERIC_SUCCESS("embeds/generic_success.json"),
     NODE_INFO("embeds/node_info.json"),

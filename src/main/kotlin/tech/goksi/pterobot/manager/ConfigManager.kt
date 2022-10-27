@@ -12,14 +12,14 @@ object ConfigManager {
     val config: YamlFile
 
     init {
-        if (!configFile.exists()){
+        if (!configFile.exists()) {
             val content = ConfigManager::class.java.classLoader.getResource("config.yml")!!.readText()
             configFile.writeText(content)
         }
         config = YamlFile(configFile)
-        try{
+        try {
             config.loadWithComments()
-        } catch (exception: IOException){
+        } catch (exception: IOException) {
             logger.error("Error while loading configuration file, exiting program...", exception)
             exitProcess(1)
         }

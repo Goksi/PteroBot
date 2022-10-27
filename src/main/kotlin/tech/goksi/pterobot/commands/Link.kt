@@ -17,12 +17,21 @@ import tech.goksi.pterobot.util.Checks
 import java.sql.SQLException
 
 private const val CONFIG_PREFIX = "Messages.Commands.Link."
-class Link(private val dataStorage: DataStorage): SimpleCommand() {
+
+class Link(private val dataStorage: DataStorage) : SimpleCommand() {
     private val logger by SLF4J
+
     init {
         this.name = "link"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-        this.options = listOf(OptionData(OptionType.STRING, "apikey", ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"), true))
+        this.options = listOf(
+            OptionData(
+                OptionType.STRING,
+                "apikey",
+                ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"),
+                true
+            )
+        )
         SendDefaults.ephemeral = ConfigManager.config.getBoolean("BotInfo.Ephemeral")
     }
 
@@ -30,18 +39,21 @@ class Link(private val dataStorage: DataStorage): SimpleCommand() {
         val key = event.getOption("apikey")!!.asString
         val response: MessageEmbed
         /*TODO: check if key is linked*/
-        if(!dataStorage.isLinked(event.user)){
-            response = try{
-                if(Checks.validClientKey(key)) throw HttpException("Wrong key format !")
+        if (!dataStorage.isLinked(event.user)) {
+            response = try {
+                if (Checks.validClientKey(key)) throw HttpException("Wrong key format !")
                 val account = dataStorage.link(event.user, key)
                 logger.info("User ${event.user.asTag} linked his discord with ${account.userName} pterodactyl account !")
-                EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "LinkSuccess").replace("%pteroName", account.userName))
+                EmbedManager.getGenericSuccess(
+                    ConfigManager.config.getString(CONFIG_PREFIX + "LinkSuccess")
+                        .replace("%pteroName", account.userName)
+                )
                     .toEmbed(event.jda)
-            } catch (exception: SQLException){
+            } catch (exception: SQLException) {
                 logger.error("Failed to link ${event.user.idLong}", exception)
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
                     .toEmbed(event.jda)
-            } catch (httpException: HttpException){
+            } catch (httpException: HttpException) {
                 EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "LinkWrongKey"))
                     .toEmbed(event.jda) //its probably wrong key if we got here, add check maybe
             }

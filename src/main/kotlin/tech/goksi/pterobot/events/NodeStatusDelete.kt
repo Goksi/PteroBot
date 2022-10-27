@@ -7,19 +7,19 @@ import tech.goksi.pterobot.commands.NodeInfo
 import tech.goksi.pterobot.commands.NodeStatusCmd
 import java.util.Timer
 
-class NodeStatusDelete: ListenerAdapter() {
+class NodeStatusDelete : ListenerAdapter() {
     private val logger by SLF4J
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
         val timer: Timer? = NodeInfo.mapping[event.messageIdLong]
-        if(timer != null){
+        if (timer != null) {
             NodeInfo.mapping.remove(event.messageIdLong)
             logger.debug("Removed ${event.messageId} node info mapper")
             timer.cancel()
             timer.purge()
         }
         val timer2: Timer? = NodeStatusCmd.mapping[event.messageIdLong]
-        if(timer2 != null){
+        if (timer2 != null) {
             NodeStatusCmd.mapping.remove(event.messageIdLong)
             timer2.purge()
             timer2.cancel()

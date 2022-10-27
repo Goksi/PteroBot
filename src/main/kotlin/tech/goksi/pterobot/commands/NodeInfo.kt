@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import net.dv8tion.jda.internal.utils.PermissionUtil
 import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.database.DataStorage
@@ -27,8 +26,10 @@ import java.util.*
 import kotlin.concurrent.fixedRateTimer
 
 private const val CONFIG_PREFIX = "Messages.Commands.NodeInfo."
-class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
+
+class NodeInfo(private val dataStorage: DataStorage) : SimpleCommand() {
     private val logger by SLF4J
+
     companion object TaskMapping {
         val mapping: MutableMap<Long, Timer> = HashMap() //message id and timer
     }
@@ -38,8 +39,19 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
         this.enableDefault = false
         this.enabledPermissions = listOf(Permission.ADMINISTRATOR)
-        this.options = listOf(OptionData(OptionType.INTEGER, "id", ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"), true),
-        OptionData(OptionType.BOOLEAN, "update", ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"), false)
+        this.options = listOf(
+            OptionData(
+                OptionType.INTEGER,
+                "id",
+                ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"),
+                true
+            ),
+            OptionData(
+                OptionType.BOOLEAN,
+                "update",
+                ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"),
+                false
+            )
         )
     }
 
@@ -49,64 +61,74 @@ class NodeInfo(private val dataStorage: DataStorage): SimpleCommand() {
         val update = event.getOption("update")?.asBoolean ?: false
         val response: MessageEmbed
         var success = false
-        if(dataStorage.isPteroAdmin(event.user) || event.member!!.hasPermission(Permission.ADMINISTRATOR)) {
+        if (dataStorage.isPteroAdmin(event.user) || event.member!!.hasPermission(Permission.ADMINISTRATOR)) {
             success = true
-            response = try{
+            response = try {
                 runBlocking {
                     withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
                 }
-            } catch (exception: Exception){
-                when(exception){
+            } catch (exception: Exception) {
+                when (exception) {
                     is HttpException, is NotFoundException -> {
                         success = false
                         logger.debug("Thrown exception: ", exception)
-                        EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeNotFound")).toEmbed(event.jda)
+                        EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeNotFound"))
+                            .toEmbed(event.jda)
                     } //shame that kotlin doesn't have multi catch
                     else -> throw exception
                 }
             }
 
         } else {
-            response = EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotAdmin")).toEmbed(event.jda)
+            response = EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotAdmin"))
+                .toEmbed(event.jda)
         }
         event.hook.sendMessageEmbeds(response).queue {
-            if(success && update){
-                val timer = fixedRateTimer(name = "NodeInfoDaemon#${mapping.size}", daemon = true, period = 300_000, initialDelay = 300_000){
+            if (success && update) {
+                val timer = fixedRateTimer(
+                    name = "NodeInfoDaemon#${mapping.size}",
+                    daemon = true,
+                    period = 300_000,
+                    initialDelay = 300_000
+                ) {
                     it.editMessageEmbeds(runBlocking {
                         withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
-                    }).queue() } /*TODO: fixed 5 minutes delay, make configurable*/
+                    }).queue()
+                } /*TODO: fixed 5 minutes delay, make configurable*/
                 mapping[it.idLong] = timer
             }
         }
 
     }
+
     /*TODO: catch login exception ?*/
     private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
         val ptero by lazy {
             Common.getDefaultApplication() to
-                Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
+                    Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
         }
         val node = ptero.first.retrieveNodeById(id.toLong()).execute()
         var memoryUsed: Long = 0
         var diskSpaceUsed = 0f
         var cpuUsed = 0.0
         var status = NodeStatus.ONLINE
-        val runningServers = ptero.second!!.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
-            if(it.isInstalling) return@filter false
-            if(status == NodeStatus.ONLINE){
-                val utilization = try {
-                    it.retrieveUtilization().execute()
-                }catch (exception: HttpException){
-                    status = NodeStatus.OFFLINE
-                    return@filter false
-                }
-                memoryUsed += utilization.memory / 1024 / 1024 //mb
-                diskSpaceUsed += utilization.disk.toFloat() / 1024 / 1024 / 1024 //gb
-                cpuUsed += utilization.cpu
-                return@filter utilization.state == UtilizationState.RUNNING || utilization.state == UtilizationState.STARTING
+        val runningServers =
+            ptero.second!!.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
+                if (it.isInstalling) return@filter false
+                if (status == NodeStatus.ONLINE) {
+                    val utilization = try {
+                        it.retrieveUtilization().execute()
+                    } catch (exception: HttpException) {
+                        status = NodeStatus.OFFLINE
+                        return@filter false
+                    }
+                    memoryUsed += utilization.memory / 1024 / 1024 //mb
+                    diskSpaceUsed += utilization.disk.toFloat() / 1024 / 1024 / 1024 //gb
+                    cpuUsed += utilization.cpu
+                    return@filter utilization.state == UtilizationState.RUNNING || utilization.state == UtilizationState.STARTING
 
-            } else return@filter false
-        }
+                } else return@filter false
+            }
 
         return EmbedManager.getNodeInfo(
             nodeName = node.name,

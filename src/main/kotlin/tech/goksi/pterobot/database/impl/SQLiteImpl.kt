@@ -10,8 +10,9 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
 import kotlin.system.exitProcess
+
 /*TODO: refactor databases, LinkedPlayer object*/
-class SQLiteImpl: DataStorage {
+class SQLiteImpl : DataStorage {
     private val connection: Connection
     private val logger by SLF4J
 
@@ -22,9 +23,9 @@ class SQLiteImpl: DataStorage {
             "CREATE TABLE IF NOT EXISTS Keys(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
         )
         statement.use {
-            try{
+            try {
                 it.executeUpdate()
-            } catch (exception: SQLException){
+            } catch (exception: SQLException) {
                 logger.error("Failed to initialize SQLite database... exiting", exception)
                 exitProcess(1)
             }
@@ -37,10 +38,10 @@ class SQLiteImpl: DataStorage {
         )
         statement.setLong(1, id)
         statement.use {
-            try{
+            try {
                 val resultSet = it.executeQuery()
-                if(resultSet.next()) return resultSet.getString("ApiKey")
-            }catch (exception: SQLException){
+                if (resultSet.next()) return resultSet.getString("ApiKey")
+            } catch (exception: SQLException) {
                 logger.error("Failed to get api key for $id", exception)
             }
             return null
@@ -53,10 +54,10 @@ class SQLiteImpl: DataStorage {
         )
         statement.setLong(1, id)
         statement.use {
-            try{
+            try {
                 val resultSet = it.executeQuery()
-                if(resultSet.next()) return resultSet.getBoolean("isAdmin")
-            }catch (exception: SQLException){
+                if (resultSet.next()) return resultSet.getBoolean("isAdmin")
+            } catch (exception: SQLException) {
                 logger.error("Failed to get admin status of $id", exception)
             }
             return false
@@ -64,7 +65,7 @@ class SQLiteImpl: DataStorage {
     }
 
     @Throws(LoginException::class, SQLException::class)
-    override fun link(snowflake: UserSnowflake, apiKey: String): Account  {
+    override fun link(snowflake: UserSnowflake, apiKey: String): Account {
         val statement = connection.prepareStatement(
             "INSERT INTO Keys (DiscordID, ApiKey, isAdmin) VALUES (?,?,?)"
         )
@@ -72,7 +73,7 @@ class SQLiteImpl: DataStorage {
         statement.setLong(1, snowflake.idLong)
         statement.setString(2, apiKey)
         statement.setBoolean(3, pteroUser.isRootAdmin)
-        statement.use { it.executeUpdate()} //should catch SQLException later in command
+        statement.use { it.executeUpdate() } //should catch SQLException later in command
         return pteroUser
     }
 
@@ -82,9 +83,9 @@ class SQLiteImpl: DataStorage {
         )
         statement.setLong(1, id)
         statement.use {
-            try{
+            try {
                 it.executeUpdate()
-            }catch (exception: SQLException){
+            } catch (exception: SQLException) {
                 logger.error("Failed to delete api key for $id", exception)
             }
         }
@@ -99,7 +100,7 @@ class SQLiteImpl: DataStorage {
             return try {
                 val resultSet = it.executeQuery()
                 resultSet.next()
-            } catch (exception: SQLException){
+            } catch (exception: SQLException) {
                 logger.error("Failed to check linked status for $id", exception)
                 false
             }
