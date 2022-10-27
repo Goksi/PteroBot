@@ -4,6 +4,7 @@ import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import tech.goksi.pterobot.commands.NodeInfo
+import tech.goksi.pterobot.commands.NodeStatusCmd
 import java.util.Timer
 
 class NodeStatusDelete: ListenerAdapter() {
@@ -16,6 +17,12 @@ class NodeStatusDelete: ListenerAdapter() {
             logger.debug("Removed ${event.messageId} node info mapper")
             timer.cancel()
             timer.purge()
+        }
+        val timer2: Timer? = NodeStatusCmd.mapping[event.messageIdLong]
+        if(timer2 != null){
+            NodeStatusCmd.mapping.remove(event.messageIdLong)
+            timer2.purge()
+            timer2.cancel()
         }
     }
 }

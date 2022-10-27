@@ -1,7 +1,10 @@
 package tech.goksi.pterobot.commands
 
-import com.mattmalec.pterodactyl4j.exceptions.HttpException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -14,42 +17,74 @@ import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.replace
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
-import java.io.BufferedReader
 import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
+import java.util.*
+import kotlin.concurrent.fixedRateTimer
 
 private const val CONFIG_PREFIX = "Messages.Commands.NodeStatus."
-class NodeStatusCmd: SimpleCommand() {
+
+class NodeStatusCmd : SimpleCommand() {
+
+    companion object TaskMapping {
+        val mapping: MutableMap<Long, Timer> = HashMap()
+    }
 
     init {
         this.name = "nodestatus"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
         this.enableDefault = false
         this.enabledPermissions = listOf(Permission.ADMINISTRATOR)
-        this.options = listOf(OptionData(OptionType.BOOLEAN, "update", ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"), false))
+        this.options = listOf(
+            OptionData(
+                OptionType.BOOLEAN,
+                "update",
+                ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"),
+                false
+            )
+        )
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
         val update = event.getOption("update")?.asBoolean ?: false
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
-        val embedBuilder = EmbedBuilder(EmbedManager.getNodeStatus().toEmbed(event.jda))
+
+        event.hook.sendMessageEmbeds(runBlocking { withContext(Dispatchers.IO) { getInfoEmbed(event.jda) } }).queue {
+            if (update) {
+                val timer = fixedRateTimer(
+                    name = "NodeStatusDaemon#${mapping.size}",
+                    daemon = true,
+                    period = 300_000,
+                    initialDelay = 300_000
+                ) {//hardcoded 5 minutes, probably wrong to use mapping.size
+                    it.editMessageEmbeds(runBlocking { withContext(Dispatchers.IO) { getInfoEmbed(event.jda) } })
+                        .queue()
+                }
+                mapping[it.idLong] = timer
+            }
+        } //update
+    }
+
+    private fun getInfoEmbed(jda: JDA): MessageEmbed {
+        val embedBuilder = EmbedBuilder(EmbedManager.getNodeStatus().toEmbed(jda))
         val fieldTemplate = embedBuilder.fields[0].also { embedBuilder.clearFields() }
         val pteroApplication = Common.getDefaultApplication()
         pteroApplication.retrieveNodes().forEach { node ->
             val connectionString = "${node.scheme}://${node.fqdn}:${node.daemonListenPort}"
             val connection = URL(connectionString).openConnection() as HttpURLConnection
-            val status = try{
-                if(connection.responseCode == 401) NodeStatus.ONLINE else NodeStatus.OFFLINE
-            }catch (exception: Exception){
+            val status = try {
+                if (connection.responseCode == 401) NodeStatus.ONLINE else NodeStatus.OFFLINE
+            } catch (exception: Exception) {
                 NodeStatus.OFFLINE
             }
             connection.disconnect()
-            val field = MessageEmbed.Field(fieldTemplate.name?.replace("%nodeName" to node.name),
-                fieldTemplate.value?.replace("%statusEmoji" to status.emoji, "%status" to status.message), fieldTemplate.isInline)
+            val field = MessageEmbed.Field(
+                fieldTemplate.name?.replace("%nodeName" to node.name),
+                fieldTemplate.value?.replace("%statusEmoji" to status.emoji, "%status" to status.message),
+                fieldTemplate.isInline
+            )
             embedBuilder.addField(field)
         }
-        event.hook.sendMessageEmbeds(embedBuilder.build()).queue() //update
+        return embedBuilder.build()
     }
 }
