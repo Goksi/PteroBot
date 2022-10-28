@@ -21,13 +21,16 @@ class SQLiteImpl : DataStorage {
         connection = DriverManager.getConnection("jdbc:sqlite:database.db")
         val statement = connection.createStatement()
         statement.addBatch(
-            "create table if not exists Members(id integer not null primary key autoincrement, discordID bigint not null, apiID integer, foreign key(apiID) references Keys(id) on delete set null)"
+            "create table if not exists Members(id integer not null primary key autoincrement, discordID bigint not null unique, apiID integer, foreign key(apiID) references Keys(id) on delete set null)"
         )
         statement.addBatch(
-            "create table if not exists Keys(id integer not null primary key autoincrement, \"key\" char(48) not null, \"admin\" boolean not null)"
+            "create table if not exists Keys(id integer not null primary key autoincrement, \"key\" char(48) not null unique, \"admin\" boolean not null)"
         )
         statement.addBatch(
             "create table if not exists Accounts(id integer not null primary key autoincrement, username varchar(25), memberID integer, foreign key(memberID) references Members(id))"
+        )
+        statement.addBatch(
+            "pragma foreign_keys = ON"
         )
         statement.use {
             try {
@@ -57,30 +60,33 @@ class SQLiteImpl : DataStorage {
 
     override fun isPteroAdmin(id: Long): Boolean {
         val statement = connection.prepareStatement(
-            "select Keys.admin from Keys where id in (" +
-                    "select id from Members where discordID = ?)"
+            "select Keys.admin from Keys inner join Members on Keys.id = Members.apiID where Members.discordID = ?"
         )
         statement.setLong(1, id)
         statement.use {
             try {
                 val resultSet = it.executeQuery()
-                if (resultSet.next()) return resultSet.getBoolean("isAdmin")
+                if (resultSet.next()) return resultSet.getBoolean("admin")
             } catch (exception: SQLException) {
                 logger.error("Failed to get admin status of $id", exception)
             }
             return false
         }
     }
-
+    /*TODO: convert query*/
     @Throws(LoginException::class, SQLException::class)
     override fun link(snowflake: UserSnowflake, apiKey: String): Account {
+        val keyStatement = connection.prepareStatement(
+            "insert into Keys(\"key\", \"admin\") values (?, ?)"
+        )
         val statement = connection.prepareStatement(
-            "INSERT INTO Keys (DiscordID, ApiKey, isAdmin) VALUES (?,?,?)"
+            "insert into Members(discordID, apiID) values (?, last_insert_rowid())  on conflict(discordID) do update set apiID = rowid " //TODO: test if already exist
         )
         val pteroUser = Common.createClient(apiKey)!!.retrieveAccount().execute() //throws LoginException
         statement.setLong(1, snowflake.idLong)
-        statement.setString(2, apiKey)
-        statement.setBoolean(3, pteroUser.isRootAdmin)
+        keyStatement.setString(1, apiKey)
+        keyStatement.setBoolean(2, pteroUser.isRootAdmin)
+        keyStatement.use { it.executeUpdate() }
         statement.use { it.executeUpdate() } //should catch SQLException later in command
         return pteroUser
     }
@@ -88,7 +94,7 @@ class SQLiteImpl : DataStorage {
     override fun unlink(id: Long) {
         val statement = connection.prepareStatement(
             "delete from Keys where id in (" +
-                    "select id from Members where discordID = ? )"
+                    "select apiID from Members where discordID = ? )"
         )
         statement.setLong(1, id)
         statement.use {
