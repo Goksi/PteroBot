@@ -32,7 +32,7 @@ class Link(private val dataStorage: DataStorage) : SimpleCommand() {
                 true
             )
         )
-        SendDefaults.ephemeral = ConfigManager.config.getBoolean("BotInfo.Ephemeral")
+        SendDefaults.ephemeral = true
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {

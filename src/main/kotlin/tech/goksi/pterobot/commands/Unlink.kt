@@ -16,7 +16,7 @@ class Unlink(private val dataStorage: DataStorage) : SimpleCommand() {
     init {
         this.name = "unlink"
         this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-        SendDefaults.ephemeral = ConfigManager.config.getBoolean("BotInfo.Ephemeral") //IDK if I need this again
+        SendDefaults.ephemeral = true
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
