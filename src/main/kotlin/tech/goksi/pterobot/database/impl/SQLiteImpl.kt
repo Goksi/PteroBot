@@ -11,7 +11,7 @@ import java.sql.DriverManager
 import java.sql.SQLException
 import kotlin.system.exitProcess
 
-/*TODO: refactor databases, LinkedPlayer object*/
+/*TODO: refactor databases, LinkedMember object*/
 class SQLiteImpl : DataStorage {
     private val connection: Connection
     private val logger by SLF4J
@@ -19,12 +19,19 @@ class SQLiteImpl : DataStorage {
     init {
         Class.forName("org.sqlite.JDBC")
         connection = DriverManager.getConnection("jdbc:sqlite:database.db")
-        val statement = connection.prepareStatement(
-            "CREATE TABLE IF NOT EXISTS Keys(ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, DiscordID BIGINT, ApiKey VARCHAR(48), isAdmin BOOLEAN)"
+        val statement = connection.createStatement()
+        statement.addBatch(
+            "create table if not exists Members(id integer not null primary key autoincrement, discordID bigint not null, apiID integer, foreign key(apiID) references Keys(id) on delete set null)"
+        )
+        statement.addBatch(
+            "create table if not exists Keys(id integer not null primary key autoincrement, \"key\" char(48) not null, \"admin\" boolean not null)"
+        )
+        statement.addBatch(
+            "create table if not exists Accounts(id integer not null primary key autoincrement, username varchar(25), memberID integer, foreign key(memberID) references Members(id))"
         )
         statement.use {
             try {
-                it.executeUpdate()
+                it.executeBatch()
             } catch (exception: SQLException) {
                 logger.error("Failed to initialize SQLite database... exiting", exception)
                 exitProcess(1)
@@ -34,13 +41,13 @@ class SQLiteImpl : DataStorage {
 
     override fun getApiKey(id: Long): String? {
         val statement = connection.prepareStatement(
-            "SELECT ApiKey FROM Keys WHERE DiscordID = ?"
+            "select Keys.key from Keys inner join Members on Keys.id = Members.apiID where Members.discordID = ?"
         )
         statement.setLong(1, id)
         statement.use {
             try {
                 val resultSet = it.executeQuery()
-                if (resultSet.next()) return resultSet.getString("ApiKey")
+                if (resultSet.next()) return resultSet.getString("key")
             } catch (exception: SQLException) {
                 logger.error("Failed to get api key for $id", exception)
             }
@@ -50,7 +57,8 @@ class SQLiteImpl : DataStorage {
 
     override fun isPteroAdmin(id: Long): Boolean {
         val statement = connection.prepareStatement(
-            "SELECT isAdmin FROM Keys WHERE DiscordID = ?"
+            "select Keys.admin from Keys where id in (" +
+                    "select id from Members where discordID = ?)"
         )
         statement.setLong(1, id)
         statement.use {
@@ -79,7 +87,8 @@ class SQLiteImpl : DataStorage {
 
     override fun unlink(id: Long) {
         val statement = connection.prepareStatement(
-            "DELETE FROM Keys WHERE DiscordID = ?"
+            "delete from Keys where id in (" +
+                    "select id from Members where discordID = ? )"
         )
         statement.setLong(1, id)
         statement.use {
@@ -93,13 +102,14 @@ class SQLiteImpl : DataStorage {
 
     override fun isLinked(id: Long): Boolean {
         val statement = connection.prepareStatement(
-            "SELECT DiscordID FROM Keys WHERE DiscordID = ?"
+            "SELECT apiID FROM Members WHERE discordID = ?"
         )
         statement.setLong(1, id)
         statement.use {
             return try {
                 val resultSet = it.executeQuery()
-                resultSet.next()
+                if(!resultSet.next()) false
+                else resultSet.getInt("apiID") != 0
             } catch (exception: SQLException) {
                 logger.error("Failed to check linked status for $id", exception)
                 false
