@@ -24,10 +24,8 @@ const val DEFAULT_NO_API_KEY_MSG = "YOUR PTERODACTYL ADMIN CLIENT KEY HERE"
 class PteroBot(args: Array<String>) {
     private val logger by SLF4J
     private val jda: JDA
-    private val dataStorage: DataStorage
 
     init {
-        dataStorage = SQLiteImpl() /*TODO: more types*/
         val tokenPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.Token"), DEFAULT_NO_TOKEN_MSG,
             "You didn't provide your bot token, please input it right-now: "
@@ -103,11 +101,11 @@ class PteroBot(args: Array<String>) {
 
         val commandData = SimpleCommandData()
         commandData.addCommands(
-            Link(dataStorage),
-            NodeInfo(dataStorage),
+            Link(),
+            NodeInfo(),
             Register(),
-            Servers(dataStorage, jda),
-            Unlink(dataStorage),
+            Servers(jda),
+            Unlink(),
             NodeStatusCmd()
         )
         val guild = jda.getGuildById(guildPair.first!!) //what if wrong guild id ?
