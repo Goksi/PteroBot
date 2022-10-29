@@ -80,7 +80,7 @@ class SQLiteImpl : DataStorage {
             "insert into Keys(\"key\", \"admin\") values (?, ?)"
         )
         val statement = connection.prepareStatement(
-            "insert into Members(discordID, apiID) values (?, last_insert_rowid())  on conflict(discordID) do update set apiID = rowid " //TODO: test if already exist
+            "insert into Members(discordID, apiID) values (?, last_insert_rowid()) on conflict(discordID) do update set apiID = last_insert_rowid()"
         )
         val pteroUser = Common.createClient(apiKey)!!.retrieveAccount().execute() //throws LoginException
         statement.setLong(1, snowflake.idLong)
