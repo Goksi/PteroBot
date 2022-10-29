@@ -11,14 +11,17 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.database.DataStorage
+import tech.goksi.pterobot.entities.ApiKey
+import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Checks
+import tech.goksi.pterobot.util.Common
 import java.sql.SQLException
 
 private const val CONFIG_PREFIX = "Messages.Commands.Link."
 
-class Link(private val dataStorage: DataStorage) : SimpleCommand() {
+class Link : SimpleCommand() {
     private val logger by SLF4J
 
     init {
@@ -32,17 +35,20 @@ class Link(private val dataStorage: DataStorage) : SimpleCommand() {
                 true
             )
         )
-        SendDefaults.ephemeral = ConfigManager.config.getBoolean("BotInfo.Ephemeral")
+        SendDefaults.ephemeral = true
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
         val key = event.getOption("apikey")!!.asString
         val response: MessageEmbed
+        val pteroMember = PteroMember(event.user)
         /*TODO: check if key is linked*/
-        if (!dataStorage.isLinked(event.user)) {
+        if (!pteroMember.isLinked()) {
             response = try {
                 if (Checks.validClientKey(key)) throw HttpException("Wrong key format !")
-                val account = dataStorage.link(event.user, key)
+                val pteroAccount = Common.createClient(key)!!
+                val account = pteroAccount.retrieveAccount().execute()
+                pteroMember.link(ApiKey(key, account.isRootAdmin))
                 logger.info("User ${event.user.asTag} linked his discord with ${account.userName} pterodactyl account !")
                 EmbedManager.getGenericSuccess(
                     ConfigManager.config.getString(CONFIG_PREFIX + "LinkSuccess")

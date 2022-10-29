@@ -17,7 +17,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
-import tech.goksi.pterobot.database.DataStorage
+import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.minutes
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
 private const val SELECTION_ID = "pterobot:servers-selector"
 
-class Servers(private val dataStorage: DataStorage, jda: JDA) : SimpleCommand() {
+class Servers(jda: JDA) : SimpleCommand() {
     private val logger by SLF4J
     private val serverMapping = HashMap<String, ClientServer>()
 
@@ -60,8 +60,9 @@ class Servers(private val dataStorage: DataStorage, jda: JDA) : SimpleCommand() 
 
     override fun execute(event: SlashCommandInteractionEvent) {
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
-        val pteroClient = dataStorage.getClient(event.user)
-        if (pteroClient != null) {
+        val pteroMember = PteroMember(event.user)
+        if (pteroMember.isLinked()) {
+            val pteroClient = pteroMember.client!!
             val servers = try {
                 pteroClient.retrieveServers().execute()
             } catch (exception: LoginException) {
@@ -93,8 +94,7 @@ class Servers(private val dataStorage: DataStorage, jda: JDA) : SimpleCommand() 
             ).queue()
         }
     }
-    /**/
-
+    /*TODO: delete after clicker button ?*/
     override fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
         if (event.componentId.split(":")[2] != event.user.id) {
@@ -106,15 +106,17 @@ class Servers(private val dataStorage: DataStorage, jda: JDA) : SimpleCommand() 
             return
         }
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
+        val pteroMember = PteroMember(event.user)
         if (!event.message.isEphemeral) event.message.delete().queue()
-        val pteroClient = dataStorage.getClient(event.user)
-        if (pteroClient == null) {
+
+        if (!pteroMember.isLinked()) {
             event.hook.sendMessageEmbeds(
                 EmbedManager
                     .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotLinked")).toEmbed(event.jda)
             ).setEphemeral(true).queue()
             return
         }
+        val pteroClient = pteroMember.client!!
         val server = try {
             pteroClient.retrieveServerByIdentifier(event.selectedOptions[0].value).execute()
         } catch (exception: LoginException) {

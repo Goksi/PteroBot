@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.database.DataStorage
+import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
@@ -27,7 +28,7 @@ import kotlin.concurrent.fixedRateTimer
 
 private const val CONFIG_PREFIX = "Messages.Commands.NodeInfo."
 
-class NodeInfo(private val dataStorage: DataStorage) : SimpleCommand() {
+class NodeInfo: SimpleCommand() {
     private val logger by SLF4J
 
     companion object TaskMapping {
@@ -61,7 +62,8 @@ class NodeInfo(private val dataStorage: DataStorage) : SimpleCommand() {
         val update = event.getOption("update")?.asBoolean ?: false
         val response: MessageEmbed
         var success = false
-        if (dataStorage.isPteroAdmin(event.user) || event.member!!.hasPermission(Permission.ADMINISTRATOR)) {
+        val pteroMember = PteroMember(event.user)
+        if (event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()) {
             success = true
             response = try {
                 runBlocking {
