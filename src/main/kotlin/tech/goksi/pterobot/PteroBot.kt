@@ -1,6 +1,5 @@
 package tech.goksi.pterobot
 
-import tech.goksi.pterobot.manager.ConfigManager
 import dev.minn.jda.ktx.jdabuilder.default
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
@@ -10,18 +9,17 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import tech.goksi.pterobot.commands.*
 import tech.goksi.pterobot.commands.manager.SimpleCommandData
-import tech.goksi.pterobot.database.DataStorage
-import tech.goksi.pterobot.database.impl.SQLiteImpl
 import tech.goksi.pterobot.events.NodeStatusDelete
-import tech.goksi.pterobot.util.Checks
+import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
+import tech.goksi.pterobot.util.Checks
 
-const val DEFAULT_NO_TOKEN_MSG = "YOUR TOKEN HERE"
-const val DEFAULT_NO_ID_MSG = "YOUR DISCORD SERVER ID HERE"
-const val DEFAULT_NO_URL_MSG = "YOUR URL HERE"
-const val DEFAULT_NO_API_KEY_MSG = "YOUR PTERODACTYL ADMIN CLIENT KEY HERE"
+private const val DEFAULT_NO_TOKEN_MSG = "YOUR TOKEN HERE"
+private const val DEFAULT_NO_ID_MSG = "YOUR DISCORD SERVER ID HERE"
+private const val DEFAULT_NO_URL_MSG = "YOUR URL HERE"
+private const val DEFAULT_NO_API_KEY_MSG = "YOUR PTERODACTYL ADMIN CLIENT KEY HERE"
 
-class PteroBot(args: Array<String>) {
+class PteroBot() {
     private val logger by SLF4J
     private val jda: JDA
 

@@ -44,6 +44,7 @@ class NodeStatusCmd : SimpleCommand() {
             )
         )
     }
+
     /*TODO: check if admin*/
     override fun execute(event: SlashCommandInteractionEvent) {
         val update = event.getOption("update")?.asBoolean ?: false
