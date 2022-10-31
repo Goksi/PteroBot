@@ -73,6 +73,9 @@ It also comes with an option to automatically update message every 5 minutes.
 > **Warning**
 > Be careful while using auto update option, bot might get rate-limited (Discord API being very strict for editing messages)
 ### Nodes status
+![Node Status](https://cdn.discordapp.com/attachments/976766831182368768/1036448248669425684/unknown.png)
+> **Warning**
+> Same as with node info, there is option for auto update, be careful
 ### Managing servers
 <pre>
 <img src = "https://cdn.discordapp.com/attachments/976766831182368768/1033775952129437799/unknown.png"></img>   <img src = "https://cdn.discordapp.com/attachments/976766831182368768/1033776116495822928/unknown.png"></img>
