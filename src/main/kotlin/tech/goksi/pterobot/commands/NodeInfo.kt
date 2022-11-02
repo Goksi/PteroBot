@@ -132,7 +132,7 @@ class NodeInfo: SimpleCommand() {
 
         return EmbedManager.getNodeInfo(
             nodeName = node.name,
-            nodeDescription = node.description,
+            nodeDescription = node.description ?: "",
             location = node.retrieveLocation().execute().shortCode,
             maintenance = node.hasMaintanceMode(),
             allocationCount = node.retrieveAllocations().execute().size,
