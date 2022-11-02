@@ -45,7 +45,7 @@ class Link : SimpleCommand() {
         /*TODO: check if key is linked*/
         if (!pteroMember.isLinked()) {
             response = try {
-                if (Checks.validClientKey(key)) throw HttpException("Wrong key format !")
+                if (!Checks.validClientKey(key)) throw HttpException("Wrong key format !")
                 val pteroAccount = Common.createClient(key)!!
                 val account = pteroAccount.retrieveAccount().execute()
                 pteroMember.link(ApiKey(key, account.isRootAdmin))

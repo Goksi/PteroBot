@@ -52,6 +52,6 @@ object Checks {
     }
 
     fun validClientKey(key: String): Boolean {
-        return key.split("_")[0] != "ptlc" || key.length != 48
+        return key.split("_")[0] == "ptlc" &&  key.length == 48
     }
 }
