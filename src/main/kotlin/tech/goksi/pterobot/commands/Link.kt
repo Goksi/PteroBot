@@ -42,7 +42,6 @@ class Link : SimpleCommand() {
         val key = event.getOption("apikey")!!.asString
         val response: MessageEmbed
         val pteroMember = PteroMember(event.user)
-        /*TODO: check if key is linked*/
         if (!pteroMember.isLinked()) {
             response = try {
                 if (!Checks.validClientKey(key)) throw HttpException("Wrong key format !")

@@ -54,7 +54,6 @@ class SQLiteImpl : DataStorage {
         }
     }
 
-    /*TODO: convert query*/
     @Throws(SQLException::class)
     override fun link(id: Long, apiKey: ApiKey) {
         val keyStatement = connection.prepareStatement(
