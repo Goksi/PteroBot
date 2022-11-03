@@ -8,6 +8,7 @@ import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.utils.Helpers
 import tech.goksi.pterobot.EmbedType
 import tech.goksi.pterobot.NodeStatus
+import tech.goksi.pterobot.entities.NodeInfo
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.util.MemoryBar
 import java.io.File
@@ -43,44 +44,29 @@ object EmbedManager {
         }
         return rawGeneric.replace("%message", message)
     }
-
-    /*TODO: cleanup this mess a bit*/
-    fun getNodeInfo(
-        nodeName: String,
-        nodeDescription: String,
-        nodeStatus: NodeStatus,
-        runningServers: Int,
-        location: String,
-        maintenance: Boolean,
-        allocationCount: Int,
-        maxMb: Long,
-        usedMb: Long,
-        cpuUsed: Double,
-        diskMax: Float,
-        diskUsed: Float,
-        memoryBar: String
-    ): String {
+    
+    fun getNodeInfo(nodeInfo: NodeInfo): String {
 
         val rawNodeInfo by lazy {
             val file = File(EmbedType.NODE_INFO.path)
             file.readText()
         }
         return rawNodeInfo.replace(
-            "%runningServers" to runningServers.toString(),
-            "%location" to location,
-            "%maintenance" to if (maintenance) "On" else "Off",
-            "%allocationsCount" to allocationCount.toString(),
-            "%maxMb" to maxMb.toString(),
-            "%usedMb" to usedMb.toString(),
-            "%memoryUsageBar" to memoryBar,
-            "%nodeName" to nodeName,
-            "%nodeDescription" to nodeDescription,
+            "%runningServers" to nodeInfo.runningServers.toString(),
+            "%location" to nodeInfo.location,
+            "%maintenance" to nodeInfo.maintenance,
+            "%allocationsCount" to nodeInfo.allocationsCount.toString(),
+            "%maxMb" to nodeInfo.ramLimit.toString(),
+            "%usedMb" to nodeInfo.ramUsed.toString(),
+            "%memoryUsageBar" to nodeInfo.memoryBar,
+            "%nodeName" to nodeInfo.name,
+            "%nodeDescription" to nodeInfo.description,
             "%timestamp" to getCurrentTimestamp(),
-            "%statusEmoji" to nodeStatus.emoji,
-            "%status" to nodeStatus.message,
-            "%diskMax" to String.format("%.2f", diskMax),
-            "%diskUsed" to String.format("%.2f", diskUsed),
-            "%cpuUsed" to String.format("%.2f", cpuUsed)
+            "%statusEmoji" to nodeInfo.status.emoji,
+            "%status" to nodeInfo.status.message,
+            "%diskMax" to String.format("%.2f", nodeInfo.diskLimit),
+            "%diskUsed" to String.format("%.2f", nodeInfo.diskUsed),
+            "%cpuUsed" to String.format("%.2f", nodeInfo.cpuUsed)
         )
     }
 

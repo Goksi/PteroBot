@@ -100,7 +100,7 @@ class PteroBot() {
         val commandData = SimpleCommandData()
         commandData.addCommands(
             Link(),
-            NodeInfo(),
+            NodeInfoCmd(),
             Register(),
             Servers(jda),
             Unlink(),

@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
-import tech.goksi.pterobot.database.DataStorage
+import tech.goksi.pterobot.entities.NodeInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
@@ -28,7 +28,7 @@ import kotlin.concurrent.fixedRateTimer
 
 private const val CONFIG_PREFIX = "Messages.Commands.NodeInfo."
 
-class NodeInfo: SimpleCommand() {
+class NodeInfoCmd : SimpleCommand() {
     private val logger by SLF4J
 
     companion object TaskMapping {
@@ -131,19 +131,14 @@ class NodeInfo: SimpleCommand() {
             }
 
         return EmbedManager.getNodeInfo(
-            nodeName = node.name,
-            nodeDescription = node.description ?: "",
-            location = node.retrieveLocation().execute().shortCode,
-            maintenance = node.hasMaintanceMode(),
-            allocationCount = node.retrieveAllocations().execute().size,
-            maxMb = node.memoryLong,
-            runningServers = runningServers.size,
-            usedMb = memoryUsed,
-            memoryBar = MemoryBar(memoryUsed, node.memoryLong).toString(),
-            nodeStatus = status,
-            diskMax = (node.diskLong.toFloat()) / 1024,
-            diskUsed = diskSpaceUsed,
-            cpuUsed = cpuUsed
+            NodeInfo(
+                node = node,
+                status = status,
+                runningServers = runningServers.size,
+                ramUsed = memoryUsed,
+                diskUsed = diskSpaceUsed,
+                cpuUsed = cpuUsed
+            )
         ).toEmbed(jda)
 
     }
