@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.replace
@@ -44,25 +45,29 @@ class NodeStatusCmd : SimpleCommand() {
             )
         )
     }
-
-    /*TODO: check if admin*/
     override fun execute(event: SlashCommandInteractionEvent) {
-        val update = event.getOption("update")?.asBoolean ?: false
-        event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
+        val pteroMember = PteroMember(event.member!!)
+        if(event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()){
+            val update = event.getOption("update")?.asBoolean ?: false
+            event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
 
-        event.hook.sendMessageEmbeds(runBlocking { withContext(Dispatchers.IO) { getInfoEmbed(event.jda) } }).queue {
-            if (update) {
-                val timer = fixedRateTimer(
-                    name = "NodeStatusDaemon#${mapping.size}",
-                    daemon = true,
-                    period = 300_000,
-                    initialDelay = 300_000
-                ) {//hardcoded 5 minutes, probably wrong to use mapping.size
-                    it.editMessageEmbeds(getInfoEmbed(event.jda))
-                        .queue()
+            event.hook.sendMessageEmbeds(runBlocking { withContext(Dispatchers.IO) { getInfoEmbed(event.jda) } }).queue {
+                if (update) {
+                    val timer = fixedRateTimer(
+                        name = "NodeStatusDaemon#${mapping.size}",
+                        daemon = true,
+                        period = 300_000,
+                        initialDelay = 300_000
+                    ) {//hardcoded 5 minutes, probably wrong to use mapping.size
+                        it.editMessageEmbeds(getInfoEmbed(event.jda))
+                            .queue()
+                    }
+                    mapping[it.idLong] = timer
                 }
-                mapping[it.idLong] = timer
             }
+        } else {
+            event.replyEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotAdmin"))
+                .toEmbed(event.jda))
         }
     }
 
