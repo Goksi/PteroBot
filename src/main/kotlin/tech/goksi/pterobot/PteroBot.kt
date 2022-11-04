@@ -75,7 +75,6 @@ class PteroBot() {
         }
         if (apiKeyPair.second) {
             ConfigManager.config.set("BotInfo.AdminApiKey", apiKeyPair.first)
-            ConfigManager.config.set("BotInfo.AdminApiKey", apiKeyPair.first)
         }
         ConfigManager.save()
         EmbedManager.init()
