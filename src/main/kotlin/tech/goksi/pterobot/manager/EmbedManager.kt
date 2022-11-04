@@ -44,7 +44,7 @@ object EmbedManager {
         }
         return rawGeneric.replace("%message", message)
     }
-    
+
     fun getNodeInfo(nodeInfo: NodeInfo): String {
 
         val rawNodeInfo by lazy {

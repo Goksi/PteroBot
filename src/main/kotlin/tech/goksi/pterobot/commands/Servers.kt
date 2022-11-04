@@ -126,6 +126,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             ).queue()
             return
         }
+        /*TODO: check here*/
         val serverInfo = ServerInfo(server)
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
 
