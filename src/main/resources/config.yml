@@ -52,6 +52,7 @@ Messages:
       SuccessStop: "You successfully sent stop signal !"
       SuccessRestart: "You successfully sent restart signal !"
       SuccessCommand: "You successfully sent command to server !"
+      NodeOffline: "Sorry, we currently can't reach selected server"
       Buttons:
         Stop: "Stop"
         StopType: "DANGER" # https://discord.com/developers/docs/interactions/message-components#button-object-button-styles

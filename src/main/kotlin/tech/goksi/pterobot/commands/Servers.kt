@@ -3,6 +3,7 @@ package tech.goksi.pterobot.commands
 import com.mattmalec.pterodactyl4j.PowerAction
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
+import com.mattmalec.pterodactyl4j.exceptions.ServerException
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
@@ -94,6 +95,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             ).queue()
         }
     }
+
     /*TODO: delete after clicker button ?*/
     override fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
@@ -126,8 +128,15 @@ class Servers(jda: JDA) : SimpleCommand() {
             ).queue()
             return
         }
-        /*TODO: check here*/
-        val serverInfo = ServerInfo(server)
+        val serverInfo = try {
+            ServerInfo(server)
+        } catch (exception: ServerException) {
+            event.hook.sendMessageEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeOffline"))
+                    .toEmbed(event.jda)
+            ).queue()
+            return;
+        }
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
 
 
