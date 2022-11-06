@@ -2,7 +2,6 @@ package tech.goksi.pterobot.entities
 
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import tech.goksi.pterobot.NodeStatus
-/*TODO: check if node is offline*/
 data class ServerInfo(private val server: ClientServer) {
     val identifier: String = server.identifier
     val name: String = server.name
