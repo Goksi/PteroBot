@@ -56,7 +56,7 @@ object VersionCheck {
             val compare = v1.compareTo(v2)
             if (compare != 0) {
                 result = compare
-                break;
+                break
             }
         }
         return result

@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.utils.Helpers
 import tech.goksi.pterobot.EmbedType
-import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.entities.NodeInfo
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.util.MemoryBar
