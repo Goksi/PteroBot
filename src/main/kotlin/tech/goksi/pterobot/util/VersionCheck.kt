@@ -28,7 +28,10 @@ object VersionCheck {
 
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    if (!response.isSuccessful) logger.error("Error while requesting version, unexpected status code: $response")
+                    if (!response.isSuccessful) {
+                        logger.error("Error while requesting version, unexpected status code: $response")
+                        return
+                    }
                     val fetchedVer = DataObject.fromJson(response.body!!.byteStream())
                         .getString("tag_name")
 
