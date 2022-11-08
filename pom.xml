@@ -34,6 +34,12 @@
     </repositories>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
         <plugins>
@@ -88,31 +94,6 @@
                 <configuration>
                     <source>8</source>
                     <target>8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <version>1.5.2</version>
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <includes>
-                        <include>${project.basedir}/src/main/kotlin/tech/goksi/pterobot/util/VersionCheck.kt</include>
-                    </includes>
-                    <replacements>
-                        <replacement>
-                            <!--suppress UnresolvedMavenProperty -->
-                            <token>@VERSION@</token>
-                            <value>${project.version}</value>
-                        </replacement>
-                    </replacements>
                 </configuration>
             </plugin>
         </plugins>
