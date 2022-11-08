@@ -22,7 +22,6 @@ import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
-import tech.goksi.pterobot.util.MemoryBar
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 

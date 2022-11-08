@@ -135,7 +135,7 @@ class Servers(jda: JDA) : SimpleCommand() {
                 EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeOffline"))
                     .toEmbed(event.jda)
             ).queue()
-            return;
+            return
         }
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
 

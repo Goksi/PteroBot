@@ -9,10 +9,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
-import tech.goksi.pterobot.manager.ConfigManager
-import tech.goksi.pterobot.database.DataStorage
 import tech.goksi.pterobot.entities.ApiKey
 import tech.goksi.pterobot.entities.PteroMember
+import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Checks
