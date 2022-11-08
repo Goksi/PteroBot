@@ -54,7 +54,7 @@ object VersionCheck {
             val v1 = ver1List[i].toInt()
             val v2 = ver2List[i].toInt()
             val compare = v1.compareTo(v2)
-            if(compare != 0){
+            if (compare != 0) {
                 result = compare
                 break;
             }
