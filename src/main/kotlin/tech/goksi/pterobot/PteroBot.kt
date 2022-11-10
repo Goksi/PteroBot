@@ -84,9 +84,9 @@ class PteroBot {
             setStatus(OnlineStatus.valueOf(statusStr))
             if (ConfigManager.config.getBoolean("BotInfo.EnableActivity")) {
                 val activityString = ConfigManager.config.getString("BotInfo.ActivityName") ?: ""
-                val activityName = ConfigManager.config.getString("BotInfo.Activity") ?: "".uppercase()
+                val activityName = ConfigManager.config.getString("BotInfo.Activity") ?: ""
                 setActivity(
-                    when (activityName) {
+                    when (activityName.uppercase()) {
                         "LISTENING" -> Activity.listening(activityString)
                         "WATCHING" -> Activity.watching(activityString)
                         else -> Activity.playing(activityString)
