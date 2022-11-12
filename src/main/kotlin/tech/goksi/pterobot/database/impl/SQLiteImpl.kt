@@ -83,4 +83,8 @@ class SQLiteImpl : DataStorage {
             }
         }
     }
+
+    override fun getRegisteredAccounts(id: Long): List<String> {
+        TODO("Not yet implemented")
+    }
 }
