@@ -97,6 +97,7 @@ class Servers(jda: JDA) : SimpleCommand() {
     }
 
     /*TODO: delete after clicker button ?*/
+    /*TODO: request logs button*/
     override fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
         if (event.componentId.split(":")[2] != event.user.id) {
@@ -109,7 +110,6 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         val pteroMember = PteroMember(event.user)
-        if (!event.message.isEphemeral) event.message.delete().queue()
 
         if (!pteroMember.isLinked()) {
             event.hook.sendMessageEmbeds(
@@ -255,7 +255,6 @@ class Servers(jda: JDA) : SimpleCommand() {
         ) {
             it.deferEdit().queue()
             val original = it.hook.retrieveOriginal().await()
-            if (!original.isEphemeral) original.delete().queue()
         }
         event.hook.sendMessageEmbeds(response).addActionRow(
             changeStateButton,
