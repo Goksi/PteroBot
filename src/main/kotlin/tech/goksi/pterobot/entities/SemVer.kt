@@ -1,11 +1,13 @@
 package tech.goksi.pterobot.entities
 
+import tech.goksi.pterobot.util.Checks
+
 class SemVer(version: String) : Comparable<SemVer> {
 
     private val versionList: List<String> = version.split(".")
 
     init {
-        if (versionList.isEmpty()) throw IllegalArgumentException("Invalid sem version")
+        Checks.arguments(versionList.isNotEmpty(), "Invalid semantic version format")
     }
 
     override fun compareTo(other: SemVer): Int {
