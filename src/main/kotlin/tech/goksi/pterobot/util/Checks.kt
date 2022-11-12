@@ -88,8 +88,6 @@ object Checks {
 
                     if (SemVer(fetchedVer) > SemVer(currentVer))
                         logger.warn("You are not running latest version of PteroBot ! Latest: v$fetchedVer Current: v$currentVer")
-                    else
-                        logger.info("You are running latest version of PteroBot, enjoy !")
                 }
 
             }
