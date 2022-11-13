@@ -13,6 +13,7 @@ import tech.goksi.pterobot.events.NodeStatusDelete
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.util.Checks
+import kotlin.system.exitProcess
 
 private const val DEFAULT_NO_TOKEN_MSG = "YOUR TOKEN HERE"
 private const val DEFAULT_NO_ID_MSG = "YOUR DISCORD SERVER ID HERE"
@@ -117,8 +118,8 @@ class PteroBot {
         logger.info("PteroBot has successfully started, you can stop it by typing \"stop\"")
         while (true) {
             if ((readLine()?.lowercase()) == "stop") {
-                jda.shutdown()
-                break
+                jda.shutdownNow()
+                exitProcess(0)
             } else logger.warn("Wrong command ! You mean \"stop\" ?")
         }
     }
