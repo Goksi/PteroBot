@@ -81,15 +81,15 @@ class Register : SimpleCommand() {
             return
         }
         val pteroApplication = Common.getDefaultApplication()
-        val userBuilder = pteroApplication.userManager.createUser()
-            .setEmail(email)
-            .setUserName(event.getValue("username")!!.asString)
-            .setFirstName(event.getValue("firstName")!!.asString)
-            .setLastName(event.getValue("lastName")!!.asString).apply {
-                if (event.getValue("password") != null) {
-                    setPassword(event.getValue("password")!!.asString)
-                }
+        val userBuilder = pteroApplication.userManager.createUser().apply {
+            setEmail(email)
+            setUserName(event.getValue("username")!!.asString)
+            setFirstName(event.getValue("firstName")!!.asString)
+            setLastName(event.getValue("lastName")!!.asString)
+            if (event.getValue("password") != null) {
+                setPassword(event.getValue("password")!!.asString)
             }
+        }
         userBuilder.executeAsync({
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericSuccess(
