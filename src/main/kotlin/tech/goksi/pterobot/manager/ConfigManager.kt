@@ -5,7 +5,7 @@ import org.simpleyaml.configuration.file.YamlFile
 import java.io.File
 import java.io.IOException
 import kotlin.system.exitProcess
-
+/*TODO: handle new config options*/
 object ConfigManager {
     private val configFile: File = File("config.yml")
     private val logger by SLF4J
