@@ -63,7 +63,7 @@ object Checks {
     fun checkVersion() {
         val apiUrl = "https://api.github.com/repos/Goksi/PteroBot/releases/latest"
         val properties = Properties()
-            .apply { this.load(this@Checks::class.java.classLoader.getResourceAsStream("version.properties")) }
+            .apply { load(this@Checks::class.java.classLoader.getResourceAsStream("version.properties")) }
         val currentVer = properties.getProperty("version")!!
         val client = OkHttpClient()
         val request = Request.Builder()

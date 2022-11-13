@@ -23,7 +23,7 @@ class SQLiteImpl : DataStorage {
             "create table if not exists Keys(id integer not null primary key autoincrement, \"key\" char(48) not null unique, \"admin\" boolean not null)"
         )
         statement.addBatch(
-            "create table if not exists Accounts(id integer not null primary key autoincrement, username varchar(25), memberID integer, foreign key(memberID) references Members(id))"
+            "create table if not exists Accounts(memberID integer, username varchar(25), foreign key(memberID) references Members(id), primary key (memberID, username))"
         )
         statement.addBatch(
             "pragma foreign_keys = ON"
@@ -84,7 +84,31 @@ class SQLiteImpl : DataStorage {
         }
     }
 
-    override fun getRegisteredAccounts(id: Long): List<String> {
-        TODO("Not yet implemented")
+    override fun getRegisteredAccounts(id: Long): Set<String> {
+        val statement = connection.prepareStatement(
+            "select username from Accounts inner join Members on Accounts.memberID = Members.id where Members.discordID = ?"
+        )
+        statement.setLong(1, id)
+        statement.use {
+            try {
+                val resultSet = it.executeQuery()
+                return buildSet {
+                    while (resultSet.next())
+                        this.add(resultSet.getString("username"))
+                }
+            } catch (exception: SQLException) {
+                logger.error("Error while retrieving registered accounts of $id", exception)
+            }
+        }
+        return emptySet()
+    }
+
+    override fun addRegisteredAccount(id: Long, accountName: String) {
+        val memberStatement = connection.prepareStatement(
+            "insert or ignore into Members(discordID) values (?)"
+        )
+        val accountStatement = connection.prepareStatement(
+            ""
+        )
     }
 }

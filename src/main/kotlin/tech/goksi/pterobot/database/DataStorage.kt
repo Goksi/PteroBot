@@ -10,5 +10,7 @@ interface DataStorage {
 
     fun unlink(id: Long)
 
-    fun getRegisteredAccounts(id: Long): List<String>
+    fun getRegisteredAccounts(id: Long): Set<String>
+
+    fun addRegisteredAccount(id: Long, accountName: String)
 }
