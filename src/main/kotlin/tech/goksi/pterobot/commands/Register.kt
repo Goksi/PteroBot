@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.replace
@@ -60,7 +61,12 @@ class Register : SimpleCommand() {
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
-        event.replyModal(modal).queue()
+        val pteroMember = PteroMember(event.user)
+        if (pteroMember.canRegisterMoreAccounts()) {
+            event.replyModal(modal).queue()
+        } else {
+
+        }
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {

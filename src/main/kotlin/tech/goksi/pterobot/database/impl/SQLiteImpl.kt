@@ -108,7 +108,20 @@ class SQLiteImpl : DataStorage {
             "insert or ignore into Members(discordID) values (?)"
         )
         val accountStatement = connection.prepareStatement(
-            ""
+            "insert into Accounts(memberID, username) values ((select id from members where discordID = ?),?)"
         )
+        memberStatement.use { member ->
+            accountStatement.use { account ->
+                member.setLong(1, id)
+                account.setLong(1, id)
+                account.setString(2, accountName)
+                try {
+                    member.executeUpdate()
+                    account.executeUpdate()
+                } catch (exception: SQLException) {
+                    logger.error("Error while adding registered account to $id", exception)
+                }
+            }
+        }
     }
 }
