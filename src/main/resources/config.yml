@@ -8,7 +8,7 @@ BotInfo:
   Activity: "PLAYING" # PLAYING LISTENING and WATCHING
   ActivityName: "Pterodactyl !"
   Ephemeral: false # indicates if commands like servers should return ephemeral or normal messages (node info will always return normal one)
-  MaxRegisteredAccount: 1 # indicates number of max accounts user can register with /register command (set to 0 for unlimited)
+  MaxRegisteredAccounts: 1 # indicates number of max accounts user can register with /register command (set to 0 for unlimited)
 Messages:
   Commands:
     Link:
@@ -31,6 +31,7 @@ Messages:
       OfflineEmoji: "🔴"
     Register:
       Description: "Registers new account to pterodactyl panel !"
+      LimitReached: "Sorry, but you reached maximum pterodactyl account registered for your discord :( \\n Your accounts: %accounts"
       InvalidEmail: "Sorry, this doesn't look like valid email address :("
       PasswordRequired: true # set this to false only if your panel is able to send mails (this will send random password to user)
       Success: "You successfully created account named %pteroName"
