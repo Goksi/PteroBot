@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.replace
@@ -18,7 +19,8 @@ import tech.goksi.pterobot.util.Checks
 import tech.goksi.pterobot.util.Common
 
 private const val CONFIG_PREFIX = "Messages.Commands.Register."
-
+/*TODO: account deletion*/
+/*TODO: maybe commands rework etc /account delete /account link...*/
 class Register : SimpleCommand() {
     private val logger by SLF4J
     private val modal: Modal
@@ -60,7 +62,17 @@ class Register : SimpleCommand() {
     }
 
     override fun execute(event: SlashCommandInteractionEvent) {
-        event.replyModal(modal).queue()
+        val pteroMember = PteroMember(event.user)
+        if (pteroMember.canRegisterMoreAccounts()) {
+            event.replyModal(modal).queue()
+        } else {
+            event.replyEmbeds(
+                EmbedManager.getGenericFailure(
+                    ConfigManager.config.getString(CONFIG_PREFIX + "LimitReached")
+                        .replace("%accounts" to pteroMember.registeredAccounts.joinToString(","))
+                ).toEmbed(event.jda)
+            ).setEphemeral(true).queue()
+        }
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {
@@ -69,34 +81,32 @@ class Register : SimpleCommand() {
         val email = event.getValue("email")!!.asString
         if (!Checks.validEmail(email)) {
             event.hook.sendMessageEmbeds(
-                listOf(
-                    EmbedManager.getGenericFailure(
-                        ConfigManager.config.getString(
-                            CONFIG_PREFIX + "InvalidEmail"
-                        )
-                    ).toEmbed(event.jda)
-                )
+                EmbedManager.getGenericFailure(
+                    ConfigManager.config.getString(
+                        CONFIG_PREFIX + "InvalidEmail"
+                    )
+                ).toEmbed(event.jda)
             )
                 .queue()
             return
         }
         val pteroApplication = Common.getDefaultApplication()
-        val userBuilder = pteroApplication.userManager.createUser()
-            .setEmail(email)
-            .setUserName(event.getValue("username")!!.asString)
-            .setFirstName(event.getValue("firstName")!!.asString)
-            .setLastName(event.getValue("lastName")!!.asString).apply {
-                if (event.getValue("password") != null) {
-                    setPassword(event.getValue("password")!!.asString)
-                }
+        val userBuilder = pteroApplication.userManager.createUser().apply {
+            setEmail(email)
+            setUserName(event.getValue("username")!!.asString)
+            setFirstName(event.getValue("firstName")!!.asString)
+            setLastName(event.getValue("lastName")!!.asString)
+            if (event.getValue("password") != null) {
+                setPassword(event.getValue("password")!!.asString)
             }
+        }
         userBuilder.executeAsync({
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericSuccess(
                     ConfigManager.config.getString(CONFIG_PREFIX + "Success")!!.replace("%pteroName" to it.userName)
                 ).toEmbed(event.jda)
-            )
-                .complete()
+            ).queue()
+            PteroMember(event.user).registerAccount(it.userName)
         }, {
             val errorMessage = it.message ?: ""
             if (errorMessage.contains("Source:") && errorMessage.contains("taken")) {

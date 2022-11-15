@@ -9,4 +9,8 @@ interface DataStorage {
     fun link(id: Long, apiKey: ApiKey)
 
     fun unlink(id: Long)
+
+    fun getRegisteredAccounts(id: Long): Set<String>
+
+    fun addRegisteredAccount(id: Long, accountName: String)
 }

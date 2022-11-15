@@ -4,6 +4,7 @@ import com.mattmalec.pterodactyl4j.client.entities.PteroClient
 import net.dv8tion.jda.api.entities.UserSnowflake
 import tech.goksi.pterobot.database.DataStorage
 import tech.goksi.pterobot.database.impl.SQLiteImpl
+import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.util.Common
 
 class PteroMember(private val discordID: Long) {
@@ -21,10 +22,10 @@ class PteroMember(private val discordID: Long) {
     val client: PteroClient?
         get() = Common.createClient(apiKey?.key)
 
-    /*val registeredAccounts: Set<String>
-        get() {
-            TODO()
-        }*/
+    val registeredAccounts: Set<String> by lazy {
+        data.getRegisteredAccounts(discordID)
+    }
+
 
     fun isPteroAdmin(): Boolean {
         return apiKey?.admin ?: false
@@ -42,9 +43,12 @@ class PteroMember(private val discordID: Long) {
         return apiKey != null
     }
 
-    /*fun canRegisterMoreAccounts(): Boolean {
+    fun canRegisterMoreAccounts(): Boolean {
         val amount = ConfigManager.config.getInt("BotInfo.MaxRegisteredAccounts")
         return if (amount == 0) true
         else registeredAccounts.size < amount
-    }*/
+    }
+
+    fun registerAccount(accountName: String) = data.addRegisteredAccount(discordID, accountName)
+
 }
