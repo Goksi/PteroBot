@@ -65,6 +65,10 @@ object Checks {
         val properties = Properties()
             .apply { load(this@Checks::class.java.classLoader.getResourceAsStream("version.properties")) }
         val currentVer = properties.getProperty("version")!!
+        if(currentVer == "canary"){
+            logger.info("You are running dev build of PteroBot !")
+            return
+        }
         val client = OkHttpClient()
         val request = Request.Builder()
             .url(apiUrl)
@@ -85,10 +89,6 @@ object Checks {
                     }
                     val fetchedVer = DataObject.fromJson(response.body!!.byteStream())
                         .getString("tag_name").replace("v", "")
-                    if(fetchedVer == "canary"){
-                        logger.info("You are running dev version of PteroBot !")
-                        return
-                    }
                     if (SemVer(fetchedVer) > SemVer(currentVer))
                         logger.warn("You are not running latest version of PteroBot ! Latest: v$fetchedVer Current: v$currentVer")
                 }
