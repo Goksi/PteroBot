@@ -6,7 +6,7 @@
 
     <artifactId>PteroBot</artifactId>
     <groupId>tech.goksi</groupId>
-    <version>1.0.3</version>
+    <version>canary</version>
     <packaging>jar</packaging>
 
     <name>PteroBot</name>

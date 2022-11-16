@@ -85,7 +85,10 @@ object Checks {
                     }
                     val fetchedVer = DataObject.fromJson(response.body!!.byteStream())
                         .getString("tag_name").replace("v", "")
-
+                    if(fetchedVer == "canary"){
+                        logger.info("You are running dev version of PteroBot !")
+                        return
+                    }
                     if (SemVer(fetchedVer) > SemVer(currentVer))
                         logger.warn("You are not running latest version of PteroBot ! Latest: v$fetchedVer Current: v$currentVer")
                 }
