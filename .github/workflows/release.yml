@@ -28,3 +28,4 @@ jobs:
         run: |
           echo ${REF}
           echo ${REF:11}
+          echo ${REF:10}
