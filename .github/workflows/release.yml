@@ -19,13 +19,19 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Build PteroBot
-        run: mvn -B package --file pom.xml
-
-      - name: Test ref
+      - name: Change version
         env:
           REF: ${{github.ref}}
-        run: |
-          echo ${REF}
-          echo ${REF:11}
-          echo ${REF:10}
+        run: sed -i 's/canary/${REF:11}/g' pom.xml
+
+      - name: Build changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test
+        run: echo ${{steps.changelog.outputs.changelog}}
+
+      - name: Build PteroBot
+        run: mvn -B package --file pom.xml
