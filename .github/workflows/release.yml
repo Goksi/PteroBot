@@ -1,0 +1,30 @@
+name: PteroBot create release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    name: Release PteroBot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Build PteroBot
+        run: mvn -B package --file pom.xml
+
+      - name: Test ref
+        env:
+          REF: ${{github.ref}}
+        run: |
+          echo ${REF}
+          echo ${REF:11}
