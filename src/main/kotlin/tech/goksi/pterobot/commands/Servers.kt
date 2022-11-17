@@ -110,7 +110,7 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         val pteroMember = PteroMember(event.user)
-
+        event.message.delete().queue()
         if (!pteroMember.isLinked()) {
             event.hook.sendMessageEmbeds(
                 EmbedManager
@@ -254,7 +254,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             emoji = Emoji.fromUnicode(getButtonSetting("CloseEmoji"))
         ) {
             it.deferEdit().queue()
-            val original = it.hook.retrieveOriginal().await()
+            it.hook.retrieveOriginal().queue { msg -> msg.delete().queue() }
         }
         event.hook.sendMessageEmbeds(response).addActionRow(
             changeStateButton,
