@@ -36,6 +36,7 @@ jobs:
         id: checksum
         run: |
           cd target/
+          ls -la
           CHECKSUM=`sha256sum ${{ steps.version.outputs.name }}`
           echo $CHECKSUM > ../checksum.txt
           echo "checksum=\n ### SHA256 checksum\n \`$CHECKSUM\`\n" >> $GITHUB_OUTPUT
