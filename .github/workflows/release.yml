@@ -25,7 +25,7 @@ jobs:
         env:
           REF: ${{ github.ref }}
         run: |
-          sed -i "s/    <version>canary</version>,/    <version>${REF:11}</version>,/" pom.xml
+          sed -i "s/canary/${REF:11}/g" pom.xml
           echo "name=PteroBot-${REF:11}.jar" >> $GITHUB_OUTPUT
           echo PteroBot-${REF:11}.jar
 
