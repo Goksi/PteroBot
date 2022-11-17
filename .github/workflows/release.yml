@@ -27,7 +27,6 @@ jobs:
         run: |
           sed -i "s/canary/${REF:11}/g" pom.xml
           echo "name=PteroBot-${REF:11}.jar" >> $GITHUB_OUTPUT
-          echo PteroBot-${REF:11}.jar
 
       - name: Build PteroBot
         run: mvn -B package --file pom.xml
@@ -36,7 +35,6 @@ jobs:
         id: checksum
         run: |
           cd target/
-          ls -la
           CHECKSUM=`sha256sum ${{ steps.version.outputs.name }}`
           echo $CHECKSUM > ../checksum.txt
           echo "checksum=\n ### SHA256 checksum\n \`$CHECKSUM\`\n" >> $GITHUB_OUTPUT
