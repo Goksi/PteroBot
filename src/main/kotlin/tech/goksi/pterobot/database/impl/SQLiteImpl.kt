@@ -77,13 +77,13 @@ class SQLiteImpl : DataStorage {
         keyStatement.setString(1, apiKey.key)
         keyStatement.setBoolean(2, apiKey.admin)
         keyStatement.use { it.executeUpdate() }
-        statement.use { it.executeUpdate() } //should catch SQLException later in command
+        statement.use { it.executeUpdate() } // should catch SQLException later in command
     }
 
     override fun unlink(id: Long) {
         val statement = connection.prepareStatement(
             "delete from Keys where id in (" +
-                    "select apiID from Members where discordID = ? )"
+                "select apiID from Members where discordID = ? )"
         )
         statement.setLong(1, id)
         statement.use {

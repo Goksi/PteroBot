@@ -9,12 +9,12 @@ object Common {
 
     fun createClient(apiKey: String?): PteroClient? {
         if (apiKey == null) return null
-        val appUrl =  ConfigManager.config.getString("BotInfo.PterodactylUrl")
+        val appUrl = ConfigManager.config.getString("BotInfo.PterodactylUrl")
         return PteroBuilder.createClient(appUrl, apiKey)
     }
 
     private fun createApplication(apiKey: String): PteroApplication {
-        val appUrl =  ConfigManager.config.getString("BotInfo.PterodactylUrl")
+        val appUrl = ConfigManager.config.getString("BotInfo.PterodactylUrl")
         return PteroBuilder.createApplication(appUrl, apiKey)
     }
 

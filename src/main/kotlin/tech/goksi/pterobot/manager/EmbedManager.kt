@@ -45,7 +45,6 @@ object EmbedManager {
     }
 
     fun getNodeInfo(nodeInfo: NodeInfo): String {
-
         val rawNodeInfo by lazy {
             val file = File(EmbedType.NODE_INFO.path)
             file.readText()
@@ -80,8 +79,11 @@ object EmbedManager {
             file.readText()
         }
         return rawServersSuccess.replace(
-            "%pteroName" to username, "%pteroFullName" to fullName, "%isAdmin" to rootAdmin.toString(),
-            "%pteroEmail" to email, "%timestamp" to getCurrentTimestamp()
+            "%pteroName" to username,
+            "%pteroFullName" to fullName,
+            "%isAdmin" to rootAdmin.toString(),
+            "%pteroEmail" to email,
+            "%timestamp" to getCurrentTimestamp()
         )
     }
 

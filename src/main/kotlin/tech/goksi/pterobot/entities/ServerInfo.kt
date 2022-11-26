@@ -12,8 +12,8 @@ data class ServerInfo(private val server: ClientServer) {
     private val utilization = server.retrieveUtilization().execute()
     val status = utilization.state.name
     val cpuUsed = utilization.cpu
-    val diskUsed = (utilization.disk.toFloat()) / 1024 / 1024 / 1024  //gb
-    val ramUsed = utilization.memory / 1024 / 1024 //mb
+    val diskUsed = (utilization.disk.toFloat()) / 1024 / 1024 / 1024 // gb
+    val ramUsed = utilization.memory / 1024 / 1024 // mb
     val diskMax = (server.limits.diskLong.toFloat()) / 1024
     val ramMax: Long
         get() {

@@ -13,28 +13,27 @@ class SimpleCommandData {
         commands = ArrayList()
     }
 
-
-    fun addCommands(vararg commands: SimpleCommand){
+    fun addCommands(vararg commands: SimpleCommand) {
         this.commands.addAll(commands)
     }
 
     fun buildData(): List<SlashCommandData> {
         val data: MutableList<SlashCommandData> = ArrayList()
-        for(command in this.commands){
+        for (command in this.commands) {
             Checks.arguments(command.options.size <= 25, "Slash command can have max 25 options !")
             val cmdData = Commands.slash(command.name, command.description)
             cmdData.isGuildOnly = true
-            if(!command.enableDefault){
+            if (!command.enableDefault) {
                 cmdData.defaultPermissions = DefaultMemberPermissions.enabledFor(command.enabledPermissions)
             }
-            if(command.options.isNotEmpty()) cmdData.addOptions(command.options)
+            if (command.options.isNotEmpty()) cmdData.addOptions(command.options)
             data.add(cmdData)
         }
         return data
     }
 
-    fun registerListeners(jda: JDA){
-        commands.forEach{
+    fun registerListeners(jda: JDA) {
+        commands.forEach {
             jda.addEventListener(it)
         }
     }

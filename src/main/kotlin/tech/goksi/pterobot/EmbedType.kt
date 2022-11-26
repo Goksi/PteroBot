@@ -10,5 +10,4 @@ enum class EmbedType(private val fileName: String) {
 
     val path
         get() = "embeds/$fileName"
-
 }
