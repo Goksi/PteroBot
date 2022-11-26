@@ -1,0 +1,25 @@
+name: Lint check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3.6.0
+        with:
+          java-version: 8
+          distribution: temurin
+          cache: 'maven'
+
+      - name: Run lint checker
+        run: mvn verify
