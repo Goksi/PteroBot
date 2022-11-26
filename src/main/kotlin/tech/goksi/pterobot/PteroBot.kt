@@ -26,11 +26,13 @@ class PteroBot {
 
     init {
         val tokenPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.Token"), DEFAULT_NO_TOKEN_MSG,
+            ConfigManager.config.getString("BotInfo.Token"),
+            DEFAULT_NO_TOKEN_MSG,
             "You didn't provide your bot token, please input it right-now: "
         ) { readLine() }
         val guildPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.ServerID"), DEFAULT_NO_ID_MSG,
+            ConfigManager.config.getString("BotInfo.ServerID"),
+            DEFAULT_NO_ID_MSG,
             "You didn't provide your discord server id, please input it right-now: "
         ) {
             var input: String
@@ -42,7 +44,8 @@ class PteroBot {
             input
         }
         val appUrlPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.PterodactylUrl"), DEFAULT_NO_URL_MSG,
+            ConfigManager.config.getString("BotInfo.PterodactylUrl"),
+            DEFAULT_NO_URL_MSG,
             "You didn't provide your pterodactyl url, please input it right-now:"
         ) {
             var input: String
@@ -54,7 +57,8 @@ class PteroBot {
             input
         }
         val apiKeyPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.AdminApiKey"), DEFAULT_NO_API_KEY_MSG,
+            ConfigManager.config.getString("BotInfo.AdminApiKey"),
+            DEFAULT_NO_API_KEY_MSG,
             "You didn't provide admin key for actions like register and node info, please input it right-now:"
         ) {
             var input: String
@@ -94,7 +98,6 @@ class PteroBot {
                     }
                 )
             }
-
         }.awaitReady()
 
         val commandData = SimpleCommandData()
@@ -106,7 +109,7 @@ class PteroBot {
             Unlink(),
             NodeStatusCmd()
         )
-        val guild = jda.getGuildById(guildPair.first!!) //what if wrong guild id ?
+        val guild = jda.getGuildById(guildPair.first!!) // what if wrong guild id ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())
         commandData.registerListeners(jda)

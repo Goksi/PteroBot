@@ -26,7 +26,6 @@ class PteroMember(private val discordID: Long) {
         data.getRegisteredAccounts(discordID)
     }
 
-
     fun isPteroAdmin(): Boolean {
         return apiKey?.admin ?: false
     }
@@ -50,5 +49,4 @@ class PteroMember(private val discordID: Long) {
     }
 
     fun registerAccount(accountName: String) = data.addRegisteredAccount(discordID, accountName)
-
 }

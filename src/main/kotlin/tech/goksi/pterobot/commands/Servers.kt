@@ -4,7 +4,6 @@ import com.mattmalec.pterodactyl4j.PowerAction
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
 import com.mattmalec.pterodactyl4j.exceptions.ServerException
-import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.SelectMenu
@@ -30,7 +29,7 @@ private const val SELECTION_ID = "pterobot:servers-selector"
 
 class Servers(jda: JDA) : SimpleCommand() {
     private val logger by SLF4J
-    private val serverMapping = HashMap<String, ClientServer>()
+    private val serverMapping: MutableMap<String, ClientServer> = HashMap<String, ClientServer>()
 
     init {
         this.name = "servers"
@@ -84,7 +83,9 @@ class Servers(jda: JDA) : SimpleCommand() {
 
             val response = EmbedManager.getServersCommand(
                 username = pteroAccount.userName,
-                fullName = pteroAccount.fullName, rootAdmin = pteroAccount.isRootAdmin, email = pteroAccount.email
+                fullName = pteroAccount.fullName,
+                rootAdmin = pteroAccount.isRootAdmin,
+                email = pteroAccount.email
             ).toEmbed(event.jda)
 
             event.hook.sendMessageEmbeds(response).addActionRow(selectMenu).queue()
@@ -138,7 +139,6 @@ class Servers(jda: JDA) : SimpleCommand() {
             return
         }
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
-
 
         /*START OR STOP BTN*/
         val changeStateButton = when (serverInfo.status) {
@@ -195,7 +195,6 @@ class Servers(jda: JDA) : SimpleCommand() {
             }
         }
 
-
         /*RESTART BTN*/
         val restartButton = event.jda.button(
             style = ButtonStyle.valueOf(getButtonSetting("RestartType")),
@@ -220,10 +219,8 @@ class Servers(jda: JDA) : SimpleCommand() {
                     .setEphemeral(true).queue().also { _ ->
                         logger.error("Error while changing server state !", it)
                     }
-
             }
         }
-
 
         /*COMMAND BTN*/
         val commandButton = event.jda.button(
@@ -237,14 +234,15 @@ class Servers(jda: JDA) : SimpleCommand() {
                 title = ConfigManager.config.getString(CONFIG_PREFIX + "Modal.Name")
             ) {
                 this.short(
-                    id = "command", label = "Command", required = true,
+                    id = "command",
+                    label = "Command",
+                    required = true,
                     placeholder = ConfigManager.config.getString(CONFIG_PREFIX + "Modal.Placeholder")
                 )
             }
             buttonEvent.replyModal(commandModal).queue()
             serverMapping[server.identifier] = server
         }
-
 
         /*CLOSE BTN*/
         val closeButton = event.jda.button(
