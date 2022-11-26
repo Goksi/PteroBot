@@ -1,0 +1,4 @@
+root = true
+
+[*.{kt,kts}]
+ktlint_disabled_rules = multiline-if-else,no-wildcard-imports
