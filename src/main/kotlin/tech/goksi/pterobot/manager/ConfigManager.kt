@@ -33,6 +33,4 @@ object ConfigManager {
     fun save() {
         config.save(configFile)
     }
-
-
 }

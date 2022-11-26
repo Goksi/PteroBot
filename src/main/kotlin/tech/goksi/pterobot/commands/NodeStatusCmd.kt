@@ -47,7 +47,7 @@ class NodeStatusCmd : SimpleCommand() {
     }
     override fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.member!!)
-        if(event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()){
+        if (event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()) {
             val update = event.getOption("update")?.asBoolean ?: false
             event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
 
@@ -58,7 +58,7 @@ class NodeStatusCmd : SimpleCommand() {
                         daemon = true,
                         period = 300_000,
                         initialDelay = 300_000
-                    ) {//hardcoded 5 minutes, probably wrong to use mapping.size
+                    ) { // hardcoded 5 minutes, probably wrong to use mapping.size
                         it.editMessageEmbeds(getInfoEmbed(event.jda))
                             .queue()
                     }
@@ -66,8 +66,10 @@ class NodeStatusCmd : SimpleCommand() {
                 }
             }
         } else {
-            event.replyEmbeds(EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotAdmin"))
-                .toEmbed(event.jda))
+            event.replyEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotAdmin"))
+                    .toEmbed(event.jda)
+            )
         }
     }
 

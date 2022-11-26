@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 
-abstract class SimpleCommand: ListenerAdapter() {
+abstract class SimpleCommand : ListenerAdapter() {
     lateinit var name: String
     lateinit var description: String
     var options: List<OptionData> = emptyList()
@@ -15,7 +15,7 @@ abstract class SimpleCommand: ListenerAdapter() {
     abstract fun execute(event: SlashCommandInteractionEvent)
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        if(name == event.name){
+        if (name == event.name) {
             execute(event)
         }
     }

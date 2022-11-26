@@ -31,7 +31,7 @@ class NodeInfoCmd : SimpleCommand() {
     private val logger by SLF4J
 
     companion object TaskMapping {
-        val mapping: MutableMap<Long, Timer> = HashMap() //message id and timer
+        val mapping: MutableMap<Long, Timer> = HashMap() // message id and timer
     }
 
     init {
@@ -75,11 +75,10 @@ class NodeInfoCmd : SimpleCommand() {
                         logger.debug("Thrown exception: ", exception)
                         EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeNotFound"))
                             .toEmbed(event.jda)
-                    } //shame that kotlin doesn't have multi catch
+                    } // shame that kotlin doesn't have multi catch
                     else -> throw exception
                 }
             }
-
         } else {
             response = EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotAdmin"))
                 .toEmbed(event.jda)
@@ -97,14 +96,13 @@ class NodeInfoCmd : SimpleCommand() {
                 mapping[it.idLong] = timer
             }
         }
-
     }
 
     /*TODO: catch login exception ?*/
     private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
         val ptero by lazy {
             Common.getDefaultApplication() to
-                    Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
+                Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
         }
         val node = ptero.first.retrieveNodeById(id.toLong()).execute()
         var memoryUsed: Long = 0
@@ -121,11 +119,10 @@ class NodeInfoCmd : SimpleCommand() {
                         status = NodeStatus.OFFLINE
                         return@filter false
                     }
-                    memoryUsed += utilization.memory / 1024 / 1024 //mb
-                    diskSpaceUsed += utilization.disk.toFloat() / 1024 / 1024 / 1024 //gb
+                    memoryUsed += utilization.memory / 1024 / 1024 // mb
+                    diskSpaceUsed += utilization.disk.toFloat() / 1024 / 1024 / 1024 // gb
                     cpuUsed += utilization.cpu
                     return@filter utilization.state == UtilizationState.RUNNING || utilization.state == UtilizationState.STARTING
-
                 } else return@filter false
             }
 
@@ -139,6 +136,5 @@ class NodeInfoCmd : SimpleCommand() {
                 cpuUsed = cpuUsed
             )
         ).toEmbed(jda)
-
     }
 }

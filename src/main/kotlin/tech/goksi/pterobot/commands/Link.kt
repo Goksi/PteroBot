@@ -59,7 +59,7 @@ class Link : SimpleCommand() {
                     .toEmbed(event.jda)
             } catch (httpException: HttpException) {
                 EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "LinkWrongKey"))
-                    .toEmbed(event.jda) //its probably wrong key if we got here, add check maybe
+                    .toEmbed(event.jda) // its probably wrong key if we got here, add check maybe
             }
         } else {
             response = EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "LinkExist"))

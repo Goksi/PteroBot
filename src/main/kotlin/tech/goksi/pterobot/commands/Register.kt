@@ -19,6 +19,7 @@ import tech.goksi.pterobot.util.Checks
 import tech.goksi.pterobot.util.Common
 
 private const val CONFIG_PREFIX = "Messages.Commands.Register."
+
 /*TODO: account deletion*/
 /*TODO: maybe commands rework etc /account delete /account link...*/
 class Register : SimpleCommand() {
@@ -113,7 +114,7 @@ class Register : SimpleCommand() {
                 val takenField = errorMessage.substring(
                     errorMessage.indexOf("Source:") + 8,
                     errorMessage.indexOf(")")
-                ) //lvl pro string extraction
+                ) // lvl pro string extraction
 
                 event.hook.sendMessageEmbeds(
                     EmbedManager.getGenericFailure(
@@ -122,13 +123,11 @@ class Register : SimpleCommand() {
                     ).toEmbed(event.jda)
                 )
                     .complete()
-
             } else event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
                     .toEmbed(event.jda)
             )
                 .complete()
         })
-
     }
 }
