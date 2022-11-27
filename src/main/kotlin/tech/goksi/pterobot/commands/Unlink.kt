@@ -19,7 +19,7 @@ class Unlink : SimpleCommand() {
         SendDefaults.ephemeral = true
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.user)
         if (pteroMember.isLinked()) {
             pteroMember.unlink()

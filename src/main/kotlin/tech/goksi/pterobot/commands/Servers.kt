@@ -29,7 +29,7 @@ private const val SELECTION_ID = "pterobot:servers-selector"
 
 class Servers(jda: JDA) : SimpleCommand() {
     private val logger by SLF4J
-    private val serverMapping: MutableMap<String, ClientServer> = HashMap<String, ClientServer>()
+    private val serverMapping: MutableMap<String, ClientServer> = HashMap()
 
     init {
         this.name = "servers"
@@ -58,13 +58,12 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         val pteroMember = PteroMember(event.user)
         if (pteroMember.isLinked()) {
-            val pteroClient = pteroMember.client!!
             val servers = try {
-                pteroClient.retrieveServers().execute()
+                pteroMember.getServers()
             } catch (exception: LoginException) {
                 event.hook.sendMessageEmbeds(
                     EmbedManager
@@ -79,7 +78,7 @@ class Servers(jda: JDA) : SimpleCommand() {
                 }
                 this.placeholder = ConfigManager.config.getString(CONFIG_PREFIX + "MenuPlaceholder")
             }
-            val pteroAccount = pteroClient.retrieveAccount().execute()
+            val pteroAccount = pteroMember.getAccount()
 
             val response = EmbedManager.getServersCommand(
                 username = pteroAccount.userName,
@@ -99,7 +98,8 @@ class Servers(jda: JDA) : SimpleCommand() {
 
     /*TODO: delete after clicker button ?*/
     /*TODO: request logs button*/
-    override fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
+    /*TODO: refresh button*/
+    override suspend fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
         if (event.componentId.split(":")[2] != event.user.id) {
             event.replyEmbeds(
@@ -119,9 +119,8 @@ class Servers(jda: JDA) : SimpleCommand() {
             ).setEphemeral(true).queue()
             return
         }
-        val pteroClient = pteroMember.client!!
         val server = try {
-            pteroClient.retrieveServerByIdentifier(event.selectedOptions[0].value).execute()
+            pteroMember.getServerById(event.selectedOptions[0].value)
         } catch (exception: LoginException) {
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "WrongKey"))
