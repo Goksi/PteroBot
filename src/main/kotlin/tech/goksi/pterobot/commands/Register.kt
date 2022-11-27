@@ -62,7 +62,7 @@ class Register : SimpleCommand() {
             .build()
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.user)
         if (pteroMember.canRegisterMoreAccounts()) {
             event.replyModal(modal).queue()
@@ -76,7 +76,7 @@ class Register : SimpleCommand() {
         }
     }
 
-    override fun onModalInteraction(event: ModalInteractionEvent) {
+    override suspend fun onModalInteraction(event: ModalInteractionEvent) {
         if (event.modalId != "pterobot:register") return
         event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
         val email = event.getValue("email")!!.asString

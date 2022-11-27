@@ -55,7 +55,7 @@ class NodeInfoCmd : SimpleCommand() {
         )
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         event.deferReply().queue()
         val nodeId = event.getOption("id")!!.asInt
         val update = event.getOption("update")?.asBoolean ?: false

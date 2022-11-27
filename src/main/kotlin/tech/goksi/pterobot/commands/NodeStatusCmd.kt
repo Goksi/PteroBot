@@ -45,7 +45,7 @@ class NodeStatusCmd : SimpleCommand() {
             )
         )
     }
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.member!!)
         if (event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()) {
             val update = event.getOption("update")?.asBoolean ?: false

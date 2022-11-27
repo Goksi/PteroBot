@@ -37,7 +37,7 @@ class Link : SimpleCommand() {
         SendDefaults.ephemeral = true
     }
 
-    override fun execute(event: SlashCommandInteractionEvent) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
         val key = event.getOption("apikey")!!.asString
         val response: MessageEmbed
         val pteroMember = PteroMember(event.user)
