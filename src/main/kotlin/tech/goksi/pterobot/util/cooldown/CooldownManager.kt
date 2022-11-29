@@ -6,7 +6,6 @@ import dev.minn.jda.ktx.jdabuilder.scope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
@@ -33,17 +32,15 @@ object CooldownManager {
 
     private fun canInteract(event: ButtonInteractionEvent): Boolean = getRemaining(event) == 0L
 
-
-    private fun getRemaining(event: ButtonInteractionEvent): Long =
-        max(
-            0,
-            (cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))]
-                ?: 0) - System.currentTimeMillis()
-        )
+    private fun getRemaining(event: ButtonInteractionEvent): Long = max(
+        0,
+        (
+            cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))] ?: 0
+            ) - System.currentTimeMillis()
+    )
 
     private fun getRemainingSeconds(event: ButtonInteractionEvent): Long =
         TimeUnit.MILLISECONDS.toSeconds(getRemaining(event))
-
 
     fun JDA.cooldownButton(
         style: ButtonStyle,
@@ -79,9 +76,8 @@ object CooldownManager {
                 removeEventListener(task)
             }
         }
-        return button;
+        return button
     }
-
 }
 
-private data class CooldownNamespace(val id: Long, val type: CooldownType) {}
+private data class CooldownNamespace(val id: Long, val type: CooldownType)
