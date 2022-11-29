@@ -1,21 +1,29 @@
 package tech.goksi.pterobot.util.cooldown
 
-import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import tech.goksi.pterobot.manager.ConfigManager
 import java.util.concurrent.TimeUnit
 
-enum class CooldownType(private val cooldownSeconds: Int) {
-    STATE_BTN(0),
-    RESTART_BTN(0),
-    COMMAND_BTN(0),
-    REFRESH_BTN(0),
-    LOGS_BTN(0);
+private const val BUTTON_CONFIG = "Cooldown.Button."
 
-    val millis: Long
-        get() = TimeUnit.SECONDS.toMillis(cooldownSeconds.toLong())
+enum class CooldownType(coolDownConfig: String) {
+    STATUS_BTN("StatusChange"),
+    RESTART_BTN("RestartServer"),
+    COMMAND_BTN("SendCommand"),
+    REFRESH_BTN("RefreshEmbed"),
+    LOGS_BTN("RequestLogs"),
+    UNDEFINED("");
+
+    private val seconds: Long = ConfigManager.config.getLong("$BUTTON_CONFIG$coolDownConfig")
+    val millis
+        get() = TimeUnit.SECONDS.toMillis(seconds)
 
     companion object {
-        fun fromEvent(event: GenericEvent): CooldownType {
+        fun fromEvent(event: ButtonInteractionEvent): CooldownType = valueOf(event.button.id!!.split(":")[0])
 
+        fun fromEvent(event: SlashCommandInteractionEvent): CooldownType {
+            TODO("Not impl")
         }
     }
 }

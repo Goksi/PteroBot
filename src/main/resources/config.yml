@@ -9,7 +9,15 @@ BotInfo:
   ActivityName: "Pterodactyl !"
   Ephemeral: false # indicates if commands like servers should return ephemeral or normal messages (node info will always return normal one)
   MaxRegisteredAccounts: 1 # indicates number of max accounts user can register with /register command (set to 0 for unlimited)
+Cooldown: # those values are in seconds !
+  Button:
+    StatusChange: 3
+    RestartServer: 10
+    SendCommand: 3
+    RefreshEmbed: 10
+    RequestLogs: 10
 Messages:
+  OnCooldown: "Sorry, this button is on cooldown for next %time seconds !"
   Commands:
     Link:
       Description: "Connect your pterodactyl account using this command !"
