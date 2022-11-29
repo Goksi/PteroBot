@@ -7,7 +7,6 @@ import com.mattmalec.pterodactyl4j.exceptions.ServerException
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.SelectMenu
-import dev.minn.jda.ktx.interactions.components.button
 import dev.minn.jda.ktx.interactions.components.option
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
@@ -22,6 +21,8 @@ import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
+import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
+import tech.goksi.pterobot.util.cooldown.CooldownType
 import kotlin.time.Duration.Companion.minutes
 
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
@@ -141,11 +142,12 @@ class Servers(jda: JDA) : SimpleCommand() {
 
         /*START OR STOP BTN*/
         val changeStateButton = when (serverInfo.status) {
-            "RUNNING", "STARTING" -> event.jda.button(
+            "RUNNING", "STARTING" -> event.jda.cooldownButton(
                 style = ButtonStyle.valueOf(getButtonSetting("StopType")),
                 user = event.user,
                 label = getButtonSetting("Stop"),
-                emoji = Emoji.fromUnicode(getButtonSetting("StopEmoji"))
+                emoji = Emoji.fromUnicode(getButtonSetting("StopEmoji")),
+                type = CooldownType.STATUS_BTN
             ) { buttonEvent ->
                 server.setPower(PowerAction.STOP).executeAsync({
                     buttonEvent.hook.sendMessageEmbeds(
@@ -167,11 +169,12 @@ class Servers(jda: JDA) : SimpleCommand() {
                 }
             }
 
-            else -> event.jda.button(
+            else -> event.jda.cooldownButton(
                 style = ButtonStyle.valueOf(getButtonSetting("StartType")),
                 user = event.user,
                 label = getButtonSetting("Start"),
-                emoji = Emoji.fromUnicode(getButtonSetting("StartEmoji"))
+                emoji = Emoji.fromUnicode(getButtonSetting("StartEmoji")),
+                type = CooldownType.STATUS_BTN
             ) { buttonEvent ->
                 server.setPower(PowerAction.START).executeAsync({
                     buttonEvent.hook.sendMessageEmbeds(
@@ -195,11 +198,12 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
 
         /*RESTART BTN*/
-        val restartButton = event.jda.button(
+        val restartButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RestartType")),
             user = event.user,
             label = getButtonSetting("Restart"),
-            emoji = Emoji.fromUnicode(getButtonSetting("RestartEmoji"))
+            emoji = Emoji.fromUnicode(getButtonSetting("RestartEmoji")),
+            type = CooldownType.RESTART_BTN
         ) { buttonEvent ->
             server.setPower(PowerAction.RESTART).executeAsync({
                 buttonEvent.hook.sendMessageEmbeds(
@@ -222,11 +226,12 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
 
         /*COMMAND BTN*/
-        val commandButton = event.jda.button(
+        val commandButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CommandType")),
             user = event.user,
             label = getButtonSetting("Command"),
-            emoji = Emoji.fromUnicode(getButtonSetting("CommandEmoji"))
+            emoji = Emoji.fromUnicode(getButtonSetting("CommandEmoji")),
+            type = CooldownType.COMMAND_BTN
         ) { buttonEvent ->
             val commandModal = Modal(
                 id = "pterobot:command:${server.identifier}",
@@ -244,7 +249,7 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
 
         /*CLOSE BTN*/
-        val closeButton = event.jda.button(
+        val closeButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
             user = event.user,
             label = getButtonSetting("Close"),
