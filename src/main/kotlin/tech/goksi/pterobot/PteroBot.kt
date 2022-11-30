@@ -24,6 +24,7 @@ class PteroBot {
     private val logger by SLF4J
     private val jda: JDA
 
+    /*TODO: DRY*/
     init {
         val tokenPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.Token"),

@@ -16,10 +16,6 @@ class SQLiteImpl : DataStorage {
         Class.forName("org.sqlite.JDBC")
         connection = DriverManager.getConnection("jdbc:sqlite:database.db")
         val statement = connection.createStatement()
-        /*TODO: remove in next release*/
-        val migrateStatement = connection.prepareStatement(
-            "pragma table_info('Accounts')"
-        )
         statement.addBatch(
             "create table if not exists Members(id integer not null primary key autoincrement, discordID bigint not null unique, apiID integer, foreign key(apiID) references Keys(id) on delete set null)"
         )
@@ -34,13 +30,6 @@ class SQLiteImpl : DataStorage {
         )
         statement.use {
             try {
-                val resultSetMigrate = migrateStatement.executeQuery()
-                while (resultSetMigrate.next()) {
-                    if (resultSetMigrate.getString("name") == "id") {
-                        connection.prepareStatement("drop table Accounts").executeUpdate()
-                        break
-                    }
-                }
                 it.executeBatch()
             } catch (exception: SQLException) {
                 logger.error("Failed to initialize SQLite database... exiting", exception)
