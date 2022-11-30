@@ -23,7 +23,7 @@ private const val DEFAULT_NO_API_KEY_MSG = "YOUR PTERODACTYL ADMIN CLIENT KEY HE
 class PteroBot {
     private val logger by SLF4J
     private val jda: JDA
-    
+
     /*TODO: DRY*/
     init {
         val tokenPair = Checks.checkInput(
