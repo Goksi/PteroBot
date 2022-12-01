@@ -6,7 +6,6 @@ import com.mattmalec.pterodactyl4j.exceptions.HttpException
 import com.mattmalec.pterodactyl4j.exceptions.NotFoundException
 import dev.minn.jda.ktx.util.SLF4J
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -65,9 +64,7 @@ class NodeInfoCmd : SimpleCommand() {
         if (event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()) {
             success = true
             response = try {
-                runBlocking {
-                    withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
-                }
+                withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
             } catch (exception: Exception) {
                 when (exception) {
                     is HttpException, is NotFoundException -> {
@@ -102,7 +99,7 @@ class NodeInfoCmd : SimpleCommand() {
     private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
         val ptero by lazy {
             Common.getDefaultApplication() to
-                Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
+                    Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
         }
         val node = ptero.first.retrieveNodeById(id.toLong()).execute()
         var memoryUsed: Long = 0

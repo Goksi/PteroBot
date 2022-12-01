@@ -1,7 +1,6 @@
 package tech.goksi.pterobot.commands
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
@@ -45,13 +44,14 @@ class NodeStatusCmd : SimpleCommand() {
             )
         )
     }
+
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.member!!)
         if (event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()) {
             val update = event.getOption("update")?.asBoolean ?: false
             event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
 
-            event.hook.sendMessageEmbeds(runBlocking { withContext(Dispatchers.IO) { getInfoEmbed(event.jda) } }).queue {
+            event.hook.sendMessageEmbeds(withContext(Dispatchers.IO) { getInfoEmbed(event.jda) }).queue {
                 if (update) {
                     val timer = fixedRateTimer(
                         name = "NodeStatusDaemon#${mapping.size}",
