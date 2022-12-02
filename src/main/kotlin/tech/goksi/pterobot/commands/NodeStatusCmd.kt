@@ -14,9 +14,9 @@ import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
-import tech.goksi.pterobot.manager.EmbedManager.replace
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
+import tech.goksi.pterobot.util.Common.replace
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
@@ -87,7 +87,7 @@ class NodeStatusCmd : SimpleCommand() {
             }
             connection.disconnect()
             val field = MessageEmbed.Field(
-                fieldTemplate.name?.replace("%nodeName" to node.name),
+                fieldTemplate.name?.replace("%nodeName", node.name),
                 fieldTemplate.value?.replace("%statusEmoji" to status.emoji, "%status" to status.message),
                 fieldTemplate.isInline
             )

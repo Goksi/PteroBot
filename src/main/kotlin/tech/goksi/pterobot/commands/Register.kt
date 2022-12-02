@@ -13,7 +13,6 @@ import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
-import tech.goksi.pterobot.manager.EmbedManager.replace
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Checks
 import tech.goksi.pterobot.util.Common
@@ -70,7 +69,7 @@ class Register : SimpleCommand() {
             event.replyEmbeds(
                 EmbedManager.getGenericFailure(
                     ConfigManager.config.getString(CONFIG_PREFIX + "LimitReached")
-                        .replace("%accounts" to pteroMember.registeredAccounts.joinToString(","))
+                        .replace("%accounts", pteroMember.registeredAccounts.joinToString(","))
                 ).toEmbed(event.jda)
             ).setEphemeral(true).queue()
         }
@@ -104,7 +103,7 @@ class Register : SimpleCommand() {
         userBuilder.executeAsync({
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericSuccess(
-                    ConfigManager.config.getString(CONFIG_PREFIX + "Success")!!.replace("%pteroName" to it.userName)
+                    ConfigManager.config.getString(CONFIG_PREFIX + "Success")!!.replace("%pteroName", it.userName)
                 ).toEmbed(event.jda)
             ).queue()
             PteroMember(event.user).registerAccount(it.userName)
@@ -119,7 +118,7 @@ class Register : SimpleCommand() {
                 event.hook.sendMessageEmbeds(
                     EmbedManager.getGenericFailure(
                         ConfigManager.config.getString(CONFIG_PREFIX + "FieldTaken")
-                            .replace("%takenField" to takenField)
+                            .replace("%takenField", takenField)
                     ).toEmbed(event.jda)
                 )
                     .complete()

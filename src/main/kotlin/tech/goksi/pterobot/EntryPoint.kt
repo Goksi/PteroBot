@@ -1,5 +1,5 @@
 package tech.goksi.pterobot
 
-fun main(args: Array<String>) {
+fun main() {
     PteroBot()
 }

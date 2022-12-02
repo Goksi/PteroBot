@@ -99,7 +99,7 @@ class NodeInfoCmd : SimpleCommand() {
     private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
         val ptero by lazy {
             Common.getDefaultApplication() to
-                    Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
+                Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
         }
         val node = ptero.first.retrieveNodeById(id.toLong()).execute()
         var memoryUsed: Long = 0
@@ -126,7 +126,7 @@ class NodeInfoCmd : SimpleCommand() {
         return EmbedManager.getNodeInfo(
             NodeInfo(
                 node = node,
-                status = status,
+                nodeStatus = status,
                 runningServers = runningServers.size,
                 ramUsed = memoryUsed,
                 diskUsed = diskSpaceUsed,

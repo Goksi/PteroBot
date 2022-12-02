@@ -7,12 +7,14 @@ import net.dv8tion.jda.api.utils.data.DataObject
 import net.dv8tion.jda.internal.JDAImpl
 import net.dv8tion.jda.internal.utils.Helpers
 import tech.goksi.pterobot.EmbedType
+import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.NodeInfo
 import tech.goksi.pterobot.entities.ServerInfo
-import tech.goksi.pterobot.util.MemoryBar
 import java.io.File
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.KProperty1
+import kotlin.reflect.KVisibility
 
 object EmbedManager {
     private val logger by SLF4J
@@ -49,42 +51,15 @@ object EmbedManager {
             val file = File(EmbedType.NODE_INFO.path)
             file.readText()
         }
-        return rawNodeInfo.replace(
-            "%runningServers" to nodeInfo.runningServers.toString(),
-            "%location" to nodeInfo.location,
-            "%maintenance" to nodeInfo.maintenance,
-            "%allocationsCount" to nodeInfo.allocationsCount.toString(),
-            "%maxMb" to nodeInfo.ramLimit.toString(),
-            "%usedMb" to nodeInfo.ramUsed.toString(),
-            "%memoryUsageBar" to nodeInfo.memoryBar,
-            "%nodeName" to nodeInfo.name,
-            "%nodeDescription" to nodeInfo.description,
-            "%timestamp" to getCurrentTimestamp(),
-            "%statusEmoji" to nodeInfo.status.emoji,
-            "%status" to nodeInfo.status.message,
-            "%diskMax" to String.format("%.2f", nodeInfo.diskLimit),
-            "%diskUsed" to String.format("%.2f", nodeInfo.diskUsed),
-            "%cpuUsed" to String.format("%.2f", nodeInfo.cpuUsed)
-        )
+        return rawNodeInfo.replacePlaceholders(getPlaceholderMap(nodeInfo))
     }
 
-    fun getServersCommand(
-        username: String,
-        fullName: String,
-        rootAdmin: Boolean,
-        email: String
-    ): String {
+    fun getServersCommand(accountInfo: AccountInfo): String {
         val rawServersSuccess by lazy {
             val file = File(EmbedType.SERVERS_COMMAND.path)
             file.readText()
         }
-        return rawServersSuccess.replace(
-            "%pteroName" to username,
-            "%pteroFullName" to fullName,
-            "%isAdmin" to rootAdmin.toString(),
-            "%pteroEmail" to email,
-            "%timestamp" to getCurrentTimestamp()
-        )
+        return rawServersSuccess.replacePlaceholders(getPlaceholderMap(accountInfo))
     }
 
     fun getServerInfo(server: ServerInfo): String {
@@ -92,21 +67,7 @@ object EmbedManager {
             val file = File(EmbedType.SERVER_INFO.path)
             file.readText()
         }
-        return rawServerInfo.replace(
-            "%serverId" to server.identifier,
-            "%timestamp" to getCurrentTimestamp(),
-            "%serverName" to server.name,
-            "%nodeName" to server.node,
-            "%primaryAllocation" to server.primaryAllocation,
-            "%cpuUsed" to String.format("%.2f", server.cpuUsed),
-            "%diskMax" to String.format("%.2f", server.diskMax),
-            "%diskUsed" to String.format("%.2f", server.diskUsed),
-            "%usedMb" to server.ramUsed.toString(),
-            "%maxMb" to server.ramMax.toString(),
-            "%memoryUsageBar" to MemoryBar(server.ramUsed, server.ramMax).toString(),
-            "%statusEmoji" to server.emoji,
-            "%status" to server.status
-        )
+        return rawServerInfo.replacePlaceholders(getPlaceholderMap(server))
     }
 
     fun getNodeStatus(): String {
@@ -114,7 +75,7 @@ object EmbedManager {
             val file = File(EmbedType.NODE_STATUS.path)
             file.readText()
         }
-        return rawServerStatus.replace("%timestamp" to getCurrentTimestamp())
+        return rawServerStatus.replace("%timestamp", getCurrentTimestamp())
     }
 
     fun String.toEmbed(jda: JDA): MessageEmbed {
@@ -122,12 +83,29 @@ object EmbedManager {
         return jdaImpl.entityBuilder.createMessageEmbed(DataObject.fromJson(this))
     }
 
-    fun String.replace(vararg replacements: Pair<String, String>): String {
+    private fun String.replacePlaceholders(replacements: Map<String, String>): String {
         var result = this
-        replacements.forEach { (first, second) -> result = result.replace(first, second) }
+        replacements.forEach { (key, value) -> result = result.replace("$key\\b".toRegex(), value) }
         return result
     }
 
     private fun getCurrentTimestamp(): String =
         Helpers.toOffsetDateTime(Instant.now()).format(DateTimeFormatter.ISO_INSTANT)
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> getPlaceholderMap(entity: T): Map<String, String> {
+        val fields = entity!!::class.members
+            .filterIsInstance<KProperty1<*, *>>()
+            .map { it as KProperty1<T, *> }.filter { it.visibility != KVisibility.PRIVATE }
+        return buildMap {
+            this["%timestamp"] = getCurrentTimestamp()
+            fields.forEach {
+                val value = when (val uncheckedVal = it.get(entity)) {
+                    is Float -> String.format("%.2f", uncheckedVal)
+                    else -> uncheckedVal.toString()
+                }
+                this["%${it.name}"] = value
+            }
+        }
+    }
 }

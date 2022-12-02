@@ -24,4 +24,10 @@ object Common {
         }
         return app
     }
+
+    fun String.replace(vararg replacements: Pair<String, String>): String {
+        var result = this
+        replacements.forEach { (first, second) -> result = result.replace(first, second) }
+        return result
+    }
 }
