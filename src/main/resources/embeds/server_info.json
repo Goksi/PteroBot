@@ -7,11 +7,11 @@
   },
   "footer": {
     "icon_url": "https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png",
-    "text": "PteroBot | %serverId"
+    "text": "PteroBot | %identifier"
   },
   "timestamp": "%timestamp",
   "title": "PteroBot",
-  "description": "%serverName",
+  "description": "%name",
   "fields": [
     {
       "name": "Status",
@@ -20,7 +20,7 @@
     },
     {
       "name": "Node",
-      "value": "%nodeName",
+      "value": "%node",
       "inline": true
     },
     {
@@ -40,7 +40,7 @@
     },
     {
       "name": "Memory usage",
-      "value": "%usedMb MB %memoryUsageBar %maxMb MB",
+      "value": "%ramUsed MB %memoryUsageBar %ramLimit MB",
       "inline": false
     }
   ]

@@ -35,12 +35,12 @@
     },
     {
       "name": "Disk usage",
-      "value": "%diskUsed GB / %diskMax GB",
+      "value": "%diskUsed GB / %diskLimit GB",
       "inline": false
     },
     {
       "name": "Memory usage",
-      "value": "%usedMb MB %memoryUsageBar %maxMb MB",
+      "value": "%ramUsed MB %memoryUsageBar %ramLimit MB",
       "inline": false
     }
   ],
@@ -51,6 +51,6 @@
   "author": {
     "name": "PteroBot"
   },
-  "description": "%nodeName\n%nodeDescription",
+  "description": "%name\n%description",
   "timestamp": "%timestamp"
 }
