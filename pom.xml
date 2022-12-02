@@ -176,6 +176,11 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>1.7.20</version>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+            <version>1.7.20</version>
+        </dependency>
         <!--JDA things-->
         <dependency>
             <groupId>net.dv8tion</groupId>
@@ -228,5 +233,4 @@
             <version>df5904a</version>
         </dependency>
     </dependencies>
-
 </project>
