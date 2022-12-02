@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
@@ -79,14 +80,7 @@ class Servers(jda: JDA) : SimpleCommand() {
                 }
                 this.placeholder = ConfigManager.config.getString(CONFIG_PREFIX + "MenuPlaceholder")
             }
-            val pteroAccount = pteroMember.getAccount()
-
-            val response = EmbedManager.getServersCommand(
-                username = pteroAccount.userName,
-                fullName = pteroAccount.fullName,
-                rootAdmin = pteroAccount.isRootAdmin,
-                email = pteroAccount.email
-            ).toEmbed(event.jda)
+            val response = EmbedManager.getServersCommand(AccountInfo(pteroMember.getAccount())).toEmbed(event.jda)
 
             event.hook.sendMessageEmbeds(response).addActionRow(selectMenu).queue()
         } else {

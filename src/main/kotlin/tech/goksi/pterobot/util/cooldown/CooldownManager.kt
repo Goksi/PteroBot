@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
-import tech.goksi.pterobot.manager.EmbedManager.replace
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.TimeUnit
@@ -60,7 +59,7 @@ object CooldownManager {
                     it.replyEmbeds(
                         EmbedManager.getGenericFailure(
                             ConfigManager.config.getString("Messages.OnCooldown")
-                                .replace("%time" to "${getRemainingSeconds(it)}")
+                                .replace("%time", "${getRemainingSeconds(it)}")
                         ).toEmbed(it.jda)
                     ).setEphemeral(true).queue()
                     return@onButton
