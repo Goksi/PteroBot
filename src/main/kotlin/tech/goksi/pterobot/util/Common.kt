@@ -3,14 +3,19 @@ package tech.goksi.pterobot.util
 import com.mattmalec.pterodactyl4j.PteroBuilder
 import com.mattmalec.pterodactyl4j.application.entities.PteroApplication
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient
+import dev.minn.jda.ktx.util.SLF4J
+import kotlinx.coroutines.*
+import tech.goksi.pterobot.events.handlers.PterodactylEventManager
 import tech.goksi.pterobot.manager.ConfigManager
 
 object Common {
+    private val logger by SLF4J<PterodactylEventManager>()
 
+    val ansiRegex by lazy { ">?\u001B\\[[\\d;]*[^\\d;]".toRegex() }
     fun createClient(apiKey: String?): PteroClient? {
         if (apiKey == null) return null
         val appUrl = ConfigManager.config.getString("BotInfo.PterodactylUrl")
-        return PteroBuilder.createClient(appUrl, apiKey)
+        return PteroBuilder.create(appUrl, apiKey).setEventManager(PterodactylEventManager()).buildClient()
     }
 
     private fun createApplication(apiKey: String): PteroApplication {
@@ -29,5 +34,17 @@ object Common {
         var result = this
         replacements.forEach { (first, second) -> result = result.replace(first, second) }
         return result
+    }
+
+    fun getDefaultCoroutineScope(): CoroutineScope {
+        val parentJob = SupervisorJob()
+        val errorHandler = CoroutineExceptionHandler { _, throwable ->
+            logger.error("Exception thrown in pterodactyl coroutine !", throwable)
+            if (throwable is Error) {
+                parentJob.cancel()
+                throw throwable
+            }
+        }
+        return CoroutineScope(Dispatchers.IO + parentJob + errorHandler)
     }
 }
