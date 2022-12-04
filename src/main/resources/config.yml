@@ -76,9 +76,12 @@ Messages:
         Command: "Command"
         CommandType: "SECONDARY"
         CommandEmoji: "🔼"
+        RequestLogs: "Request logs"
+        RequestLogsType: "SECONDARY"
+        RequestLogsEmoji: "🔽"
         Close: "Close"
         CloseType: "DANGER"
-        CloseEmoji: "❌"
+        CloseEmoji: "✖️"
       Modal:
         Name: "Send command"
         Placeholder: "Please input your command here"

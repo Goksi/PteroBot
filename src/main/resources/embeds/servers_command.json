@@ -1,6 +1,6 @@
 {
   "type": "IMAGE",
-  "description": "Hello %pteroName :wave:",
+  "description": "Hello %username :wave:",
   "color": 39129,
   "title": "PteroBot",
   "footer": {
@@ -10,17 +10,17 @@
   "fields": [
     {
       "name": "Full name",
-      "value": "%pteroFullName",
+      "value": "%fullName",
       "inline": true
     },
     {
       "name": "Admin",
-      "value": "%isAdmin",
+      "value": "%rootAdmin",
       "inline": true
     },
     {
       "name": "Email",
-      "value": "%pteroEmail",
+      "value": "%email",
       "inline": false
     }
   ],

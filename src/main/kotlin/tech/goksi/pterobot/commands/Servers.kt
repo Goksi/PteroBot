@@ -92,7 +92,6 @@ class Servers(jda: JDA) : SimpleCommand() {
     }
 
     /*TODO: delete after clicker button ?*/
-    /*TODO: request logs button*/
     /*TODO: refresh button*/
     override suspend fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
@@ -242,6 +241,17 @@ class Servers(jda: JDA) : SimpleCommand() {
             serverMapping[server.identifier] = server
         }
 
+        /*REQUEST LOGS BTN*/
+        val requestLogsButton = event.jda.cooldownButton(
+            style = ButtonStyle.valueOf(getButtonSetting("RequestLogsType")),
+            user = event.user,
+            label = getButtonSetting("RequestLogs"),
+            emoji = Emoji.fromUnicode(getButtonSetting("RequestLogsEmoji")),
+            type = CooldownType.LOGS_BTN
+        ) {
+
+        }
+
         /*CLOSE BTN*/
         val closeButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
@@ -256,8 +266,8 @@ class Servers(jda: JDA) : SimpleCommand() {
             changeStateButton,
             restartButton,
             if (serverInfo.status == "RUNNING") commandButton else commandButton.asDisabled(),
-            closeButton
-        ).queue()
+            if (serverInfo.status == "RUNNING") requestLogsButton else requestLogsButton.asDisabled(),
+        ).addActionRow(closeButton).queue()
     }
 
     private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
