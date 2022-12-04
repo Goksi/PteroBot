@@ -15,15 +15,20 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.entities.ServerInfo
+import tech.goksi.pterobot.events.handlers.getLogs
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
+import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.minutes
 
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
@@ -249,7 +254,14 @@ class Servers(jda: JDA) : SimpleCommand() {
             emoji = Emoji.fromUnicode(getButtonSetting("RequestLogsEmoji")),
             type = CooldownType.LOGS_BTN
         ) {
-
+            /*TODO: a lot of empty lines*/
+            it.deferReply(true).queue()
+            it.hook.sendFiles(
+                FileUpload.fromData(
+                    server.getLogs().replace(Common.ansiRegex, "").byteInputStream(),
+                    "${server.name}-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyy_HH-mm"))}.txt"
+                )
+            ).queue()
         }
 
         /*CLOSE BTN*/
@@ -266,7 +278,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             changeStateButton,
             restartButton,
             if (serverInfo.status == "RUNNING") commandButton else commandButton.asDisabled(),
-            if (serverInfo.status == "RUNNING") requestLogsButton else requestLogsButton.asDisabled(),
+            if (serverInfo.status == "RUNNING") requestLogsButton else requestLogsButton.asDisabled()
         ).addActionRow(closeButton).queue()
     }
 
