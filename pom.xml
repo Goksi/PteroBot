@@ -27,10 +27,6 @@
             <name>jitpack</name>
             <url>https://jitpack.io/</url>
         </repository>
-        <repository>
-            <id>mattmalec-repo</id>
-            <url>https://repo.mattmalec.com/repository/releases</url>
-        </repository>
     </repositories>
 
     <build>
@@ -228,9 +224,9 @@
         </dependency>
         <!--Ptero thingy-->
         <dependency>
-            <groupId>com.github.mattmalec</groupId>
+            <groupId>com.github.Goksi</groupId>
             <artifactId>Pterodactyl4J</artifactId>
-            <version>df5904a</version>
+            <version>5d3ea3a</version>
         </dependency>
     </dependencies>
 </project>
