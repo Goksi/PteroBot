@@ -20,11 +20,11 @@ import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.entities.ServerInfo
-import tech.goksi.pterobot.events.handlers.getLogs
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
+import tech.goksi.pterobot.util.Common.getLogs
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
 import java.time.LocalDateTime
