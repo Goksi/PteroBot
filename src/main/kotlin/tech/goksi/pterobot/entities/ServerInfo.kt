@@ -6,7 +6,7 @@ import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.MemoryBar
 
 /*TODO: if node offline server not working*/
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 data class ServerInfo(private val server: ClientServer) {
     val identifier: String = server.identifier
     val name: String = server.name
