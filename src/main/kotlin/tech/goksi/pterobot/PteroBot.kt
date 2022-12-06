@@ -30,7 +30,7 @@ class PteroBot {
             ConfigManager.config.getString("BotInfo.Token"),
             DEFAULT_NO_TOKEN_MSG,
             "You didn't provide your bot token, please input it right-now: "
-        ) { readLine() }
+        ) { readlnOrNull() }
         val guildPair = Checks.checkInput(
             ConfigManager.config.getString("BotInfo.ServerID"),
             DEFAULT_NO_ID_MSG,
@@ -38,7 +38,7 @@ class PteroBot {
         ) {
             var input: String
             while (true) {
-                input = readLine() ?: ""
+                input = readlnOrNull() ?: ""
                 if (Checks.validSnowflake(input)) break
                 else logger.warn("Invalid server id, please try again !")
             }
@@ -51,7 +51,7 @@ class PteroBot {
         ) {
             var input: String
             while (true) {
-                input = readLine() ?: ""
+                input = readlnOrNull() ?: ""
                 if (Checks.validUrl(input)) break
                 else logger.warn("Invalid url, please try again !")
             }
@@ -64,7 +64,7 @@ class PteroBot {
         ) {
             var input: String
             while (true) {
-                input = readLine() ?: ""
+                input = readlnOrNull() ?: ""
                 if (Checks.validClientKey(input)) break
                 else logger.warn("Invalid api key, please try again !")
             }
@@ -121,7 +121,7 @@ class PteroBot {
     private fun listenStdin() {
         logger.info("PteroBot has successfully started, you can stop it by typing \"stop\"")
         while (true) {
-            if ((readLine()?.lowercase()) == "stop") {
+            if ((readlnOrNull()?.lowercase()) == "stop") {
                 jda.shutdownNow()
                 exitProcess(0)
             } else logger.warn("Wrong command ! You mean \"stop\" ?")

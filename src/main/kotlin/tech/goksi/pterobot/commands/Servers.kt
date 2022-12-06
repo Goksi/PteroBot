@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
 import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.PteroMember
@@ -22,8 +23,12 @@ import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
+import tech.goksi.pterobot.util.Common
+import tech.goksi.pterobot.util.Common.getLogs
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.minutes
 
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
@@ -92,7 +97,6 @@ class Servers(jda: JDA) : SimpleCommand() {
     }
 
     /*TODO: delete after clicker button ?*/
-    /*TODO: request logs button*/
     /*TODO: refresh button*/
     override suspend fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
@@ -242,6 +246,24 @@ class Servers(jda: JDA) : SimpleCommand() {
             serverMapping[server.identifier] = server
         }
 
+        /*REQUEST LOGS BTN*/
+        val requestLogsButton = event.jda.cooldownButton(
+            style = ButtonStyle.valueOf(getButtonSetting("RequestLogsType")),
+            user = event.user,
+            label = getButtonSetting("RequestLogs"),
+            emoji = Emoji.fromUnicode(getButtonSetting("RequestLogsEmoji")),
+            type = CooldownType.LOGS_BTN
+        ) {
+            /*TODO: a lot of empty lines*/
+            it.deferReply(true).queue()
+            it.hook.sendFiles(
+                FileUpload.fromData(
+                    server.getLogs().replace(Common.ansiRegex, "").byteInputStream(),
+                    "${server.name}-${LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyy_HH-mm"))}.txt"
+                )
+            ).queue()
+        }
+
         /*CLOSE BTN*/
         val closeButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
@@ -256,8 +278,8 @@ class Servers(jda: JDA) : SimpleCommand() {
             changeStateButton,
             restartButton,
             if (serverInfo.status == "RUNNING") commandButton else commandButton.asDisabled(),
-            closeButton
-        ).queue()
+            if (serverInfo.status == "RUNNING") requestLogsButton else requestLogsButton.asDisabled()
+        ).addActionRow(closeButton).queue()
     }
 
     private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")

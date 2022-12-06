@@ -15,7 +15,7 @@ Cooldown: # those values are in seconds !
     RestartServer: 10
     SendCommand: 3
     RefreshEmbed: 10
-    RequestLogs: 10
+    RequestLogs: 20
 Messages:
   OnCooldown: "Sorry, this button is on cooldown for next %time seconds !"
   Commands:
@@ -76,9 +76,12 @@ Messages:
         Command: "Command"
         CommandType: "SECONDARY"
         CommandEmoji: "🔼"
+        RequestLogs: "Request logs"
+        RequestLogsType: "SECONDARY"
+        RequestLogsEmoji: "🔽"
         Close: "Close"
         CloseType: "DANGER"
-        CloseEmoji: "❌"
+        CloseEmoji: "✖️"
       Modal:
         Name: "Send command"
         Placeholder: "Please input your command here"

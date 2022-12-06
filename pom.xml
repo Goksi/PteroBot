@@ -27,10 +27,6 @@
             <name>jitpack</name>
             <url>https://jitpack.io/</url>
         </repository>
-        <repository>
-            <id>mattmalec-repo</id>
-            <url>https://repo.mattmalec.com/repository/releases</url>
-        </repository>
     </repositories>
 
     <build>
@@ -67,6 +63,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.4.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -228,9 +225,9 @@
         </dependency>
         <!--Ptero thingy-->
         <dependency>
-            <groupId>com.github.mattmalec</groupId>
+            <groupId>com.github.Goksi</groupId>
             <artifactId>Pterodactyl4J</artifactId>
-            <version>df5904a</version>
+            <version>a43c254</version>
         </dependency>
     </dependencies>
 </project>
