@@ -54,7 +54,10 @@ object Common {
         val stringBuilder = StringBuilder()
         val wssBuilder = this.webSocketBuilder
         val task = (wssBuilder.eventManager as PteroEventManager).websocketListener {
-            stringBuilder.append(it.line).append('\n')
+            val line = it.line
+            if (line.isEmpty()) return@websocketListener
+            if (!line.contains('\r') && stringBuilder.isNotEmpty()) stringBuilder.append('\n')
+            stringBuilder.append(line)
         }
         val wss = wssBuilder.addEventListeners(task).build()
         delay(task.expireAfter)
