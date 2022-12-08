@@ -4,8 +4,6 @@ import com.mattmalec.pterodactyl4j.PteroBuilder
 import com.mattmalec.pterodactyl4j.application.entities.PteroApplication
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient
-import com.mattmalec.pterodactyl4j.client.ws.events.output.ConsoleOutputEvent
-import com.mattmalec.pterodactyl4j.client.ws.events.output.DaemonMessageEvent
 import dev.minn.jda.ktx.util.SLF4J
 import kotlinx.coroutines.*
 import tech.goksi.pterobot.events.handlers.PteroEventManager
@@ -56,7 +54,10 @@ object Common {
         val stringBuilder = StringBuilder()
         val wssBuilder = this.webSocketBuilder
         val task = (wssBuilder.eventManager as PteroEventManager).websocketListener {
-            stringBuilder.append(it.line)
+            val line = it.line
+            if (line.isEmpty()) return@websocketListener
+            if (!line.contains('\r') && stringBuilder.isNotEmpty()) stringBuilder.append('\n')
+            stringBuilder.append(line)
         }
         val wss = wssBuilder.addEventListeners(task).build()
         delay(task.expireAfter)
