@@ -254,7 +254,6 @@ class Servers(jda: JDA) : SimpleCommand() {
             emoji = Emoji.fromUnicode(getButtonSetting("RequestLogsEmoji")),
             type = CooldownType.LOGS_BTN
         ) {
-            /*TODO: a lot of empty lines*/
             it.deferReply(true).queue()
             it.hook.sendFiles(
                 FileUpload.fromData(
