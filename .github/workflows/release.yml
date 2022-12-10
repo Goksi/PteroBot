@@ -38,7 +38,7 @@ jobs:
           cd target/
           CHECKSUM=`sha256sum ${{ steps.version.outputs.name }}`
           echo $CHECKSUM > ../checksum.txt
-          echo "checksum=### SHA256 checksum\r\n \`\`\`\r\n$CHECKSUM\r\n\`\`\`\r\n" >> $GITHUB_OUTPUT
+          echo -e "checksum=### SHA256 checksum\n\`\`\`\n$CHECKSUM\n\`\`\`\n" >> $GITHUB_OUTPUT
 
       - name: Create release
         uses: softprops/action-gh-release@v0.1.14
