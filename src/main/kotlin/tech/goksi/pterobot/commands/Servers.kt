@@ -6,14 +6,14 @@ import com.mattmalec.pterodactyl4j.exceptions.LoginException
 import com.mattmalec.pterodactyl4j.exceptions.ServerException
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
-import dev.minn.jda.ktx.interactions.components.SelectMenu
+import dev.minn.jda.ktx.interactions.components.StringSelectMenu
 import dev.minn.jda.ktx.interactions.components.option
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
@@ -79,7 +79,7 @@ class Servers(jda: JDA) : SimpleCommand() {
                 ).queue()
                 return
             }
-            val selectMenu = SelectMenu(SELECTION_ID + ":${event.user.idLong}") {
+            val selectMenu = StringSelectMenu(SELECTION_ID + ":${event.user.idLong}") {
                 for (server in servers) {
                     this.option(label = server.name, value = server.identifier)
                 }
@@ -96,9 +96,8 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
     }
 
-    /*TODO: delete after clicker button ?*/
     /*TODO: refresh button*/
-    override suspend fun onSelectMenuInteraction(event: SelectMenuInteractionEvent) {
+    override suspend fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
         if (event.componentId.split(":")[2] != event.user.id) {
             event.replyEmbeds(

@@ -182,7 +182,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.0.0-alpha.21</version>
+            <version>5.0.0-beta.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>club.minnced</groupId>
@@ -193,7 +193,7 @@
         <dependency>
             <groupId>com.github.minndevelopment</groupId>
             <artifactId>jda-ktx</artifactId>
-            <version>fc7d7de</version>
+            <version>17eb77a</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.jetbrains.kotlin</groupId>
