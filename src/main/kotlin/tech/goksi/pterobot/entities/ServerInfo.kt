@@ -6,7 +6,6 @@ import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.MemoryBar
 
-/*TODO: if node offline server not working*/
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 data class ServerInfo(private val server: ClientServer) {
     companion object {
