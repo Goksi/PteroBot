@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
-import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
@@ -170,6 +169,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             else -> event.jda.cooldownButton(
                 style = ButtonStyle.valueOf(getButtonSetting("StartType")),
                 user = event.user,
+                disabled = serverInfo.status == "UNKNOWN",
                 label = getButtonSetting("Start"),
                 emoji = Emoji.fromUnicode(getButtonSetting("StartEmoji")),
                 type = CooldownType.STATUS_BTN
@@ -199,6 +199,7 @@ class Servers(jda: JDA) : SimpleCommand() {
         val restartButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RestartType")),
             user = event.user,
+            disabled = serverInfo.status == "UNKNOWN",
             label = getButtonSetting("Restart"),
             emoji = Emoji.fromUnicode(getButtonSetting("RestartEmoji")),
             type = CooldownType.RESTART_BTN
@@ -227,6 +228,7 @@ class Servers(jda: JDA) : SimpleCommand() {
         val commandButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CommandType")),
             user = event.user,
+            disabled = serverInfo.status != "RUNNING",
             label = getButtonSetting("Command"),
             emoji = Emoji.fromUnicode(getButtonSetting("CommandEmoji")),
             type = CooldownType.COMMAND_BTN
@@ -250,6 +252,7 @@ class Servers(jda: JDA) : SimpleCommand() {
         val requestLogsButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RequestLogsType")),
             user = event.user,
+            disabled = serverInfo.status != "RUNNING",
             label = getButtonSetting("RequestLogs"),
             emoji = Emoji.fromUnicode(getButtonSetting("RequestLogsEmoji")),
             type = CooldownType.LOGS_BTN
@@ -274,17 +277,12 @@ class Servers(jda: JDA) : SimpleCommand() {
             it.hook.retrieveOriginal().queue { msg -> msg.delete().queue() }
         }
         event.hook.sendMessageEmbeds(response).addActionRow(
-            onlyKnownStatus(changeStateButton, serverInfo),
-            onlyKnownStatus(restartButton, serverInfo),
-            onlyRunningStatus(commandButton, serverInfo),
-            onlyRunningStatus(requestLogsButton, serverInfo)
+            changeStateButton,
+            restartButton,
+            commandButton,
+            requestLogsButton
         ).addActionRow(closeButton).queue()
     }
 
     private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
-    private fun onlyRunningStatus(button: Button, serverInfo: ServerInfo): Button =
-        if (serverInfo.status == "RUNNING") button else button.asDisabled()
-
-    private fun onlyKnownStatus(button: Button, serverInfo: ServerInfo): Button =
-        if (serverInfo.status != "UNKNOWN") button else button.asDisabled()
 }

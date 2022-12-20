@@ -34,8 +34,8 @@ object CooldownManager {
     private fun getRemaining(event: ButtonInteractionEvent): Long = max(
         0,
         (
-            cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))] ?: 0
-            ) - System.currentTimeMillis()
+                cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))] ?: 0
+                ) - System.currentTimeMillis()
     )
 
     private fun getRemainingSeconds(event: ButtonInteractionEvent): Long =
@@ -53,6 +53,7 @@ object CooldownManager {
     ): Button {
         val id = type.name + ":${ThreadLocalRandom.current().nextLong()}"
         val button = button(id, label, emoji, style, disabled)
+        if (button.isDisabled) return button
         val task = onButton(id, expiration) {
             if (user == null || user == it.user) {
                 if (!canInteract(it)) {
