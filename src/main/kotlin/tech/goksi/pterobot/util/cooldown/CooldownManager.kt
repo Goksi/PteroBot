@@ -73,6 +73,7 @@ object CooldownManager {
             scope.launch {
                 delay(expiration)
                 removeEventListener(task)
+                /*TODO: delete original message ?*/
             }
         }
         return button
