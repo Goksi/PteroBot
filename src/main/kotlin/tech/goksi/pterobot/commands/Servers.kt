@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
@@ -136,7 +137,18 @@ class Servers(jda: JDA) : SimpleCommand() {
             return
         }
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
+        val buttons = getButtons(server, serverInfo, event);
+        event.hook.sendMessageEmbeds(response).addActionRow(buttons.subList(0, 4))
+            .addActionRow(buttons.subList(4, buttons.size)).queue()
+    }
 
+    private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
+
+    private fun getButtons(
+        server: ClientServer,
+        serverInfo: ServerInfo,
+        event: StringSelectInteractionEvent
+    ): List<Button> {
         /*START OR STOP BTN*/
         val changeStateButton = when (serverInfo.status) {
             "RUNNING", "STARTING" -> event.jda.cooldownButton(
@@ -194,7 +206,6 @@ class Servers(jda: JDA) : SimpleCommand() {
                 }
             }
         }
-
         /*RESTART BTN*/
         val restartButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RestartType")),
@@ -223,7 +234,6 @@ class Servers(jda: JDA) : SimpleCommand() {
                     }
             }
         }
-
         /*COMMAND BTN*/
         val commandButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CommandType")),
@@ -247,7 +257,6 @@ class Servers(jda: JDA) : SimpleCommand() {
             buttonEvent.replyModal(commandModal).queue()
             serverMapping[server.identifier] = server
         }
-
         /*REQUEST LOGS BTN*/
         val requestLogsButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RequestLogsType")),
@@ -265,7 +274,6 @@ class Servers(jda: JDA) : SimpleCommand() {
                 )
             ).queue()
         }
-
         /*CLOSE BTN*/
         val closeButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
@@ -276,13 +284,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             it.deferEdit().queue()
             it.hook.retrieveOriginal().queue { msg -> msg.delete().queue() }
         }
-        event.hook.sendMessageEmbeds(response).addActionRow(
-            changeStateButton,
-            restartButton,
-            commandButton,
-            requestLogsButton
-        ).addActionRow(closeButton).queue()
-    }
 
-    private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
+        return listOf(changeStateButton, restartButton, commandButton, requestLogsButton, closeButton)
+    }
 }
