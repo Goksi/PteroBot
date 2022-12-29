@@ -14,7 +14,7 @@ Cooldown: # those values are in seconds !
     StatusChange: 3
     RestartServer: 10
     SendCommand: 3
-    RefreshEmbed: 10
+    RefreshEmbed: 25
     RequestLogs: 20
 Messages:
   OnCooldown: "Sorry, this button is on cooldown for next %time seconds !"
@@ -79,6 +79,9 @@ Messages:
         RequestLogs: "Request logs"
         RequestLogsType: "SECONDARY"
         RequestLogsEmoji: "🔽"
+        Refresh: "Refresh"
+        RefreshType: "SECONDARY"
+        RefreshEmoji: "🔄"
         Close: "Close"
         CloseType: "DANGER"
         CloseEmoji: "✖️"
