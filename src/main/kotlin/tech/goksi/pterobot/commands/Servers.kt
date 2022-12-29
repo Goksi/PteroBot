@@ -8,12 +8,16 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.StringSelectMenu
 import dev.minn.jda.ktx.interactions.components.option
+import dev.minn.jda.ktx.interactions.components.row
+import dev.minn.jda.ktx.messages.MessageEditBuilder
+import dev.minn.jda.ktx.messages.editMessage_
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
+import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.FileUpload
@@ -34,7 +38,7 @@ import kotlin.time.Duration.Companion.minutes
 
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
 private const val SELECTION_ID = "pterobot:servers-selector"
-
+/*TODO single event for every close btn*/
 class Servers(jda: JDA) : SimpleCommand() {
     private val logger by SLF4J
     private val serverMapping: MutableMap<String, ClientServer> = HashMap()
@@ -138,8 +142,8 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
         val buttons = getButtons(server, serverInfo, event);
-        event.hook.sendMessageEmbeds(response).addActionRow(buttons.subList(0, 4))
-            .addActionRow(buttons.subList(4, buttons.size)).queue()
+        event.hook.sendMessageEmbeds(response).addActionRow(buttons.subList(0, 5))
+            .addActionRow(buttons.subList(5, buttons.size)).queue()
     }
 
     private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
@@ -274,6 +278,19 @@ class Servers(jda: JDA) : SimpleCommand() {
                 )
             ).queue()
         }
+        /*Need to retrieve server again*/
+        val refreshButton = event.jda.cooldownButton(
+            style = ButtonStyle.valueOf(getButtonSetting("RefreshType")),
+            user = event.user,
+            label = getButtonSetting("Refresh"),
+            emoji = Emoji.fromUnicode(getButtonSetting("RefreshEmoji")),
+            type = CooldownType.REFRESH_BTN
+        ) {
+            val newButtons = getButtons(server, serverInfo, event)
+            val rows = listOf(ActionRow.of(newButtons.subList(0, 5)), ActionRow.of(newButtons.subList(5, newButtons.size)))
+            it.editMessageEmbeds(EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)).setReplace(true)
+                .setComponents(rows).queue()
+        }
         /*CLOSE BTN*/
         val closeButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
@@ -285,6 +302,6 @@ class Servers(jda: JDA) : SimpleCommand() {
             it.hook.retrieveOriginal().queue { msg -> msg.delete().queue() }
         }
 
-        return listOf(changeStateButton, restartButton, commandButton, requestLogsButton, closeButton)
+        return listOf(changeStateButton, restartButton, commandButton, requestLogsButton, refreshButton, closeButton)
     }
 }
