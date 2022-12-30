@@ -3,7 +3,6 @@ package tech.goksi.pterobot.util.cooldown
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import tech.goksi.pterobot.manager.ConfigManager
-import java.util.concurrent.TimeUnit
 
 private const val BUTTON_CONFIG = "Cooldown.Button."
 

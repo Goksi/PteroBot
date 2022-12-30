@@ -8,9 +8,6 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.StringSelectMenu
 import dev.minn.jda.ktx.interactions.components.option
-import dev.minn.jda.ktx.interactions.components.row
-import dev.minn.jda.ktx.messages.MessageEditBuilder
-import dev.minn.jda.ktx.messages.editMessage_
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.emoji.Emoji
@@ -141,7 +138,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             return
         }
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
-        val buttons = getButtons(server, serverInfo, event);
+        val buttons = getButtons(server, serverInfo, event)
         event.hook.sendMessageEmbeds(response).addActionRow(buttons.subList(0, 5))
             .addActionRow(buttons.subList(5, buttons.size)).queue()
     }
