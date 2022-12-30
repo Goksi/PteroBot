@@ -38,6 +38,7 @@ import kotlin.time.Duration.Companion.minutes
 
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
 private const val SELECTION_ID = "pterobot:servers-selector"
+
 /*TODO single event for every close btn*/
 class Servers(jda: JDA) : SimpleCommand() {
     private val logger by SLF4J
@@ -278,19 +279,6 @@ class Servers(jda: JDA) : SimpleCommand() {
                 )
             ).queue()
         }
-        /*Need to retrieve server again*/
-        val refreshButton = event.jda.cooldownButton(
-            style = ButtonStyle.valueOf(getButtonSetting("RefreshType")),
-            user = event.user,
-            label = getButtonSetting("Refresh"),
-            emoji = Emoji.fromUnicode(getButtonSetting("RefreshEmoji")),
-            type = CooldownType.REFRESH_BTN
-        ) {
-            val newButtons = getButtons(server, serverInfo, event)
-            val rows = listOf(ActionRow.of(newButtons.subList(0, 5)), ActionRow.of(newButtons.subList(5, newButtons.size)))
-            it.editMessageEmbeds(EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)).setReplace(true)
-                .setComponents(rows).queue()
-        }
         /*CLOSE BTN*/
         val closeButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
@@ -300,6 +288,29 @@ class Servers(jda: JDA) : SimpleCommand() {
         ) {
             it.deferEdit().queue()
             it.hook.retrieveOriginal().queue { msg -> msg.delete().queue() }
+        }
+        val refreshButton = event.jda.cooldownButton(
+            style = ButtonStyle.valueOf(getButtonSetting("RefreshType")),
+            user = event.user,
+            label = getButtonSetting("Refresh"),
+            emoji = Emoji.fromUnicode(getButtonSetting("RefreshEmoji")),
+            type = CooldownType.REFRESH_BTN
+        ) {/*TODO small cd, check that*/
+            val serverNew = server.refreshData().execute()
+            val serverInfoNew = try {
+                ServerInfo(serverNew)
+            } catch (exception: ServerException) {
+                it.editMessageEmbeds(
+                    EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeOffline"))
+                        .toEmbed(event.jda)
+                ).setActionRow(closeButton).queue()
+                return@cooldownButton
+            }
+            val newButtons = getButtons(serverNew, serverInfoNew, event)
+            val rows =
+                listOf(ActionRow.of(newButtons.subList(0, 5)), ActionRow.of(newButtons.subList(5, newButtons.size)))
+            it.editMessageEmbeds(EmbedManager.getServerInfo(serverInfoNew).toEmbed(event.jda)).setReplace(true)
+                .setComponents(rows).queue()
         }
 
         return listOf(changeStateButton, restartButton, commandButton, requestLogsButton, refreshButton, closeButton)
