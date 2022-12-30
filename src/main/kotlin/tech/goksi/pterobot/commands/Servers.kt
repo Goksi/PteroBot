@@ -102,7 +102,6 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
     }
 
-    /*TODO: refresh button*/
     override suspend fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
         if (event.componentId.split(":")[2] != event.user.id) {
@@ -295,7 +294,7 @@ class Servers(jda: JDA) : SimpleCommand() {
             label = getButtonSetting("Refresh"),
             emoji = Emoji.fromUnicode(getButtonSetting("RefreshEmoji")),
             type = CooldownType.REFRESH_BTN
-        ) {/*TODO small cd, check that*/
+        ) {
             val serverNew = server.refreshData().execute()
             val serverInfoNew = try {
                 ServerInfo(serverNew)
