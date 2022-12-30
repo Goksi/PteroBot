@@ -17,7 +17,7 @@ enum class CooldownType(coolDownConfig: String) {
 
     private val seconds: Long = ConfigManager.config.getLong("$BUTTON_CONFIG$coolDownConfig")
     val millis
-        get() = TimeUnit.SECONDS.toMillis(seconds)
+        get() = seconds * 1000
 
     companion object {
         fun fromEvent(event: ButtonInteractionEvent): CooldownType = valueOf(event.button.id!!.split(":")[0])
