@@ -30,12 +30,9 @@ object CooldownManager {
     }
 
     private fun canInteract(event: ButtonInteractionEvent): Boolean = getRemaining(event) == 0L
-
     private fun getRemaining(event: ButtonInteractionEvent): Long = max(
         0,
-        (
-                cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))] ?: 0
-                ) - System.currentTimeMillis()
+        (cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))] ?: 0) - System.currentTimeMillis()
     )
 
     private fun getRemainingSeconds(event: ButtonInteractionEvent): Long =
@@ -46,7 +43,7 @@ object CooldownManager {
         label: String? = null,
         emoji: Emoji?,
         disabled: Boolean = false,
-        expiration: Duration = 15.minutes,
+        expiration: Duration = 10.minutes,
         user: User? = null,
         type: CooldownType = CooldownType.UNDEFINED,
         listener: suspend (ButtonInteractionEvent) -> Unit
@@ -65,8 +62,8 @@ object CooldownManager {
                     ).setEphemeral(true).queue()
                     return@onButton
                 }
-                listener(it)
                 applyCooldown(it)
+                listener(it)
             }
             if (!it.isAcknowledged) it.deferEdit().queue()
         }

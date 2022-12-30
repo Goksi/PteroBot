@@ -14,7 +14,7 @@ object Common {
     private val logger by SLF4J<PteroEventManager>()
 
     val ansiRegex by lazy { ">?\u001B\\[[\\d;]*[^\\d;]".toRegex() }
-    val newLineRegex by lazy { "\r?\n?".toRegex() }
+    private val newLineRegex by lazy { "\r?\n?".toRegex() }
     fun createClient(apiKey: String?): PteroClient? {
         if (apiKey == null) return null
         val appUrl = ConfigManager.config.getString("BotInfo.PterodactylUrl")

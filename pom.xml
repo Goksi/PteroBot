@@ -227,7 +227,7 @@
         <dependency>
             <groupId>com.github.Goksi</groupId>
             <artifactId>Pterodactyl4J</artifactId>
-            <version>a43c254</version>
+            <version>3c0200a</version>
         </dependency>
     </dependencies>
 </project>

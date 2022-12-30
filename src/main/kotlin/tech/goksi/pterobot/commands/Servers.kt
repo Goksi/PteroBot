@@ -14,6 +14,8 @@ import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
+import net.dv8tion.jda.api.interactions.components.ActionRow
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
@@ -34,6 +36,7 @@ import kotlin.time.Duration.Companion.minutes
 private const val CONFIG_PREFIX = "Messages.Commands.Servers."
 private const val SELECTION_ID = "pterobot:servers-selector"
 
+/*TODO single event for every close btn*/
 class Servers(jda: JDA) : SimpleCommand() {
     private val logger by SLF4J
     private val serverMapping: MutableMap<String, ClientServer> = HashMap()
@@ -96,7 +99,6 @@ class Servers(jda: JDA) : SimpleCommand() {
         }
     }
 
-    /*TODO: refresh button*/
     override suspend fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
         if (!event.componentId.startsWith(SELECTION_ID)) return
         if (event.componentId.split(":")[2] != event.user.id) {
@@ -136,7 +138,18 @@ class Servers(jda: JDA) : SimpleCommand() {
             return
         }
         val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
+        val buttons = getButtons(server, serverInfo, event)
+        event.hook.sendMessageEmbeds(response).addActionRow(buttons.subList(0, 5))
+            .addActionRow(buttons.subList(5, buttons.size)).queue()
+    }
 
+    private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
+
+    private fun getButtons(
+        server: ClientServer,
+        serverInfo: ServerInfo,
+        event: StringSelectInteractionEvent
+    ): List<Button> {
         /*START OR STOP BTN*/
         val changeStateButton = when (serverInfo.status) {
             "RUNNING", "STARTING" -> event.jda.cooldownButton(
@@ -194,7 +207,6 @@ class Servers(jda: JDA) : SimpleCommand() {
                 }
             }
         }
-
         /*RESTART BTN*/
         val restartButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RestartType")),
@@ -223,7 +235,6 @@ class Servers(jda: JDA) : SimpleCommand() {
                     }
             }
         }
-
         /*COMMAND BTN*/
         val commandButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CommandType")),
@@ -247,7 +258,6 @@ class Servers(jda: JDA) : SimpleCommand() {
             buttonEvent.replyModal(commandModal).queue()
             serverMapping[server.identifier] = server
         }
-
         /*REQUEST LOGS BTN*/
         val requestLogsButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RequestLogsType")),
@@ -265,7 +275,6 @@ class Servers(jda: JDA) : SimpleCommand() {
                 )
             ).queue()
         }
-
         /*CLOSE BTN*/
         val closeButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
@@ -276,13 +285,30 @@ class Servers(jda: JDA) : SimpleCommand() {
             it.deferEdit().queue()
             it.hook.retrieveOriginal().queue { msg -> msg.delete().queue() }
         }
-        event.hook.sendMessageEmbeds(response).addActionRow(
-            changeStateButton,
-            restartButton,
-            commandButton,
-            requestLogsButton
-        ).addActionRow(closeButton).queue()
-    }
+        val refreshButton = event.jda.cooldownButton(
+            style = ButtonStyle.valueOf(getButtonSetting("RefreshType")),
+            user = event.user,
+            label = getButtonSetting("Refresh"),
+            emoji = Emoji.fromUnicode(getButtonSetting("RefreshEmoji")),
+            type = CooldownType.REFRESH_BTN
+        ) {
+            val serverNew = server.refreshData().execute()
+            val serverInfoNew = try {
+                ServerInfo(serverNew)
+            } catch (exception: ServerException) {
+                it.editMessageEmbeds(
+                    EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeOffline"))
+                        .toEmbed(event.jda)
+                ).setActionRow(closeButton).queue()
+                return@cooldownButton
+            }
+            val newButtons = getButtons(serverNew, serverInfoNew, event)
+            val rows =
+                listOf(ActionRow.of(newButtons.subList(0, 5)), ActionRow.of(newButtons.subList(5, newButtons.size)))
+            it.editMessageEmbeds(EmbedManager.getServerInfo(serverInfoNew).toEmbed(event.jda)).setReplace(true)
+                .setComponents(rows).queue()
+        }
 
-    private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
+        return listOf(changeStateButton, restartButton, commandButton, requestLogsButton, refreshButton, closeButton)
+    }
 }
