@@ -11,9 +11,9 @@ BotInfo:
   MaxRegisteredAccounts: 1 # indicates number of max accounts user can register with /register command (set to 0 for unlimited)
 Cooldown: # those values are in seconds !
   Button:
-    StatusChange: 3
-    RestartServer: 10
-    SendCommand: 3
+    StatusChange: 10
+    RestartServer: 15
+    SendCommand: 10
     RefreshEmbed: 25
     RequestLogs: 20
 Messages:
