@@ -86,7 +86,7 @@ class PteroBot {
         EmbedManager.init()
         jda = default(tokenPair.first!!, enableCoroutines = true, intents = listOf(GatewayIntent.GUILD_MESSAGES)) {
             disableCache(listOf(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.EMOJI, CacheFlag.SCHEDULED_EVENTS))
-            val statusStr = ConfigManager.config.getString("BotInfo.Status") ?: "ONLINE".uppercase()
+            val statusStr = ConfigManager.config.getString("BotInfo.Status")?.uppercase() ?: "ONLINE"
             setStatus(OnlineStatus.valueOf(statusStr))
             if (ConfigManager.config.getBoolean("BotInfo.EnableActivity")) {
                 val activityString = ConfigManager.config.getString("BotInfo.ActivityName") ?: ""
