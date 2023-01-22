@@ -25,7 +25,7 @@
     },
     {
       "name": "Allocation",
-      "value": "%primaryAllocation",
+      "value": "%allocationAlias",
       "inline": false
     },
     {
