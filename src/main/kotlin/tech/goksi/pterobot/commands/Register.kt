@@ -20,16 +20,16 @@ import tech.goksi.pterobot.util.Common
 private const val CONFIG_PREFIX = "Messages.Commands.Register."
 
 /*TODO: account deletion*/
-/*TODO: maybe commands rework etc /account delete /account link...*/
-class Register : SimpleCommand() {
+/*TODO: maybe commands rework etc /account delete /account link... (in progress)*/
+class Register : SimpleCommand(
+    name = "register",
+    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description"),
+    enabledPermissions = listOf(Permission.ADMINISTRATOR)
+) {
     private val logger by SLF4J
     private val modal: Modal
 
     init {
-        this.name = "register"
-        this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-        this.enableDefault = false
-        this.enabledPermissions = listOf(Permission.ADMINISTRATOR)
         SendDefaults.ephemeral = true
     }
 

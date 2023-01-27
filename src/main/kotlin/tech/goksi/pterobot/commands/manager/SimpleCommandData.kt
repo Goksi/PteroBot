@@ -23,7 +23,7 @@ class SimpleCommandData {
             Checks.arguments(command.options.size <= 25, "Slash command can have max 25 options !")
             val cmdData = Commands.slash(command.name, command.description)
             cmdData.isGuildOnly = true
-            if (!command.enableDefault) {
+            if (command.enabledPermissions.isNotEmpty()) {
                 cmdData.defaultPermissions = DefaultMemberPermissions.enabledFor(command.enabledPermissions)
             }
             if (command.options.isNotEmpty()) cmdData.addOptions(command.options)

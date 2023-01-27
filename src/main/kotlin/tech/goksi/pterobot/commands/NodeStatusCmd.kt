@@ -24,25 +24,22 @@ import kotlin.concurrent.fixedRateTimer
 
 private const val CONFIG_PREFIX = "Messages.Commands.NodeStatus."
 
-class NodeStatusCmd : SimpleCommand() {
+class NodeStatusCmd : SimpleCommand(
+    name = "nodestatus",
+    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description"),
+    enabledPermissions = listOf(Permission.ADMINISTRATOR),
+    options = listOf(
+        OptionData(
+            OptionType.BOOLEAN,
+            "update",
+            ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"),
+            false
+        )
+    )
+) {
 
     companion object TaskMapping {
         val mapping: MutableMap<Long, Timer> = HashMap()
-    }
-
-    init {
-        this.name = "nodestatus"
-        this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-        this.enableDefault = false
-        this.enabledPermissions = listOf(Permission.ADMINISTRATOR)
-        this.options = listOf(
-            OptionData(
-                OptionType.BOOLEAN,
-                "update",
-                ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"),
-                false
-            )
-        )
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
