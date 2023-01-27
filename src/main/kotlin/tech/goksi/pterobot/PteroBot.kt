@@ -101,16 +101,17 @@ class PteroBot {
             }
         }.awaitReady()
 
-        val commandData = SimpleCommandData()
-        commandData.addCommands(
-            Link(),
-            NodeInfoCmd(),
-            Register(),
-            Servers(jda),
-            Unlink(),
-            NodeStatusCmd()
-        )
-        val guild = jda.getGuildById(guildPair.first!!) // what if wrong guild id ?
+        val commandData = SimpleCommandData().apply {
+            addCommands(
+                Link(),
+                NodeInfoCmd(),
+                Register(),
+                Servers(jda),
+                Unlink(),
+                NodeStatusCmd()
+            )
+        }
+        val guild = jda.getGuildById(guildPair.first!!) // what if wrong guild id, silent fail for now ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())
         commandData.registerListeners(jda)

@@ -11,11 +11,12 @@ import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 
 private const val CONFIG_PREFIX = "Messages.Commands.Unlink."
 
-class Unlink : SimpleCommand() {
+class Unlink : SimpleCommand(
+    name = "unlink",
+    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
+) {
 
     init {
-        this.name = "unlink"
-        this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
         SendDefaults.ephemeral = true
     }
 
