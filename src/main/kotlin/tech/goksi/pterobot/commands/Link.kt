@@ -20,20 +20,21 @@ import java.sql.SQLException
 
 private const val CONFIG_PREFIX = "Messages.Commands.Link."
 
-class Link : SimpleCommand() {
+class Link : SimpleCommand(
+    name = "link",
+    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description"),
+    options = listOf(
+        OptionData(
+            OptionType.STRING,
+            "apikey",
+            ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"),
+            true
+        )
+    )
+) {
     private val logger by SLF4J
 
     init {
-        this.name = "link"
-        this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-        this.options = listOf(
-            OptionData(
-                OptionType.STRING,
-                "apikey",
-                ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"),
-                true
-            )
-        )
         SendDefaults.ephemeral = true
     }
 

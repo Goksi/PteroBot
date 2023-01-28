@@ -37,14 +37,12 @@ private const val CONFIG_PREFIX = "Messages.Commands.Servers."
 private const val SELECTION_ID = "pterobot:servers-selector"
 
 /*TODO single event for every close btn*/
-class Servers(jda: JDA) : SimpleCommand() {
+class Servers(jda: JDA) : SimpleCommand(
+    name = "servers",
+    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
+) {
     private val logger by SLF4J
     private val serverMapping: MutableMap<String, ClientServer> = HashMap()
-
-    init {
-        this.name = "servers"
-        this.description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
-    }
 
     /*LISTENER FOR COMMAND*/
     init {
