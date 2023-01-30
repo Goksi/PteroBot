@@ -8,7 +8,8 @@ BotInfo:
   Activity: "PLAYING" # PLAYING LISTENING and WATCHING
   ActivityName: "Pterodactyl !"
   Ephemeral: false # indicates if commands like servers should return ephemeral or normal messages (node info will always return normal one)
-  MaxRegisteredAccounts: 1 # indicates number of max accounts user can register with /register command (set to 0 for unlimited)
+  EnabledRegistration: false
+  MaxRegisteredAccounts: 1 # indicates number of max accounts user can register with /account register command (set to 0 for unlimited)
 Cooldown: # those values are in seconds !
   Button:
     StatusChange: 10
@@ -31,6 +32,7 @@ Messages:
         NotLinked: "You don't have any pterodactyl key linked, link one using /account link"
         SuccessUnlink: "You successfully unlinked your pterodactyl account"
       Register:
+        DisabledMessage: "Sorry, registrations are currently disabled !"
         Description: "Registers new account to pterodactyl panel !"
         LimitReached: "Sorry, but you reached maximum pterodactyl account registered for your discord :( \\n Your accounts: %accounts"
         InvalidEmail: "Sorry, this doesn't look like valid email address :("

@@ -7,7 +7,10 @@ import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
-import tech.goksi.pterobot.commands.*
+import tech.goksi.pterobot.commands.AccountCommand
+import tech.goksi.pterobot.commands.NodeInfoCmd
+import tech.goksi.pterobot.commands.NodeStatusCmd
+import tech.goksi.pterobot.commands.Servers
 import tech.goksi.pterobot.commands.manager.SimpleCommandData
 import tech.goksi.pterobot.events.NodeStatusDelete
 import tech.goksi.pterobot.manager.ConfigManager
@@ -106,7 +109,6 @@ class PteroBot {
             addCommands(
                 AccountCommand(),
                 NodeInfoCmd(),
-                Register(),
                 Servers(jda),
                 NodeStatusCmd()
             )
