@@ -18,16 +18,27 @@ import tech.goksi.pterobot.util.Checks
 import tech.goksi.pterobot.util.Common
 import java.sql.SQLException
 
-private const val CONFIG_PREFIX = "Messages.Commands.Link."
+private const val ACCOUNT_PREFIX = "Messages.Commands.Account"
 
-class Link : SimpleCommand(
+class AccountCommand : SimpleCommand(
+    name = "account",
+    description = "Main account command, have no influence",
+    subcommands = listOf(Link())
+) {
+
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+        // Base command
+    }
+}
+
+private class Link : SimpleCommand(
     name = "link",
-    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description"),
+    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.Description"),
     options = listOf(
         OptionData(
             OptionType.STRING,
             "apikey",
-            ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"),
+            ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.OptionDescription"),
             true
         )
     )
@@ -50,7 +61,7 @@ class Link : SimpleCommand(
                 pteroMember.link(ApiKey(key, account.isRootAdmin))
                 logger.info("User ${event.user.asTag} linked his discord with ${account.userName} pterodactyl account !")
                 EmbedManager.getGenericSuccess(
-                    ConfigManager.config.getString(CONFIG_PREFIX + "LinkSuccess")
+                    ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkSuccess")
                         .replace("%pteroName", account.userName)
                 )
                     .toEmbed(event.jda)
@@ -59,12 +70,13 @@ class Link : SimpleCommand(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
                     .toEmbed(event.jda)
             } catch (httpException: HttpException) {
-                EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "LinkWrongKey"))
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkWrongKey"))
                     .toEmbed(event.jda) // its probably wrong key if we got here, add check maybe
             }
         } else {
-            response = EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "LinkExist"))
-                .toEmbed(event.jda)
+            response =
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkExist"))
+                    .toEmbed(event.jda)
         }
         event.reply_(embeds = listOf(response)).queue()
     }

@@ -19,16 +19,31 @@ Cooldown: # those values are in seconds !
 Messages:
   OnCooldown: "Sorry, this button is on cooldown for next %time seconds !"
   Commands:
-    Link:
-      Description: "Connect your pterodactyl account using this command !"
-      OptionDescription: "Enter your pterodactyl api key here !"
-      LinkSuccess: "You successfully linked your discord account with %pteroName pterodactyl account"
-      LinkExist: "Sorry, but you already have pterodactyl account linked !"
-      LinkWrongKey: "Sorry, that api key is wrong !"
-    Unlink:
-      Description: "Unlink your linked pterodactyl api key !"
-      NotLinked: "You don't have any pterodactyl key linked, link one using /link"
-      SuccessUnlink: "You successfully unlinked your pterodactyl account"
+    Account:
+      Link:
+        Description: "Connect your pterodactyl account using this command !"
+        OptionDescription: "Enter your pterodactyl api key here !"
+        LinkSuccess: "You successfully linked your discord account with %pteroName pterodactyl account"
+        LinkExist: "Sorry, but you already have pterodactyl account linked !"
+        LinkWrongKey: "Sorry, that api key is wrong !"
+      Unlink:
+        Description: "Unlink your linked pterodactyl api key !"
+        NotLinked: "You don't have any pterodactyl key linked, link one using /link"
+        SuccessUnlink: "You successfully unlinked your pterodactyl account"
+      Register:
+        Description: "Registers new account to pterodactyl panel !"
+        LimitReached: "Sorry, but you reached maximum pterodactyl account registered for your discord :( \\n Your accounts: %accounts"
+        InvalidEmail: "Sorry, this doesn't look like valid email address :("
+        PasswordRequired: true # set this to false only if your panel is able to send mails (this will send random password to user)
+        Success: "You successfully created account named %pteroName"
+        FieldTaken: "Sorry, but provided %takenField is already taken"
+        Modal:
+          Name: "PteroBot registration"
+          EmailPlaceholder: "Please enter your email here"
+          UsernamePlaceholder: "Enter your username here"
+          PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
+          FirstNamePlaceholder: "Enter your first name here"
+          LastNamePlaceholder: "Enter your last name here"
     NodeInfo:
       Description: "Shows specific node info or all nodes online status (depends on options)"
       OptionDescription: "ID of node you want to show info of"
@@ -37,20 +52,6 @@ Messages:
       NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
       OnlineEmoji: "🟢"
       OfflineEmoji: "🔴"
-    Register:
-      Description: "Registers new account to pterodactyl panel !"
-      LimitReached: "Sorry, but you reached maximum pterodactyl account registered for your discord :( \\n Your accounts: %accounts"
-      InvalidEmail: "Sorry, this doesn't look like valid email address :("
-      PasswordRequired: true # set this to false only if your panel is able to send mails (this will send random password to user)
-      Success: "You successfully created account named %pteroName"
-      FieldTaken: "Sorry, but provided %takenField is already taken"
-      Modal:
-        Name: "PteroBot registration"
-        EmailPlaceholder: "Please enter your email here"
-        UsernamePlaceholder: "Enter your username here"
-        PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
-        FirstNamePlaceholder: "Enter your first name here"
-        LastNamePlaceholder: "Enter your last name here"
     Servers:
       Description: "Select server you want to interact with"
       NotLinked: "Sorry, your discord isn't linked with any pterodactyl account, link one using /link"
