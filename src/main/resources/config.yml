@@ -28,7 +28,7 @@ Messages:
         LinkWrongKey: "Sorry, that api key is wrong !"
       Unlink:
         Description: "Unlink your linked pterodactyl api key !"
-        NotLinked: "You don't have any pterodactyl key linked, link one using /link"
+        NotLinked: "You don't have any pterodactyl key linked, link one using /account link"
         SuccessUnlink: "You successfully unlinked your pterodactyl account"
       Register:
         Description: "Registers new account to pterodactyl panel !"

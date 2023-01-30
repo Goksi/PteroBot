@@ -23,7 +23,7 @@ private const val ACCOUNT_PREFIX = "Messages.Commands.Account"
 class AccountCommand : SimpleCommand(
     name = "account",
     description = "Main account command, have no influence",
-    subcommands = listOf(Link())
+    subcommands = listOf(Link(), Unlink())
 ) {
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
@@ -79,5 +79,37 @@ private class Link : SimpleCommand(
                     .toEmbed(event.jda)
         }
         event.reply_(embeds = listOf(response)).queue()
+    }
+}
+
+private class Unlink : SimpleCommand(
+    name = "unlink",
+    description = ConfigManager.config.getString("${ACCOUNT_PREFIX}.Unlink.Description")
+) {
+
+    init {
+        SendDefaults.ephemeral = true
+    }
+
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+        val pteroMember = PteroMember(event.user)
+        if (pteroMember.isLinked()) {
+            pteroMember.unlink()
+            event.reply_(
+                embeds = listOf(
+                    EmbedManager
+                        .getGenericSuccess(ConfigManager.config.getString("${ACCOUNT_PREFIX}.Unlink.SuccessUnlink"))
+                        .toEmbed(event.jda)
+                )
+            ).queue()
+        } else {
+            event.reply_(
+                embeds = listOf(
+                    EmbedManager
+                        .getGenericFailure(ConfigManager.config.getString("${ACCOUNT_PREFIX}.Unlink.NotLinked"))
+                        .toEmbed(event.jda)
+                )
+            ).queue()
+        }
     }
 }

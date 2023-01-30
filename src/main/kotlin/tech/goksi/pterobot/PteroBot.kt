@@ -108,7 +108,6 @@ class PteroBot {
                 NodeInfoCmd(),
                 Register(),
                 Servers(jda),
-                Unlink(),
                 NodeStatusCmd()
             )
         }
