@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import tech.goksi.pterobot.events.hook.CoroutineListenerAdapter
 import tech.goksi.pterobot.util.Checks
 
+/*TODO: probably differ base and sub command*/
 abstract class SimpleCommand(
     val name: String,
     val description: String,

@@ -28,7 +28,7 @@ private const val ACCOUNT_PREFIX = "Messages.Commands.Account"
 
 class AccountCommand : SimpleCommand(
     name = "account",
-    description = "Main account command, have no influence",
+    description = "Top level account command, have no influence",
     subcommands = listOf(Link(), Unlink(), Register())
 ) {
 
