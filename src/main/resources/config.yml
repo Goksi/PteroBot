@@ -46,14 +46,19 @@ Messages:
           PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
           FirstNamePlaceholder: "Enter your first name here"
           LastNamePlaceholder: "Enter your last name here"
-    NodeInfo:
-      Description: "Shows specific node info or all nodes online status (depends on options)"
-      OptionDescription: "ID of node you want to show info of"
-      OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new info, be careful because of rate-limit"
-      NodeNotFound: "Sorry, requested node is not found"
-      NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
-      OnlineEmoji: "🟢"
-      OfflineEmoji: "🔴"
+    Node:
+      Info:
+        Description: "Shows specific node info or all nodes online status (depends on options)"
+        OptionDescription: "ID of node you want to show info of"
+        OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new info, be careful because of rate-limit"
+        NodeNotFound: "Sorry, requested node is not found"
+        NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
+        OnlineEmoji: "🟢"
+        OfflineEmoji: "🔴"
+      Status:
+        Description: "Display online or offline status of all nodes !"
+        OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new status,be careful because of rate-limit"
+        NotAdmin: "Sorry, only admins can execute this command !"
     Servers:
       Description: "Select server you want to interact with"
       NotLinked: "Sorry, your discord isn't linked with any pterodactyl account, link one using /link"
@@ -91,9 +96,5 @@ Messages:
       Modal:
         Name: "Send command"
         Placeholder: "Please input your command here"
-    NodeStatus:
-      Description: "Display online or offline status of all nodes !"
-      OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new status,be careful because of rate-limit"
-      NotAdmin: "Sorry, only admins can execute this command !"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"

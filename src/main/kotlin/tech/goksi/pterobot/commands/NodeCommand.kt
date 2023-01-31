@@ -2,11 +2,11 @@ package tech.goksi.pterobot.commands
 
 import com.mattmalec.pterodactyl4j.ClientType
 import com.mattmalec.pterodactyl4j.UtilizationState
+import com.mattmalec.pterodactyl4j.client.entities.PteroClient
 import com.mattmalec.pterodactyl4j.exceptions.HttpException
 import com.mattmalec.pterodactyl4j.exceptions.NotFoundException
 import dev.minn.jda.ktx.util.SLF4J
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -21,37 +21,48 @@ import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
-import java.util.*
-import kotlin.concurrent.fixedRateTimer
 
-private const val CONFIG_PREFIX = "Messages.Commands.NodeInfo."
+private const val NODE_PREFIX = "Messages.Commands.Node"
+
+class NodeCommand : SimpleCommand(
+    name = "node",
+    description = "Top level node command, have no influence",
+    enabledPermissions = listOf(Permission.ADMINISTRATOR),
+    subcommands = listOf(Info())
+) {
+
+    companion object TaskMapping {
+        val coroutineScope by lazy {
+            Common.getDefaultCoroutineScope("NodeScope")
+        }
+        val taskMap: MutableMap<Long, Job> = HashMap()
+    }
+
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+        // base command
+    }
+}
 
 /*TODO: probably different coroutine scope and error handling*/
-class NodeInfoCmd : SimpleCommand(
-    name = "nodeinfo",
-    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description"),
-    enabledPermissions = listOf(Permission.ADMINISTRATOR),
+private class Info : SimpleCommand(
+    name = "info",
+    description = ConfigManager.config.getString("$NODE_PREFIX.Info.Description"),
     options = listOf(
         OptionData(
             OptionType.INTEGER,
             "id",
-            ConfigManager.config.getString(CONFIG_PREFIX + "OptionDescription"),
+            ConfigManager.config.getString("$NODE_PREFIX.Info.OptionDescription"),
             true
         ),
         OptionData(
             OptionType.BOOLEAN,
             "update",
-            ConfigManager.config.getString(CONFIG_PREFIX + "OptionUpdateDescription"),
+            ConfigManager.config.getString("$NODE_PREFIX.Info.OptionUpdateDescription"),
             false
         )
     )
 ) {
     private val logger by SLF4J
-
-    companion object TaskMapping {
-        val mapping: MutableMap<Long, Timer> = HashMap() // message id and timer
-    }
-
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         event.deferReply().queue()
         val nodeId = event.getOption("id")!!.asInt
@@ -59,53 +70,47 @@ class NodeInfoCmd : SimpleCommand(
         val response: MessageEmbed
         var success = false
         val pteroMember = PteroMember(event.user)
-        if (event.member!!.hasPermission(Permission.ADMINISTRATOR) || pteroMember.isPteroAdmin()) {
+        if (pteroMember.isPteroAdmin()) {
             success = true
             response = try {
-                withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda) }
+                withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda, pteroMember.client!!) }
             } catch (exception: Exception) {
                 when (exception) {
                     is HttpException, is NotFoundException -> {
                         success = false
                         logger.debug("Thrown exception: ", exception)
-                        EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeNotFound"))
+                        EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Info.NodeNotFound"))
                             .toEmbed(event.jda)
                     } // shame that kotlin doesn't have multi catch
                     else -> throw exception
                 }
             }
         } else {
-            response = EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotAdmin"))
+            response = EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Info.NotAdmin"))
                 .toEmbed(event.jda)
         }
         event.hook.sendMessageEmbeds(response).queue {
             if (success && update) {
-                val timer = fixedRateTimer(
-                    name = "NodeInfoDaemon#${mapping.size}",
-                    daemon = true,
-                    period = 300_000,
-                    initialDelay = 300_000
-                ) {
-                    it.editMessageEmbeds(getNodeInfoEmbed(nodeId, event.jda)).queue()
+                val job = NodeCommand.coroutineScope.launch {
+                    while (true) {
+                        delay(300_000)
+                        it.editMessageEmbeds(getNodeInfoEmbed(nodeId, event.jda, pteroMember.client!!)).queue()
+                    }
                 } /*TODO: fixed 5 minutes delay, make configurable*/
-                mapping[it.idLong] = timer
+                NodeCommand.taskMap[it.idLong] = job
             }
         }
     }
 
-    /*TODO: catch login exception ?*/
-    private fun getNodeInfoEmbed(id: Int, jda: JDA): MessageEmbed {
-        val ptero by lazy {
-            Common.getDefaultApplication() to
-                Common.createClient(ConfigManager.config.getString("BotInfo.AdminApiKey"))
-        }
-        val node = ptero.first.retrieveNodeById(id.toLong()).execute()
+    private fun getNodeInfoEmbed(id: Int, jda: JDA, pteroClient: PteroClient): MessageEmbed {
+        val pteroApplication = Common.getDefaultApplication()
+        val node = pteroApplication.retrieveNodeById(id.toLong()).execute()
         var memoryUsed: Long = 0
         var diskSpaceUsed = 0f
         var cpuUsed = 0.0
         var status = NodeStatus.ONLINE
         val runningServers =
-            ptero.second!!.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
+            pteroClient.retrieveServers(ClientType.ADMIN_ALL).filter { it.node == node.name }.filter {
                 if (it.isInstalling) return@filter false
                 if (status == NodeStatus.ONLINE) {
                     val utilization = try {

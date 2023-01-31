@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import tech.goksi.pterobot.commands.AccountCommand
-import tech.goksi.pterobot.commands.NodeInfoCmd
+import tech.goksi.pterobot.commands.NodeCommand
 import tech.goksi.pterobot.commands.NodeStatusCmd
 import tech.goksi.pterobot.commands.Servers
 import tech.goksi.pterobot.commands.manager.SimpleCommandData
@@ -108,7 +108,7 @@ class PteroBot {
         val commandData = SimpleCommandData().apply {
             addCommands(
                 AccountCommand(),
-                NodeInfoCmd(),
+                NodeCommand(),
                 Servers(jda),
                 NodeStatusCmd()
             )
