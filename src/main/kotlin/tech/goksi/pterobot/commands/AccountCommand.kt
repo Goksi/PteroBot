@@ -37,6 +37,7 @@ class AccountCommand : SimpleCommand(
     }
 }
 
+/*LINK SUBCOMMAND*/
 private class Link : SimpleCommand(
     name = "link",
     description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.Description"),
@@ -88,6 +89,7 @@ private class Link : SimpleCommand(
     }
 }
 
+/*UNLINK SUBCOMMAND*/
 private class Unlink : SimpleCommand(
     name = "unlink",
     description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.Description")
@@ -120,6 +122,7 @@ private class Unlink : SimpleCommand(
     }
 }
 
+/*REGISTER SUBCOMMAND*/
 /*TODO: edit README*/
 private class Register : SimpleCommand(
     name = "register",
