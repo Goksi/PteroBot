@@ -8,7 +8,6 @@ import dev.minn.jda.ktx.util.SLF4J
 import kotlinx.coroutines.*
 import tech.goksi.pterobot.events.handlers.PteroEventManager
 import tech.goksi.pterobot.manager.ConfigManager
-import java.lang.StringBuilder
 
 object Common {
     private val logger by SLF4J<PteroEventManager>()
@@ -39,16 +38,16 @@ object Common {
         return result
     }
 
-    fun getDefaultCoroutineScope(): CoroutineScope {
+    fun getDefaultCoroutineScope(name: String = "PteroBotScope"): CoroutineScope {
         val parentJob = SupervisorJob()
         val errorHandler = CoroutineExceptionHandler { _, throwable ->
-            logger.error("Exception thrown in pterodactyl coroutine !", throwable)
+            logger.error("Exception thrown in PteroBot coroutine !", throwable)
             if (throwable is Error) {
                 parentJob.cancel()
                 throw throwable
             }
         }
-        return CoroutineScope(Dispatchers.IO + parentJob + errorHandler)
+        return CoroutineScope(Dispatchers.IO + parentJob + errorHandler + CoroutineName(name))
     }
 
     suspend fun ClientServer.getLogs(): String {
