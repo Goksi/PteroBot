@@ -27,6 +27,7 @@ import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.Common.getLogs
+import tech.goksi.pterobot.util.await
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
 import java.time.LocalDateTime
@@ -298,7 +299,7 @@ private class List(jda: JDA) : SimpleCommand(
             emoji = Emoji.fromUnicode(getButtonSetting("RefreshEmoji")),
             type = CooldownType.REFRESH_BTN
         ) {
-            val serverNew = server.refreshData().execute()
+            val serverNew = server.refreshData().await()
             val serverInfoNew = try {
                 ServerInfo(serverNew)
             } catch (exception: ServerException) {

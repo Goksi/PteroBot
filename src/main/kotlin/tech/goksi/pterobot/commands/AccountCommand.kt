@@ -22,6 +22,7 @@ import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Checks
 import tech.goksi.pterobot.util.Common
+import tech.goksi.pterobot.util.await
 import java.sql.SQLException
 
 private const val ACCOUNT_PREFIX = "Messages.Commands.Account"
@@ -64,7 +65,7 @@ private class Link : SimpleCommand(
             response = try {
                 if (!Checks.validClientKey(key)) throw HttpException("Wrong key format !")
                 val pteroAccount = Common.createClient(key)!!
-                val account = pteroAccount.retrieveAccount().execute()
+                val account = pteroAccount.retrieveAccount().await()
                 pteroMember.link(ApiKey(key, account.isRootAdmin))
                 logger.info("User ${event.user.asTag} linked his discord with ${account.userName} pterodactyl account !")
                 EmbedManager.getGenericSuccess(

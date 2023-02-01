@@ -23,6 +23,7 @@ import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.Common.replace
+import tech.goksi.pterobot.util.await
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -106,9 +107,9 @@ private class Info : SimpleCommand(
         }
     }
 
-    private fun getNodeInfoEmbed(id: Int, jda: JDA, pteroClient: PteroClient): MessageEmbed {
+    private suspend fun getNodeInfoEmbed(id: Int, jda: JDA, pteroClient: PteroClient): MessageEmbed {
         val pteroApplication = Common.getDefaultApplication()
-        val node = pteroApplication.retrieveNodeById(id.toLong()).execute()
+        val node = pteroApplication.retrieveNodeById(id.toLong()).await()
         var memoryUsed: Long = 0
         var diskSpaceUsed = 0f
         var cpuUsed = 0.0
@@ -118,7 +119,7 @@ private class Info : SimpleCommand(
                 if (it.isInstalling) return@filter false
                 if (status == NodeStatus.ONLINE) {
                     val utilization = try {
-                        it.retrieveUtilization().execute()
+                        it.retrieveUtilization().await()
                     } catch (exception: HttpException) {
                         status = NodeStatus.OFFLINE
                         return@filter false
