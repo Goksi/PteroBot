@@ -33,18 +33,25 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.minutes
 
-private const val CONFIG_PREFIX = "Messages.Commands.Servers."
-private const val SELECTION_ID = "pterobot:servers-selector"
+private const val SERVER_PATH = "Messages.Commands.Server"
 
-/*TODO single event for every close btn*/
-class Servers(jda: JDA) : SimpleCommand(
-    name = "servers",
-    description = ConfigManager.config.getString(CONFIG_PREFIX + "Description")
+class ServerCommand(jda: JDA) : SimpleCommand(
+    name = "server",
+    description = "Top level node command, have no influence",
+    subcommands = listOf(List(jda))
+) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+        // Base command
+    }
+}
+
+private class List(jda: JDA) : SimpleCommand(
+    name = "list",
+    description = ConfigManager.config.getString("$SERVER_PATH.List.Description")
 ) {
     private val logger by SLF4J
     private val serverMapping: MutableMap<String, ClientServer> = HashMap()
 
-    /*LISTENER FOR COMMAND*/
     init {
         jda.listener<ModalInteractionEvent>(timeout = 2.minutes) {
             val id = it.modalId
@@ -52,7 +59,7 @@ class Servers(jda: JDA) : SimpleCommand(
                 val server = serverMapping[id.split(":")[2]]!!.also { serverMapping.remove(id.split(":")[2]) }
                 server.sendCommand(it.getValue("command")!!.asString).executeAsync({ _ ->
                     it.replyEmbeds(
-                        EmbedManager.getGenericSuccess(ConfigManager.config.getString(CONFIG_PREFIX + "SuccessCommand"))
+                        EmbedManager.getGenericSuccess(ConfigManager.config.getString("$SERVER_PATH.List.SuccessCommand"))
                             .toEmbed(it.jda)
                     ).setEphemeral(true).queue()
                 }) { throwable ->
@@ -64,6 +71,7 @@ class Servers(jda: JDA) : SimpleCommand(
                 }
             }
         }
+        jda.addEventListener(this) // TODO: feels wrong, probably find different way when differ top level cmd and subcommand, also one listener for close btn
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
@@ -75,16 +83,16 @@ class Servers(jda: JDA) : SimpleCommand(
             } catch (exception: LoginException) {
                 event.hook.sendMessageEmbeds(
                     EmbedManager
-                        .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotFound"))
+                        .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotFound"))
                         .toEmbed(event.jda)
                 ).queue()
                 return
             }
-            val selectMenu = StringSelectMenu(SELECTION_ID + ":${event.user.idLong}") {
+            val selectMenu = StringSelectMenu("pterobot:servers-selector:${event.user.idLong}") {
                 for (server in servers) {
                     this.option(label = server.name, value = server.identifier)
                 }
-                this.placeholder = ConfigManager.config.getString(CONFIG_PREFIX + "MenuPlaceholder")
+                this.placeholder = ConfigManager.config.getString("$SERVER_PATH.List.MenuPlaceholder")
             }
             val response = EmbedManager.getServersCommand(AccountInfo(pteroMember.getAccount())).toEmbed(event.jda)
 
@@ -92,16 +100,16 @@ class Servers(jda: JDA) : SimpleCommand(
         } else {
             event.hook.sendMessageEmbeds(
                 EmbedManager
-                    .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotLinked")).toEmbed(event.jda)
+                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed(event.jda)
             ).queue()
         }
     }
 
     override suspend fun onStringSelectInteraction(event: StringSelectInteractionEvent) {
-        if (!event.componentId.startsWith(SELECTION_ID)) return
+        if (!event.componentId.startsWith("pterobot:servers-selector:")) return
         if (event.componentId.split(":")[2] != event.user.id) {
             event.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "WrongUser"))
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.WrongUser"))
                     .toEmbed(event.jda)
             )
                 .setEphemeral(true).queue()
@@ -113,7 +121,7 @@ class Servers(jda: JDA) : SimpleCommand(
         if (!pteroMember.isLinked()) {
             event.hook.sendMessageEmbeds(
                 EmbedManager
-                    .getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NotLinked")).toEmbed(event.jda)
+                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed(event.jda)
             ).setEphemeral(true).queue()
             return
         }
@@ -121,7 +129,7 @@ class Servers(jda: JDA) : SimpleCommand(
             pteroMember.getServerById(event.selectedOptions[0].value)
         } catch (exception: LoginException) {
             event.hook.sendMessageEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "WrongKey"))
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.WrongKey"))
                     .toEmbed(event.jda)
             ).queue()
             return
@@ -130,7 +138,7 @@ class Servers(jda: JDA) : SimpleCommand(
             ServerInfo(server)
         } catch (exception: ServerException) {
             event.hook.sendMessageEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeOffline"))
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NodeOffline"))
                     .toEmbed(event.jda)
             ).queue()
             return
@@ -141,13 +149,13 @@ class Servers(jda: JDA) : SimpleCommand(
             .addActionRow(buttons.subList(5, buttons.size)).queue()
     }
 
-    private fun getButtonSetting(setting: String) = ConfigManager.config.getString(CONFIG_PREFIX + "Buttons.$setting")
+    private fun getButtonSetting(setting: String) = ConfigManager.config.getString("$SERVER_PATH.List.Buttons.$setting")
 
     private fun getButtons(
         server: ClientServer,
         serverInfo: ServerInfo,
         event: StringSelectInteractionEvent
-    ): List<Button> {
+    ): kotlin.collections.List<Button> {
         /*START OR STOP BTN*/
         val changeStateButton = when (serverInfo.status) {
             "RUNNING", "STARTING" -> event.jda.cooldownButton(
@@ -161,7 +169,7 @@ class Servers(jda: JDA) : SimpleCommand(
                     buttonEvent.hook.sendMessageEmbeds(
                         EmbedManager.getGenericSuccess(
                             ConfigManager.config.getString(
-                                CONFIG_PREFIX + "SuccessStop"
+                                "$SERVER_PATH.List.SuccessStop"
                             )
                         ).toEmbed(event.jda)
                     )
@@ -189,7 +197,7 @@ class Servers(jda: JDA) : SimpleCommand(
                     buttonEvent.hook.sendMessageEmbeds(
                         EmbedManager.getGenericSuccess(
                             ConfigManager.config.getString(
-                                CONFIG_PREFIX + "SuccessStart"
+                                "$SERVER_PATH.List.SuccessStart"
                             )
                         ).toEmbed(event.jda)
                     )
@@ -218,7 +226,7 @@ class Servers(jda: JDA) : SimpleCommand(
                 buttonEvent.hook.sendMessageEmbeds(
                     EmbedManager.getGenericSuccess(
                         ConfigManager.config.getString(
-                            CONFIG_PREFIX + "SuccessRestart"
+                            "$SERVER_PATH.List.SuccessRestart"
                         )
                     ).toEmbed(event.jda)
                 )
@@ -244,13 +252,13 @@ class Servers(jda: JDA) : SimpleCommand(
         ) { buttonEvent ->
             val commandModal = Modal(
                 id = "pterobot:command:${server.identifier}",
-                title = ConfigManager.config.getString(CONFIG_PREFIX + "Modal.Name")
+                title = ConfigManager.config.getString("$SERVER_PATH.List.Modal.Name")
             ) {
                 this.short(
                     id = "command",
                     label = "Command",
                     required = true,
-                    placeholder = ConfigManager.config.getString(CONFIG_PREFIX + "Modal.Placeholder")
+                    placeholder = ConfigManager.config.getString("$SERVER_PATH.List.Modal.Placeholder")
                 )
             }
             buttonEvent.replyModal(commandModal).queue()
@@ -295,7 +303,7 @@ class Servers(jda: JDA) : SimpleCommand(
                 ServerInfo(serverNew)
             } catch (exception: ServerException) {
                 it.editMessageEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.config.getString(CONFIG_PREFIX + "NodeOffline"))
+                    EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NodeOffline"))
                         .toEmbed(event.jda)
                 ).setActionRow(closeButton).queue()
                 return@cooldownButton

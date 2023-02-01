@@ -22,7 +22,7 @@ class PteroMember(private val discordID: Long) {
         data.getApiKey(discordID)
     }
 
-    private val client: PteroClient?
+    val client: PteroClient?
         get() = Common.createClient(apiKey?.key)
 
     val registeredAccounts: Set<String> by lazy {
