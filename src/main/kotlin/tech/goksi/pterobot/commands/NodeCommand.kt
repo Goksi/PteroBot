@@ -7,6 +7,7 @@ import com.mattmalec.pterodactyl4j.exceptions.HttpException
 import com.mattmalec.pterodactyl4j.exceptions.NotFoundException
 import dev.minn.jda.ktx.util.SLF4J
 import kotlinx.coroutines.*
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -21,6 +22,9 @@ import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
+import tech.goksi.pterobot.util.Common.replace
+import java.net.HttpURLConnection
+import java.net.URL
 
 private const val NODE_PREFIX = "Messages.Commands.Node"
 
@@ -28,7 +32,7 @@ class NodeCommand : SimpleCommand(
     name = "node",
     description = "Top level node command, have no influence",
     enabledPermissions = listOf(Permission.ADMINISTRATOR),
-    subcommands = listOf(Info())
+    subcommands = listOf(Info(), Status())
 ) {
 
     companion object TaskMapping {
@@ -136,5 +140,67 @@ private class Info : SimpleCommand(
                 cpuUsed = cpuUsed
             )
         ).toEmbed(jda)
+    }
+}
+
+private class Status : SimpleCommand(
+    name = "status",
+    description = ConfigManager.config.getString("$NODE_PREFIX.Status.Description"),
+    options = listOf(
+        OptionData(
+            OptionType.BOOLEAN,
+            "update",
+            ConfigManager.config.getString("$NODE_PREFIX.Status.OptionUpdateDescription"),
+            false
+        )
+    )
+) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+        val pteroMember = PteroMember(event.member!!)
+        if (pteroMember.isPteroAdmin()) {
+            val update = event.getOption("update")?.asBoolean ?: false
+            event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
+
+            event.hook.sendMessageEmbeds(withContext(Dispatchers.IO) { getInfoEmbed(event.jda) }).queue {
+                if (update) {
+                    val job = NodeCommand.coroutineScope.launch {
+                        while (true) {
+                            delay(300_000)
+                            it.editMessageEmbeds(getInfoEmbed(event.jda))
+                                .queue()
+                        }
+                    }
+                    NodeCommand.taskMap[it.idLong] = job
+                }
+            }
+        } else {
+            event.replyEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Status.NotAdmin"))
+                    .toEmbed(event.jda)
+            )
+        }
+    }
+
+    private fun getInfoEmbed(jda: JDA): MessageEmbed {
+        val embedBuilder = EmbedBuilder(EmbedManager.getNodeStatus().toEmbed(jda))
+        val fieldTemplate = embedBuilder.fields[0].also { embedBuilder.clearFields() }
+        val pteroApplication = Common.getDefaultApplication()
+        pteroApplication.retrieveNodes().forEach { node ->
+            val connectionString = "${node.scheme}://${node.fqdn}:${node.daemonListenPort}"
+            val connection = URL(connectionString).openConnection() as HttpURLConnection
+            val status = try {
+                if (connection.responseCode == 401) NodeStatus.ONLINE else NodeStatus.OFFLINE
+            } catch (exception: Exception) {
+                NodeStatus.OFFLINE
+            }
+            connection.disconnect()
+            val field = MessageEmbed.Field(
+                fieldTemplate.name?.replace("%nodeName", node.name),
+                fieldTemplate.value?.replace("%statusEmoji" to status.emoji, "%status" to status.message),
+                fieldTemplate.isInline
+            )
+            embedBuilder.addField(field)
+        }
+        return embedBuilder.build()
     }
 }

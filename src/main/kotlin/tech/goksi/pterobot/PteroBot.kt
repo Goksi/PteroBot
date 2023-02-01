@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
 import tech.goksi.pterobot.commands.AccountCommand
 import tech.goksi.pterobot.commands.NodeCommand
-import tech.goksi.pterobot.commands.NodeStatusCmd
 import tech.goksi.pterobot.commands.Servers
 import tech.goksi.pterobot.commands.manager.SimpleCommandData
 import tech.goksi.pterobot.events.NodeStatusDelete
@@ -110,7 +109,6 @@ class PteroBot {
                 AccountCommand(),
                 NodeCommand(),
                 Servers(jda),
-                NodeStatusCmd()
             )
         }
         val guild = jda.getGuildById(guildPair.first!!) // what if wrong guild id, silent fail for now ?
