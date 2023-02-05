@@ -6,7 +6,10 @@ import com.mattmalec.pterodactyl4j.client.entities.PteroClient
 import com.mattmalec.pterodactyl4j.exceptions.HttpException
 import com.mattmalec.pterodactyl4j.exceptions.NotFoundException
 import dev.minn.jda.ktx.util.SLF4J
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -15,7 +18,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.NodeStatus
-import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
+import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
 import tech.goksi.pterobot.entities.NodeInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
@@ -29,27 +33,20 @@ import java.net.URL
 
 private const val NODE_PREFIX = "Messages.Commands.Node"
 
-class NodeCommand : SimpleCommand(
+class NodeCommand : TopLevelCommand(
     name = "node",
-    description = "Top level node command, have no influence",
     enabledPermissions = listOf(Permission.ADMINISTRATOR),
     subcommands = listOf(Info(), Status())
 ) {
-
     companion object TaskMapping {
         val coroutineScope by lazy {
             Common.getDefaultCoroutineScope("NodeScope")
         }
         val taskMap: MutableMap<Long, Job> = HashMap()
     }
-
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
-        // base command
-    }
 }
 
-/*TODO: probably different coroutine scope and error handling*/
-private class Info : SimpleCommand(
+private class Info : SimpleSubcommand(
     name = "info",
     description = ConfigManager.config.getString("$NODE_PREFIX.Info.Description"),
     options = listOf(
@@ -65,7 +62,8 @@ private class Info : SimpleCommand(
             ConfigManager.config.getString("$NODE_PREFIX.Info.OptionUpdateDescription"),
             false
         )
-    )
+    ),
+    baseCommand = "node"
 ) {
     private val logger by SLF4J
     override suspend fun execute(event: SlashCommandInteractionEvent) {
@@ -78,7 +76,13 @@ private class Info : SimpleCommand(
         if (pteroMember.isPteroAdmin()) {
             success = true
             response = try {
-                withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda, pteroMember.client!!) }
+                withContext(NodeCommand.coroutineScope.coroutineContext) {
+                    getNodeInfoEmbed(
+                        nodeId,
+                        event.jda,
+                        pteroMember.client!!
+                    )
+                }
             } catch (exception: Exception) {
                 when (exception) {
                     is HttpException, is NotFoundException -> {
@@ -144,7 +148,7 @@ private class Info : SimpleCommand(
     }
 }
 
-private class Status : SimpleCommand(
+private class Status : SimpleSubcommand(
     name = "status",
     description = ConfigManager.config.getString("$NODE_PREFIX.Status.Description"),
     options = listOf(
@@ -154,7 +158,8 @@ private class Status : SimpleCommand(
             ConfigManager.config.getString("$NODE_PREFIX.Status.OptionUpdateDescription"),
             false
         )
-    )
+    ),
+    baseCommand = "node"
 ) {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.member!!)
@@ -162,18 +167,19 @@ private class Status : SimpleCommand(
             val update = event.getOption("update")?.asBoolean ?: false
             event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
 
-            event.hook.sendMessageEmbeds(withContext(Dispatchers.IO) { getInfoEmbed(event.jda) }).queue {
-                if (update) {
-                    val job = NodeCommand.coroutineScope.launch {
-                        while (true) {
-                            delay(300_000)
-                            it.editMessageEmbeds(getInfoEmbed(event.jda))
-                                .queue()
+            event.hook.sendMessageEmbeds(withContext(NodeCommand.coroutineScope.coroutineContext) { getInfoEmbed(event.jda) })
+                .queue {
+                    if (update) {
+                        val job = NodeCommand.coroutineScope.launch {
+                            while (true) {
+                                delay(300_000)
+                                it.editMessageEmbeds(getInfoEmbed(event.jda))
+                                    .queue()
+                            }
                         }
+                        NodeCommand.taskMap[it.idLong] = job
                     }
-                    NodeCommand.taskMap[it.idLong] = job
                 }
-            }
         } else {
             event.replyEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Status.NotAdmin"))

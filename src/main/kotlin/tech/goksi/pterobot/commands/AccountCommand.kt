@@ -14,7 +14,8 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import net.dv8tion.jda.api.interactions.modals.Modal
-import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
+import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
 import tech.goksi.pterobot.entities.ApiKey
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
@@ -27,19 +28,13 @@ import java.sql.SQLException
 
 private const val ACCOUNT_PREFIX = "Messages.Commands.Account"
 
-class AccountCommand : SimpleCommand(
+class AccountCommand : TopLevelCommand(
     name = "account",
-    description = "Top level account command, have no influence",
     subcommands = listOf(Link(), Unlink(), Register())
-) {
-
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
-        // Base command
-    }
-}
+)
 
 /*LINK SUBCOMMAND*/
-private class Link : SimpleCommand(
+private class Link : SimpleSubcommand(
     name = "link",
     description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.Description"),
     options = listOf(
@@ -49,7 +44,8 @@ private class Link : SimpleCommand(
             ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.OptionDescription"),
             true
         )
-    )
+    ),
+    baseCommand = "account"
 ) {
     private val logger by SLF4J
 
@@ -91,9 +87,10 @@ private class Link : SimpleCommand(
 }
 
 /*UNLINK SUBCOMMAND*/
-private class Unlink : SimpleCommand(
+private class Unlink : SimpleSubcommand(
     name = "unlink",
-    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.Description")
+    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.Description"),
+    baseCommand = "account"
 ) {
 
     init {
@@ -125,9 +122,10 @@ private class Unlink : SimpleCommand(
 
 /*REGISTER SUBCOMMAND*/
 /*TODO: edit README*/
-private class Register : SimpleCommand(
+private class Register : SimpleSubcommand(
     name = "register",
-    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Description")
+    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Description"),
+    baseCommand = "account"
 ) {
     private val modal: Modal
 

@@ -18,7 +18,8 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.FileUpload
-import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
+import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
 import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.entities.ServerInfo
@@ -36,19 +37,15 @@ import kotlin.time.Duration.Companion.minutes
 
 private const val SERVER_PATH = "Messages.Commands.Server"
 
-class ServerCommand(jda: JDA) : SimpleCommand(
+class ServerCommand(jda: JDA) : TopLevelCommand(
     name = "server",
-    description = "Top level node command, have no influence",
     subcommands = listOf(List(jda))
-) {
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
-        // Base command
-    }
-}
+)
 
-private class List(jda: JDA) : SimpleCommand(
+private class List(jda: JDA) : SimpleSubcommand(
     name = "list",
-    description = ConfigManager.config.getString("$SERVER_PATH.List.Description")
+    description = ConfigManager.config.getString("$SERVER_PATH.List.Description"),
+    baseCommand = "server"
 ) {
     private val logger by SLF4J
     private val serverMapping: MutableMap<String, ClientServer> = HashMap()
@@ -72,7 +69,6 @@ private class List(jda: JDA) : SimpleCommand(
                 }
             }
         }
-        jda.addEventListener(this) // TODO: feels wrong, probably find different way when differ top level cmd and subcommand, also one listener for close btn
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
