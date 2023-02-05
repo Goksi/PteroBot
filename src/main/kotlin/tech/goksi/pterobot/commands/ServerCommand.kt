@@ -69,7 +69,6 @@ private class List(jda: JDA) : SimpleSubcommand(
                 }
             }
         }
-        jda.addEventListener(this) // TODO: feels wrong, probably find different way when differ top level cmd and subcommand, also one listener for close btn
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
