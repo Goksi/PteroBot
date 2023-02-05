@@ -1,6 +1,5 @@
 package tech.goksi.pterobot.util
 
-
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.simpleyaml.configuration.file.YamlConfiguration
