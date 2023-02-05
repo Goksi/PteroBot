@@ -6,7 +6,10 @@ import com.mattmalec.pterodactyl4j.client.entities.PteroClient
 import com.mattmalec.pterodactyl4j.exceptions.HttpException
 import com.mattmalec.pterodactyl4j.exceptions.NotFoundException
 import dev.minn.jda.ktx.util.SLF4J
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -43,7 +46,6 @@ class NodeCommand : TopLevelCommand(
     }
 }
 
-/*TODO: probably different coroutine scope and error handling*/
 private class Info : SimpleSubcommand(
     name = "info",
     description = ConfigManager.config.getString("$NODE_PREFIX.Info.Description"),
@@ -74,7 +76,13 @@ private class Info : SimpleSubcommand(
         if (pteroMember.isPteroAdmin()) {
             success = true
             response = try {
-                withContext(Dispatchers.IO) { getNodeInfoEmbed(nodeId, event.jda, pteroMember.client!!) }
+                withContext(NodeCommand.coroutineScope.coroutineContext) {
+                    getNodeInfoEmbed(
+                        nodeId,
+                        event.jda,
+                        pteroMember.client!!
+                    )
+                }
             } catch (exception: Exception) {
                 when (exception) {
                     is HttpException, is NotFoundException -> {
@@ -159,18 +167,19 @@ private class Status : SimpleSubcommand(
             val update = event.getOption("update")?.asBoolean ?: false
             event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
 
-            event.hook.sendMessageEmbeds(withContext(Dispatchers.IO) { getInfoEmbed(event.jda) }).queue {
-                if (update) {
-                    val job = NodeCommand.coroutineScope.launch {
-                        while (true) {
-                            delay(300_000)
-                            it.editMessageEmbeds(getInfoEmbed(event.jda))
-                                .queue()
+            event.hook.sendMessageEmbeds(withContext(NodeCommand.coroutineScope.coroutineContext) { getInfoEmbed(event.jda) })
+                .queue {
+                    if (update) {
+                        val job = NodeCommand.coroutineScope.launch {
+                            while (true) {
+                                delay(300_000)
+                                it.editMessageEmbeds(getInfoEmbed(event.jda))
+                                    .queue()
+                            }
                         }
+                        NodeCommand.taskMap[it.idLong] = job
                     }
-                    NodeCommand.taskMap[it.idLong] = job
                 }
-            }
         } else {
             event.replyEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Status.NotAdmin"))
