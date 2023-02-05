@@ -11,8 +11,8 @@ abstract class SimpleSubcommand(
     private val baseCommand: String
 ) : ExecutableCommand(name, description, options) {
 
-    override fun shouldExecute(slashEvent: SlashCommandInteractionEvent): Boolean {
-        return "$baseCommand $name" == slashEvent.fullCommandName
+    override fun shouldExecute(event: SlashCommandInteractionEvent): Boolean {
+        return "$baseCommand $name" == event.fullCommandName
     }
 
     fun buildSubcommand(): SubcommandData {

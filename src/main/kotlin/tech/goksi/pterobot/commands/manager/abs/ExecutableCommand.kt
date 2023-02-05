@@ -1,31 +1,24 @@
 package tech.goksi.pterobot.commands.manager.abs
 
-import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import tech.goksi.pterobot.events.hook.CoroutineListenerAdapter
 
 abstract class ExecutableCommand(
     override val name: String,
     val description: String,
     val options: List<OptionData>
-) : CommandBase, EventListener {
+) : CoroutineListenerAdapter(), CommandBase {
 
-    abstract fun execute(slashEvent: SlashCommandInteractionEvent)
+    abstract suspend fun execute(event: SlashCommandInteractionEvent)
 
-    open fun shouldExecute(slashEvent: SlashCommandInteractionEvent): Boolean {
-        return name == slashEvent.name
+    open fun shouldExecute(event: SlashCommandInteractionEvent): Boolean {
+        return name == event.name
     }
 
-    override fun onEvent(genericEvent: GenericEvent) {
-        if (genericEvent is SlashCommandInteractionEvent) {
-            onSlashCommandInteraction(genericEvent)
-        }
-    }
-
-    private fun onSlashCommandInteraction(slashEvent: SlashCommandInteractionEvent) {
-        if (shouldExecute(slashEvent)) {
-            execute(slashEvent)
+    override suspend fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        if (shouldExecute(event)) {
+            execute(event)
         }
     }
 }
