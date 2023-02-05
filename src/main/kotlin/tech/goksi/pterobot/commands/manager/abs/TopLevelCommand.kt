@@ -7,11 +7,11 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 
 abstract class TopLevelCommand(
     override val name: String,
-    private val subcommands: List<SimpleSubcommand>,
+    val subcommands: List<SimpleSubcommand>,
     private val enabledPermissions: List<Permission> = emptyList()
 ) : CommandBase {
     fun buildCommand(): SlashCommandData {
-        val data = Commands.slash(name, " ")
+        val data = Commands.slash(name, "none")
         data.addSubcommands(subcommands.map { it.buildSubcommand() })
         if (enabledPermissions.isNotEmpty()) {
             data.defaultPermissions = DefaultMemberPermissions.enabledFor(enabledPermissions)
