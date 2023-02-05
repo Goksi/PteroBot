@@ -15,7 +15,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import tech.goksi.pterobot.NodeStatus
-import tech.goksi.pterobot.commands.manager.abs.SimpleCommand
+import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
+import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
 import tech.goksi.pterobot.entities.NodeInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
@@ -29,27 +30,21 @@ import java.net.URL
 
 private const val NODE_PREFIX = "Messages.Commands.Node"
 
-class NodeCommand : SimpleCommand(
+class NodeCommand : TopLevelCommand(
     name = "node",
-    description = "Top level node command, have no influence",
     enabledPermissions = listOf(Permission.ADMINISTRATOR),
     subcommands = listOf(Info(), Status())
 ) {
-
     companion object TaskMapping {
         val coroutineScope by lazy {
             Common.getDefaultCoroutineScope("NodeScope")
         }
         val taskMap: MutableMap<Long, Job> = HashMap()
     }
-
-    override suspend fun execute(event: SlashCommandInteractionEvent) {
-        // base command
-    }
 }
 
 /*TODO: probably different coroutine scope and error handling*/
-private class Info : SimpleCommand(
+private class Info : SimpleSubcommand(
     name = "info",
     description = ConfigManager.config.getString("$NODE_PREFIX.Info.Description"),
     options = listOf(
@@ -65,7 +60,8 @@ private class Info : SimpleCommand(
             ConfigManager.config.getString("$NODE_PREFIX.Info.OptionUpdateDescription"),
             false
         )
-    )
+    ),
+    baseCommand = "node"
 ) {
     private val logger by SLF4J
     override suspend fun execute(event: SlashCommandInteractionEvent) {
@@ -144,7 +140,7 @@ private class Info : SimpleCommand(
     }
 }
 
-private class Status : SimpleCommand(
+private class Status : SimpleSubcommand(
     name = "status",
     description = ConfigManager.config.getString("$NODE_PREFIX.Status.Description"),
     options = listOf(
@@ -154,7 +150,8 @@ private class Status : SimpleCommand(
             ConfigManager.config.getString("$NODE_PREFIX.Status.OptionUpdateDescription"),
             false
         )
-    )
+    ),
+    baseCommand = "node"
 ) {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.member!!)
