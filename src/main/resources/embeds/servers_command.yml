@@ -1,0 +1,20 @@
+title: PteroBot
+description: "Hello %username :wave:"
+color: 39129
+fields:
+  - f1:
+      name: Full name
+      value: %fullName
+      inline: true
+  - f2:
+      name: Admin
+      value: %rootAdmin
+      inline: true
+  - f3:
+      name: Email
+      value: %email
+      inline: false
+footer:
+  text: PteroBot | Servers
+  icon_url: https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png
+timestamp: %timestamp
