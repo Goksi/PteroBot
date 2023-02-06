@@ -1,0 +1,42 @@
+title: Node info
+description: "%name\n%description"
+color: 39129
+author:
+  name: PteroBot
+fields:
+  - f1:
+      name: Status
+      value: %statusEmoji %status
+      inline: true
+  - f2:
+      name: Running servers
+      value: %runningServers
+      inline: false
+  - f3:
+      name: Location
+      value: %location
+      inline: true
+  - f4:
+      name: Maintenance mode
+      value: %maintenance
+      inline: true
+  - f4:
+      name: Allocations
+      value: %allocationsCount
+      inline: true
+  - f5:
+      name: CPU usage
+      value: %cpuUsed %
+      inline: false
+  - f6:
+      name: Disk usage
+      value: %diskUsed GB / %diskLimit GB
+      inline: false
+  - f7:
+      name: Memory usage
+      value: %ramUsed MB %memoryUsageBar %ramLimit MB
+      inline: false
+footer:
+  text: PteroBot | Node
+  icon_url: https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png
+timestamp: %timestamp
