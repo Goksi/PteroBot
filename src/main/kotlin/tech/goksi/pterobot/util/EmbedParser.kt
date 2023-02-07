@@ -3,7 +3,9 @@ package tech.goksi.pterobot.util
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import org.simpleyaml.configuration.file.YamlConfiguration
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 object EmbedParser {
 
@@ -22,13 +24,15 @@ object EmbedParser {
         builder.setThumbnail(config.getString("thumbnail"))
         builder.setImage(config.getString("image"))
         currentSection = config.getConfigurationSection("fields")
-        val fields = currentSection.getKeys(false).map { currentSection.getConfigurationSection(it) }
-        for (field in fields) {
-            builder.addField(field.getString("name"), field.getString("value"), field.getBoolean("inline"))
+        if (currentSection != null) {
+            val fields = currentSection.getKeys(false).map { currentSection.getConfigurationSection(it) }
+            for (field in fields) {
+                builder.addField(field.getString("name"), field.getString("value"), field.getBoolean("inline"))
+            }
         }
         builder.setTimestamp(
             if (config.getString("timestamp") == null) null
-            else OffsetDateTime.parse(config.getString("timestamp"))
+            else OffsetDateTime.ofInstant(Instant.ofEpochMilli(config.getLong("timestamp")), ZoneOffset.UTC)
         )
         currentSection = config.getConfigurationSection("footer")
         builder.setFooter(currentSection.getString("text"), currentSection.getString("icon_url"))
