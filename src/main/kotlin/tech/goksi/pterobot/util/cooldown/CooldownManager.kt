@@ -32,8 +32,10 @@ object CooldownManager {
     private fun canInteract(event: ButtonInteractionEvent): Boolean = getRemaining(event) == 0L
     private fun getRemaining(event: ButtonInteractionEvent): Long = max(
         0,
-        (cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))]
-            ?: 0) - System.currentTimeMillis()
+        (
+            cooldownMapping[CooldownNamespace(event.user.idLong, CooldownType.fromEvent(event))]
+                ?: 0
+            ) - System.currentTimeMillis()
     )
 
     private fun getRemainingSeconds(event: ButtonInteractionEvent): Long =

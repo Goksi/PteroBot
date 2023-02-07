@@ -83,7 +83,7 @@ object EmbedManager {
         return result
     }
 
-    private fun getCurrentTimestamp(): Long = System.currentTimeMillis()// TODO: problem
+    private fun getCurrentTimestamp(): Long = System.currentTimeMillis()
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> getPlaceholderMap(entity: T): Map<String, String> {
