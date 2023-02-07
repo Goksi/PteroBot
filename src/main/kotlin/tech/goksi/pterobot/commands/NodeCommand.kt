@@ -11,7 +11,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -79,7 +78,6 @@ private class Info : SimpleSubcommand(
                 withContext(NodeCommand.coroutineScope.coroutineContext) {
                     getNodeInfoEmbed(
                         nodeId,
-                        event.jda,
                         pteroMember.client!!
                     )
                 }
@@ -89,21 +87,21 @@ private class Info : SimpleSubcommand(
                         success = false
                         logger.debug("Thrown exception: ", exception)
                         EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Info.NodeNotFound"))
-                            .toEmbed(event.jda)
+                            .toEmbed()
                     } // shame that kotlin doesn't have multi catch
                     else -> throw exception
                 }
             }
         } else {
             response = EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Info.NotAdmin"))
-                .toEmbed(event.jda)
+                .toEmbed()
         }
         event.hook.sendMessageEmbeds(response).queue {
             if (success && update) {
                 val job = NodeCommand.coroutineScope.launch {
                     while (true) {
                         delay(300_000)
-                        it.editMessageEmbeds(getNodeInfoEmbed(nodeId, event.jda, pteroMember.client!!)).queue()
+                        it.editMessageEmbeds(getNodeInfoEmbed(nodeId, pteroMember.client!!)).queue()
                     }
                 } /*TODO: fixed 5 minutes delay, make configurable*/
                 NodeCommand.taskMap[it.idLong] = job
@@ -111,7 +109,7 @@ private class Info : SimpleSubcommand(
         }
     }
 
-    private suspend fun getNodeInfoEmbed(id: Int, jda: JDA, pteroClient: PteroClient): MessageEmbed {
+    private suspend fun getNodeInfoEmbed(id: Int, pteroClient: PteroClient): MessageEmbed {
         val pteroApplication = Common.getDefaultApplication()
         val node = pteroApplication.retrieveNodeById(id.toLong()).await()
         var memoryUsed: Long = 0
@@ -144,7 +142,7 @@ private class Info : SimpleSubcommand(
                 diskUsed = diskSpaceUsed,
                 cpuUsed = cpuUsed
             )
-        ).toEmbed(jda)
+        ).toEmbed()
     }
 }
 
@@ -167,13 +165,13 @@ private class Status : SimpleSubcommand(
             val update = event.getOption("update")?.asBoolean ?: false
             event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
 
-            event.hook.sendMessageEmbeds(withContext(NodeCommand.coroutineScope.coroutineContext) { getInfoEmbed(event.jda) })
+            event.hook.sendMessageEmbeds(withContext(NodeCommand.coroutineScope.coroutineContext) { getInfoEmbed() })
                 .queue {
                     if (update) {
                         val job = NodeCommand.coroutineScope.launch {
                             while (true) {
                                 delay(300_000)
-                                it.editMessageEmbeds(getInfoEmbed(event.jda))
+                                it.editMessageEmbeds(getInfoEmbed())
                                     .queue()
                             }
                         }
@@ -183,13 +181,13 @@ private class Status : SimpleSubcommand(
         } else {
             event.replyEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Status.NotAdmin"))
-                    .toEmbed(event.jda)
+                    .toEmbed()
             )
         }
     }
 
-    private fun getInfoEmbed(jda: JDA): MessageEmbed {
-        val embedBuilder = EmbedBuilder(EmbedManager.getNodeStatus().toEmbed(jda))
+    private fun getInfoEmbed(): MessageEmbed {
+        val embedBuilder = EmbedBuilder(EmbedManager.getNodeStatus().toEmbed())
         val fieldTemplate = embedBuilder.fields[0].also { embedBuilder.clearFields() }
         val pteroApplication = Common.getDefaultApplication()
         pteroApplication.retrieveNodes().forEach { node ->
