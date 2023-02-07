@@ -68,19 +68,19 @@ private class Link : SimpleSubcommand(
                     ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkSuccess")
                         .replace("%pteroName", account.userName)
                 )
-                    .toEmbed(event.jda)
+                    .toEmbed()
             } catch (exception: SQLException) {
                 logger.error("Failed to link ${event.user.idLong}", exception)
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
-                    .toEmbed(event.jda)
+                    .toEmbed()
             } catch (httpException: HttpException) {
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkWrongKey"))
-                    .toEmbed(event.jda) // its probably wrong key if we got here, add check maybe
+                    .toEmbed() // its probably wrong key if we got here, add check maybe
             }
         } else {
             response =
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkExist"))
-                    .toEmbed(event.jda)
+                    .toEmbed()
         }
         event.reply_(embeds = listOf(response)).queue()
     }
@@ -105,7 +105,7 @@ private class Unlink : SimpleSubcommand(
                 embeds = listOf(
                     EmbedManager
                         .getGenericSuccess(ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.SuccessUnlink"))
-                        .toEmbed(event.jda)
+                        .toEmbed()
                 )
             ).queue()
         } else {
@@ -113,7 +113,7 @@ private class Unlink : SimpleSubcommand(
                 embeds = listOf(
                     EmbedManager
                         .getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.NotLinked"))
-                        .toEmbed(event.jda)
+                        .toEmbed()
                 )
             ).queue()
         }
@@ -170,7 +170,7 @@ private class Register : SimpleSubcommand(
             !event.member!!.hasPermission(Permission.ADMINISTRATOR)
         ) {
             event.replyEmbeds(
-                EmbedManager.getGenericFailure("$ACCOUNT_PREFIX.Register.DisabledMessage").toEmbed(event.jda)
+                EmbedManager.getGenericFailure("$ACCOUNT_PREFIX.Register.DisabledMessage").toEmbed()
             ).queue()
             return
         }
@@ -182,7 +182,7 @@ private class Register : SimpleSubcommand(
                 EmbedManager.getGenericFailure(
                     ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.LimitReached")
                         .replace("%accounts", pteroMember.registeredAccounts.joinToString(","))
-                ).toEmbed(event.jda)
+                ).toEmbed()
             ).setEphemeral(true).queue()
         }
     }
@@ -197,7 +197,7 @@ private class Register : SimpleSubcommand(
                     ConfigManager.config.getString(
                         "$ACCOUNT_PREFIX.Register.InvalidEmail"
                     )
-                ).toEmbed(event.jda)
+                ).toEmbed()
             )
                 .queue()
             return
@@ -217,7 +217,7 @@ private class Register : SimpleSubcommand(
                 EmbedManager.getGenericSuccess(
                     ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Success")!!
                         .replace("%pteroName", it.userName)
-                ).toEmbed(event.jda)
+                ).toEmbed()
             ).queue()
             PteroMember(event.user).registerAccount(it.userName)
         }, {
@@ -231,11 +231,11 @@ private class Register : SimpleSubcommand(
                     EmbedManager.getGenericFailure(
                         ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.FieldTaken")
                             .replace("%takenField", takenField)
-                    ).toEmbed(event.jda)
+                    ).toEmbed()
                 ).queue()
             } else event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
-                    .toEmbed(event.jda)
+                    .toEmbed()
             ).queue()
         })
     }

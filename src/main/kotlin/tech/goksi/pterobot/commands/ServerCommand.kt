@@ -58,12 +58,12 @@ private class List(jda: JDA) : SimpleSubcommand(
                 server.sendCommand(it.getValue("command")!!.asString).executeAsync({ _ ->
                     it.replyEmbeds(
                         EmbedManager.getGenericSuccess(ConfigManager.config.getString("$SERVER_PATH.List.SuccessCommand"))
-                            .toEmbed(it.jda)
+                            .toEmbed()
                     ).setEphemeral(true).queue()
                 }) { throwable ->
                     it.replyEmbeds(
                         EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError"))
-                            .toEmbed(it.jda)
+                            .toEmbed()
                     ).setEphemeral(true).queue()
                     logger.error("Error while sending command to ${server.name}", throwable)
                 }
@@ -81,7 +81,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                 event.hook.sendMessageEmbeds(
                     EmbedManager
                         .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotFound"))
-                        .toEmbed(event.jda)
+                        .toEmbed()
                 ).queue()
                 return
             }
@@ -91,13 +91,13 @@ private class List(jda: JDA) : SimpleSubcommand(
                 }
                 this.placeholder = ConfigManager.config.getString("$SERVER_PATH.List.MenuPlaceholder")
             }
-            val response = EmbedManager.getServersCommand(AccountInfo(pteroMember.getAccount())).toEmbed(event.jda)
+            val response = EmbedManager.getServersCommand(AccountInfo(pteroMember.getAccount())).toEmbed()
 
             event.hook.sendMessageEmbeds(response).addActionRow(selectMenu).queue()
         } else {
             event.hook.sendMessageEmbeds(
                 EmbedManager
-                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed(event.jda)
+                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed()
             ).queue()
         }
     }
@@ -107,7 +107,7 @@ private class List(jda: JDA) : SimpleSubcommand(
         if (event.componentId.split(":")[2] != event.user.id) {
             event.replyEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.WrongUser"))
-                    .toEmbed(event.jda)
+                    .toEmbed()
             )
                 .setEphemeral(true).queue()
             return
@@ -118,7 +118,7 @@ private class List(jda: JDA) : SimpleSubcommand(
         if (!pteroMember.isLinked()) {
             event.hook.sendMessageEmbeds(
                 EmbedManager
-                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed(event.jda)
+                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed()
             ).setEphemeral(true).queue()
             return
         }
@@ -127,7 +127,7 @@ private class List(jda: JDA) : SimpleSubcommand(
         } catch (exception: LoginException) {
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.WrongKey"))
-                    .toEmbed(event.jda)
+                    .toEmbed()
             ).queue()
             return
         }
@@ -136,11 +136,11 @@ private class List(jda: JDA) : SimpleSubcommand(
         } catch (exception: ServerException) {
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NodeOffline"))
-                    .toEmbed(event.jda)
+                    .toEmbed()
             ).queue()
             return
         }
-        val response = EmbedManager.getServerInfo(serverInfo).toEmbed(event.jda)
+        val response = EmbedManager.getServerInfo(serverInfo).toEmbed()
         val buttons = getButtons(server, serverInfo, event)
         event.hook.sendMessageEmbeds(response).addActionRow(buttons.subList(0, 5))
             .addActionRow(buttons.subList(5, buttons.size)).queue()
@@ -168,13 +168,13 @@ private class List(jda: JDA) : SimpleSubcommand(
                             ConfigManager.config.getString(
                                 "$SERVER_PATH.List.SuccessStop"
                             )
-                        ).toEmbed(event.jda)
+                        ).toEmbed()
                     )
                         .setEphemeral(true).queue()
                 }) {
                     buttonEvent.hook.sendMessageEmbeds(
                         EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError"))
-                            .toEmbed(event.jda)
+                            .toEmbed()
                     )
                         .setEphemeral(true).queue().also { _ ->
                             logger.error("Error while changing server state !", it)
@@ -196,13 +196,13 @@ private class List(jda: JDA) : SimpleSubcommand(
                             ConfigManager.config.getString(
                                 "$SERVER_PATH.List.SuccessStart"
                             )
-                        ).toEmbed(event.jda)
+                        ).toEmbed()
                     )
                         .setEphemeral(true).queue()
                 }) {
                     buttonEvent.hook.sendMessageEmbeds(
                         EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
-                            .toEmbed(event.jda)
+                            .toEmbed()
                     )
                         .setEphemeral(true).queue().also { _ ->
                             logger.error("Error while changing server state !", it)
@@ -225,13 +225,13 @@ private class List(jda: JDA) : SimpleSubcommand(
                         ConfigManager.config.getString(
                             "$SERVER_PATH.List.SuccessRestart"
                         )
-                    ).toEmbed(event.jda)
+                    ).toEmbed()
                 )
                     .setEphemeral(true).queue()
             }) {
                 buttonEvent.hook.sendMessageEmbeds(
                     EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError"))
-                        .toEmbed(event.jda)
+                        .toEmbed()
                 )
                     .setEphemeral(true).queue().also { _ ->
                         logger.error("Error while changing server state !", it)
@@ -301,14 +301,14 @@ private class List(jda: JDA) : SimpleSubcommand(
             } catch (exception: ServerException) {
                 it.editMessageEmbeds(
                     EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NodeOffline"))
-                        .toEmbed(event.jda)
+                        .toEmbed()
                 ).setActionRow(closeButton).queue()
                 return@cooldownButton
             }
             val newButtons = getButtons(serverNew, serverInfoNew, event)
             val rows =
                 listOf(ActionRow.of(newButtons.subList(0, 5)), ActionRow.of(newButtons.subList(5, newButtons.size)))
-            it.editMessageEmbeds(EmbedManager.getServerInfo(serverInfoNew).toEmbed(event.jda)).setReplace(true)
+            it.editMessageEmbeds(EmbedManager.getServerInfo(serverInfoNew).toEmbed()).setReplace(true)
                 .setComponents(rows).queue()
         }
 
