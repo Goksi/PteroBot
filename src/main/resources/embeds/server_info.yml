@@ -8,7 +8,7 @@ fields:
     inline: true
   f2:
     name: Node
-    value: %node,
+    value: %node
     inline: true
   f3:
     name: Allocation
