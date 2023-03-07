@@ -22,7 +22,6 @@ private const val DEFAULT_NO_ID_MSG = "YOUR DISCORD SERVER ID HERE"
 private const val DEFAULT_NO_URL_MSG = "YOUR URL HERE"
 private const val DEFAULT_NO_API_KEY_MSG = "YOUR PTERODACTYL ADMIN CLIENT KEY HERE"
 
-/*TODO: make embeds YAML instead of JSON*/
 class PteroBot {
     private val logger by SLF4J
     private val jda: JDA
