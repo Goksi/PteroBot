@@ -261,5 +261,4 @@ private class AccInfo : SimpleSubcommand(
         event.hook.sendMessageEmbeds(EmbedManager.getAccountInfo(AccountInfo(pteroMember.getAccount())).toEmbed())
             .queue()
     }
-
 }
