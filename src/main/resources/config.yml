@@ -8,7 +8,8 @@ BotInfo:
   Activity: "PLAYING" # PLAYING LISTENING and WATCHING
   ActivityName: "Pterodactyl !"
   Ephemeral: false # indicates if commands like servers should return ephemeral or normal messages (node info will always return normal one)
-  MaxRegisteredAccounts: 1 # indicates number of max accounts user can register with /register command (set to 0 for unlimited)
+  EnabledRegistration: false
+  MaxRegisteredAccounts: 1 # indicates number of max accounts user can register with /account register command (set to 0 for unlimited)
 Cooldown: # those values are in seconds !
   Button:
     StatusChange: 10
@@ -19,78 +20,85 @@ Cooldown: # those values are in seconds !
 Messages:
   OnCooldown: "Sorry, this button is on cooldown for next %time seconds !"
   Commands:
-    Link:
-      Description: "Connect your pterodactyl account using this command !"
-      OptionDescription: "Enter your pterodactyl api key here !"
-      LinkSuccess: "You successfully linked your discord account with %pteroName pterodactyl account"
-      LinkExist: "Sorry, but you already have pterodactyl account linked !"
-      LinkWrongKey: "Sorry, that api key is wrong !"
-    Unlink:
-      Description: "Unlink your linked pterodactyl api key !"
-      NotLinked: "You don't have any pterodactyl key linked, link one using /link"
-      SuccessUnlink: "You successfully unlinked your pterodactyl account"
-    NodeInfo:
-      Description: "Shows specific node info or all nodes online status (depends on options)"
-      OptionDescription: "ID of node you want to show info of"
-      OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new info, be careful because of rate-limit"
-      NodeNotFound: "Sorry, requested node is not found"
-      NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
-      OnlineEmoji: "🟢"
-      OfflineEmoji: "🔴"
-    Register:
-      Description: "Registers new account to pterodactyl panel !"
-      LimitReached: "Sorry, but you reached maximum pterodactyl account registered for your discord :( \\n Your accounts: %accounts"
-      InvalidEmail: "Sorry, this doesn't look like valid email address :("
-      PasswordRequired: true # set this to false only if your panel is able to send mails (this will send random password to user)
-      Success: "You successfully created account named %pteroName"
-      FieldTaken: "Sorry, but provided %takenField is already taken"
-      Modal:
-        Name: "PteroBot registration"
-        EmailPlaceholder: "Please enter your email here"
-        UsernamePlaceholder: "Enter your username here"
-        PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
-        FirstNamePlaceholder: "Enter your first name here"
-        LastNamePlaceholder: "Enter your last name here"
-    Servers:
-      Description: "Select server you want to interact with"
-      NotLinked: "Sorry, your discord isn't linked with any pterodactyl account, link one using /link"
-      NotFound: "Sorry, but your account isn't found anymore (deleted apy key) ?"
-      WrongKey: "Looks like your api key is wrong, please unlink and link with new key again"
-      MenuPlaceholder: "Please select server you would like"
-      WrongUser: "I'm sorry, but this server selection was not meant for you !"
-      SuccessStart: "You successfully sent start signal !"
-      SuccessStop: "You successfully sent stop signal !"
-      SuccessRestart: "You successfully sent restart signal !"
-      SuccessCommand: "You successfully sent command to server !"
-      NodeOffline: "Sorry, we currently can't reach selected server"
-      Buttons:
-        Stop: "Stop"
-        StopType: "DANGER" # https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
-        StopEmoji: "⭕"
-        Start: "Start"
-        StartType: "SUCCESS"
-        StartEmoji: "✅"
-        Restart: "Restart"
-        RestartType: "PRIMARY"
-        RestartEmoji: "🔁"
-        Command: "Command"
-        CommandType: "SECONDARY"
-        CommandEmoji: "🔼"
-        RequestLogs: "Request logs"
-        RequestLogsType: "SECONDARY"
-        RequestLogsEmoji: "🔽"
-        Refresh: "Refresh"
-        RefreshType: "SECONDARY"
-        RefreshEmoji: "🔄"
-        Close: "Close"
-        CloseType: "DANGER"
-        CloseEmoji: "✖️"
-      Modal:
-        Name: "Send command"
-        Placeholder: "Please input your command here"
-    NodeStatus:
-      Description: "Display online or offline status of all nodes !"
-      OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new status,be careful because of rate-limit"
-      NotAdmin: "Sorry, only admins can execute this command !"
+    Account:
+      Link:
+        Description: "Connect your pterodactyl account using this command !"
+        OptionDescription: "Enter your pterodactyl api key here !"
+        LinkSuccess: "You successfully linked your discord account with %pteroName pterodactyl account"
+        LinkExist: "Sorry, but you already have pterodactyl account linked !"
+        LinkWrongKey: "Sorry, that api key is wrong !"
+      Unlink:
+        Description: "Unlink your linked pterodactyl api key !"
+        NotLinked: "You don't have any pterodactyl key linked, link one using /account link"
+        SuccessUnlink: "You successfully unlinked your pterodactyl account"
+      Register:
+        DisabledMessage: "Sorry, registrations are currently disabled !"
+        Description: "Registers new account to pterodactyl panel !"
+        LimitReached: "Sorry, but you reached maximum pterodactyl account registered for your discord :( \\n Your accounts: %accounts"
+        InvalidEmail: "Sorry, this doesn't look like valid email address :("
+        PasswordRequired: true # set this to false only if your panel is able to send mails (this will send random password to user)
+        Success: "You successfully created account named %pteroName"
+        FieldTaken: "Sorry, but provided %takenField is already taken"
+        Modal:
+          Name: "PteroBot registration"
+          EmailPlaceholder: "Please enter your email here"
+          UsernamePlaceholder: "Enter your username here"
+          PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
+          FirstNamePlaceholder: "Enter your first name here"
+          LastNamePlaceholder: "Enter your last name here"
+      Info:
+        Description: "Shows info of your linked pterodactyl account !"
+        NotLinked: "You don't have pterodactyl account linked !"
+    Node:
+      Info:
+        Description: "Shows specific node info or all nodes online status (depends on options)"
+        OptionDescription: "ID of node you want to show info of"
+        OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new info, be careful because of rate-limit"
+        NodeNotFound: "Sorry, requested node is not found"
+        NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
+        OnlineEmoji: "🟢"
+        OfflineEmoji: "🔴"
+      Status:
+        Description: "Display online or offline status of all nodes !"
+        OptionUpdateDescription: "If true, bot will edit this message every 5 minutes with new status,be careful because of rate-limit"
+        NotAdmin: "Sorry, only admins can execute this command !"
+    Server:
+      List:
+        Description: "Select server you want to interact with"
+        NotLinked: "Sorry, your discord isn't linked with any pterodactyl account, link one using /link"
+        NotFound: "Sorry, but your account isn't found anymore (deleted apy key) ?"
+        WrongKey: "Looks like your api key is wrong, please unlink and link with new key again"
+        MenuPlaceholder: "Please select server you would like"
+        WrongUser: "I'm sorry, but this server selection was not meant for you !"
+        SuccessStart: "You successfully sent start signal !"
+        SuccessStop: "You successfully sent stop signal !"
+        SuccessRestart: "You successfully sent restart signal !"
+        SuccessCommand: "You successfully sent command to server !"
+        NodeOffline: "Sorry, we currently can't reach selected server"
+        Buttons:
+          Stop: "Stop"
+          StopType: "DANGER" # https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
+          StopEmoji: "⭕"
+          Start: "Start"
+          StartType: "SUCCESS"
+          StartEmoji: "✅"
+          Restart: "Restart"
+          RestartType: "PRIMARY"
+          RestartEmoji: "🔁"
+          Command: "Command"
+          CommandType: "SECONDARY"
+          CommandEmoji: "🔼"
+          RequestLogs: "Request logs"
+          RequestLogsType: "SECONDARY"
+          RequestLogsEmoji: "🔽"
+          Refresh: "Refresh"
+          RefreshType: "SECONDARY"
+          RefreshEmoji: "🔄"
+          Close: "Close"
+          CloseType: "DANGER"
+          CloseEmoji: "✖️"
+        Modal:
+          Name: "Send command"
+          Placeholder: "Please input your command here"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"

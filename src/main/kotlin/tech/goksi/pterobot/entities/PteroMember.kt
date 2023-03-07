@@ -3,13 +3,12 @@ package tech.goksi.pterobot.entities
 import com.mattmalec.pterodactyl4j.client.entities.Account
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import net.dv8tion.jda.api.entities.UserSnowflake
 import tech.goksi.pterobot.database.DataStorage
 import tech.goksi.pterobot.database.impl.SQLiteImpl
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.util.Common
+import tech.goksi.pterobot.util.await
 
 class PteroMember(private val discordID: Long) {
     constructor(snowflake: UserSnowflake) : this(snowflake.idLong)
@@ -22,7 +21,7 @@ class PteroMember(private val discordID: Long) {
         data.getApiKey(discordID)
     }
 
-    private val client: PteroClient?
+    val client: PteroClient?
         get() = Common.createClient(apiKey?.key)
 
     val registeredAccounts: Set<String> by lazy {
@@ -54,20 +53,14 @@ class PteroMember(private val discordID: Long) {
     fun registerAccount(accountName: String) = data.addRegisteredAccount(discordID, accountName)
 
     suspend fun getServers(): List<ClientServer> {
-        return withContext(Dispatchers.IO) {
-            client!!.retrieveServers().execute()
-        }
+        return client!!.retrieveServers().await()
     }
 
     suspend fun getServerById(id: String): ClientServer {
-        return withContext(Dispatchers.IO) {
-            client!!.retrieveServerByIdentifier(id).execute()
-        }
+        return client!!.retrieveServerByIdentifier(id).await()
     }
 
     suspend fun getAccount(): Account {
-        return withContext(Dispatchers.IO) {
-            client!!.retrieveAccount().execute()
-        }
+        return client!!.retrieveAccount().await()
     }
 }

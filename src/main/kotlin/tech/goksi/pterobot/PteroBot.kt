@@ -7,7 +7,9 @@ import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.cache.CacheFlag
-import tech.goksi.pterobot.commands.*
+import tech.goksi.pterobot.commands.AccountCommand
+import tech.goksi.pterobot.commands.NodeCommand
+import tech.goksi.pterobot.commands.ServerCommand
 import tech.goksi.pterobot.commands.manager.SimpleCommandData
 import tech.goksi.pterobot.events.NodeStatusDelete
 import tech.goksi.pterobot.manager.ConfigManager
@@ -101,16 +103,14 @@ class PteroBot {
             }
         }.awaitReady()
 
-        val commandData = SimpleCommandData()
-        commandData.addCommands(
-            Link(),
-            NodeInfoCmd(),
-            Register(),
-            Servers(jda),
-            Unlink(),
-            NodeStatusCmd()
-        )
-        val guild = jda.getGuildById(guildPair.first!!) // what if wrong guild id ?
+        val commandData = SimpleCommandData().apply {
+            addCommands(
+                AccountCommand(),
+                NodeCommand(),
+                ServerCommand(jda)
+            )
+        }
+        val guild = jda.getGuildById(guildPair.first!!) // what if wrong guild id, silent fail for now ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())
         commandData.registerListeners(jda)

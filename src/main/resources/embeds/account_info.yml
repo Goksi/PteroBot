@@ -1,0 +1,27 @@
+title: PteroBot
+color: 39129
+fields:
+  f1:
+    name: Id
+    value: %id
+    inline: true
+  f2:
+    name: Username
+    value: %username
+    inline: true
+  f3:
+    name: Name
+    value: %fullName
+    inline: false
+  f4:
+    name: Email
+    value: %email
+    inline: false
+  f5:
+    name: Admin
+    value: %rootAdmin
+    inline: false
+footer:
+  text: PteroBot | Servers
+  icon_url: https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png
+timestamp: %timestamp

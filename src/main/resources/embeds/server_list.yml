@@ -1,0 +1,7 @@
+title: PteroBot
+description: "Please select one of your servers :hugging:"
+color: 39129
+footer:
+  text: PteroBot | Servers
+  icon_url: https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png
+timestamp: %timestamp

@@ -1,18 +1,13 @@
 package tech.goksi.pterobot.manager
 
 import dev.minn.jda.ktx.util.SLF4J
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.utils.data.DataObject
-import net.dv8tion.jda.internal.JDAImpl
-import net.dv8tion.jda.internal.utils.Helpers
 import tech.goksi.pterobot.EmbedType
 import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.NodeInfo
 import tech.goksi.pterobot.entities.ServerInfo
+import tech.goksi.pterobot.util.EmbedParser
 import java.io.File
-import java.time.Instant
-import java.time.format.DateTimeFormatter
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
 
@@ -54,12 +49,12 @@ object EmbedManager {
         return rawNodeInfo.replacePlaceholders(getPlaceholderMap(nodeInfo))
     }
 
-    fun getServersCommand(accountInfo: AccountInfo): String {
+    fun getServersCommand(): String {
         val rawServersSuccess by lazy {
             val file = File(EmbedType.SERVERS_COMMAND.path)
             file.readText()
         }
-        return rawServersSuccess.replacePlaceholders(getPlaceholderMap(accountInfo))
+        return rawServersSuccess.replacePlaceholders(emptyMap())
     }
 
     fun getServerInfo(server: ServerInfo): String {
@@ -70,27 +65,34 @@ object EmbedManager {
         return rawServerInfo.replacePlaceholders(getPlaceholderMap(server))
     }
 
+    fun getAccountInfo(accountInfo: AccountInfo): String {
+        val rawAccountInfo by lazy {
+            val file = File(EmbedType.ACCOUNT_INFO.path)
+            file.readText()
+        }
+        return rawAccountInfo.replacePlaceholders(getPlaceholderMap(accountInfo))
+    }
+
     fun getNodeStatus(): String {
         val rawServerStatus by lazy {
             val file = File(EmbedType.NODE_STATUS.path)
             file.readText()
         }
-        return rawServerStatus.replace("%timestamp", getCurrentTimestamp())
+        return rawServerStatus.replace("%timestamp", getCurrentTimestamp().toString())
     }
 
-    fun String.toEmbed(jda: JDA): MessageEmbed {
-        val jdaImpl: JDAImpl = jda as JDAImpl
-        return jdaImpl.entityBuilder.createMessageEmbed(DataObject.fromJson(this))
+    fun String.toEmbed(): MessageEmbed {
+        return EmbedParser.parse(this)
     }
 
     private fun String.replacePlaceholders(replacements: Map<String, String>): String {
         var result = this
+        result = result.replace("%timestamp", getCurrentTimestamp().toString())
         replacements.forEach { (key, value) -> result = result.replace("$key\\b".toRegex(), value) }
         return result
     }
 
-    private fun getCurrentTimestamp(): String =
-        Helpers.toOffsetDateTime(Instant.now()).format(DateTimeFormatter.ISO_INSTANT)
+    private fun getCurrentTimestamp(): Long = System.currentTimeMillis()
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> getPlaceholderMap(entity: T): Map<String, String> {
@@ -98,7 +100,6 @@ object EmbedManager {
             .filterIsInstance<KProperty1<*, *>>()
             .map { it as KProperty1<T, *> }.filter { it.visibility != KVisibility.PRIVATE }
         return buildMap {
-            this["%timestamp"] = getCurrentTimestamp()
             fields.forEach {
                 val value = when (val uncheckedVal = it.get(entity)) {
                     is Float -> String.format("%.2f", uncheckedVal)
