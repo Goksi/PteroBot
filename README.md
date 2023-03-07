@@ -95,5 +95,6 @@ By default, every member can *manage* servers with their own api key !
 ### Registration
 
 ![Registration](https://cdn.discordapp.com/attachments/976766831182368768/1033776792898642021/unknown.png)  
-By default, `/register` command is admin only, you can enable it to everyone by setting `EnabledRegistration` config
+By default, `/account register` command is admin only, you can enable it to everyone by setting `EnabledRegistration`
+config
 option to true
