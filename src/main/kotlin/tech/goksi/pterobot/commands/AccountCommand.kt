@@ -122,7 +122,6 @@ private class Unlink : SimpleSubcommand(
 }
 
 /*REGISTER SUBCOMMAND*/
-/*TODO: edit README*/
 private class Register : SimpleSubcommand(
     name = "register",
     description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Description"),
