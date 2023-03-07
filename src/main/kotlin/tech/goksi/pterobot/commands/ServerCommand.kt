@@ -20,7 +20,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
 import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
-import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
@@ -91,7 +90,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                 }
                 this.placeholder = ConfigManager.config.getString("$SERVER_PATH.List.MenuPlaceholder")
             }
-            val response = EmbedManager.getServersCommand(AccountInfo(pteroMember.getAccount())).toEmbed()
+            val response = EmbedManager.getServersCommand().toEmbed()
 
             event.hook.sendMessageEmbeds(response).addActionRow(selectMenu).queue()
         } else {

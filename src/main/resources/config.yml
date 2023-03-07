@@ -46,6 +46,9 @@ Messages:
           PasswordPlaceholder: "Enter your password, if not specified panel will generate one"
           FirstNamePlaceholder: "Enter your first name here"
           LastNamePlaceholder: "Enter your last name here"
+      Info:
+        Description: "Shows info of your linked pterodactyl account !"
+        NotLinked: "You don't have pterodactyl account linked !"
     Node:
       Info:
         Description: "Shows specific node info or all nodes online status (depends on options)"
