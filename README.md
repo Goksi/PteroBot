@@ -86,7 +86,9 @@ It also comes with an option to automatically update message every 5 minutes.
 
 ### Managing servers
 
-![Server list](/imgs/server_list.png) ![Server manage](/imgs/server_manage.png)
+<pre>
+<img src="/imgs/server_list.png" alt="Server list">   <img src = "imgs/server_manage.png" alt="Server manage">
+</pre>
 
 By default, every member can *manage* servers with their own api key !
 
