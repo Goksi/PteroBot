@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import net.dv8tion.jda.api.interactions.modals.Modal
 import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
 import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
+import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.ApiKey
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.manager.ConfigManager
@@ -30,7 +31,7 @@ private const val ACCOUNT_PREFIX = "Messages.Commands.Account"
 
 class AccountCommand : TopLevelCommand(
     name = "account",
-    subcommands = listOf(Link(), Unlink(), Register())
+    subcommands = listOf(Link(), Unlink(), Register(), AccInfo())
 )
 
 /*LINK SUBCOMMAND*/
@@ -239,4 +240,26 @@ private class Register : SimpleSubcommand(
             ).queue()
         })
     }
+}
+
+/*INFO SUBCOMMAND*/
+private class AccInfo : SimpleSubcommand(
+    name = "info",
+    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Info.Description"),
+    baseCommand = "account"
+) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+        val pteroMember = PteroMember(event.user)
+        event.deferReply().queue()
+        if (!pteroMember.isLinked()) {
+            event.hook.sendMessageEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Info.NotLinked"))
+                    .toEmbed()
+            ).queue()
+            return
+        }
+        event.hook.sendMessageEmbeds(EmbedManager.getAccountInfo(AccountInfo(pteroMember.getAccount())).toEmbed())
+            .queue()
+    }
+
 }

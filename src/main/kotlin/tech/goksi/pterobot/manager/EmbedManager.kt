@@ -49,12 +49,12 @@ object EmbedManager {
         return rawNodeInfo.replacePlaceholders(getPlaceholderMap(nodeInfo))
     }
 
-    fun getServersCommand(accountInfo: AccountInfo): String {
+    fun getServersCommand(): String {
         val rawServersSuccess by lazy {
             val file = File(EmbedType.SERVERS_COMMAND.path)
             file.readText()
         }
-        return rawServersSuccess.replacePlaceholders(getPlaceholderMap(accountInfo))
+        return rawServersSuccess.replacePlaceholders(emptyMap())
     }
 
     fun getServerInfo(server: ServerInfo): String {
@@ -63,6 +63,14 @@ object EmbedManager {
             file.readText()
         }
         return rawServerInfo.replacePlaceholders(getPlaceholderMap(server))
+    }
+
+    fun getAccountInfo(accountInfo: AccountInfo): String {
+        val rawAccountInfo by lazy {
+            val file = File(EmbedType.ACCOUNT_INFO.path)
+            file.readText()
+        }
+        return rawAccountInfo.replacePlaceholders(getPlaceholderMap(accountInfo))
     }
 
     fun getNodeStatus(): String {
@@ -79,6 +87,7 @@ object EmbedManager {
 
     private fun String.replacePlaceholders(replacements: Map<String, String>): String {
         var result = this
+        result = result.replace("%timestamp", getCurrentTimestamp().toString())
         replacements.forEach { (key, value) -> result = result.replace("$key\\b".toRegex(), value) }
         return result
     }
@@ -91,7 +100,6 @@ object EmbedManager {
             .filterIsInstance<KProperty1<*, *>>()
             .map { it as KProperty1<T, *> }.filter { it.visibility != KVisibility.PRIVATE }
         return buildMap {
-            this["%timestamp"] = getCurrentTimestamp().toString()
             fields.forEach {
                 val value = when (val uncheckedVal = it.get(entity)) {
                     is Float -> String.format("%.2f", uncheckedVal)
