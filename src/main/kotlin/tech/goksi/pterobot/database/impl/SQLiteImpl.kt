@@ -56,7 +56,8 @@ class SQLiteImpl : DataStorage {
     override fun link(id: Long, apiKey: ApiKey) {
         connectionWrapper.withConnection(
             query = "insert into Keys(\"key\", \"admin\") values (?, ?)",
-            apiKey.key, apiKey.admin
+            apiKey.key,
+            apiKey.admin
         ) { it.executeUpdate() }
 
         /*TODO: probably should not relay on last_insert_rowid()*/
