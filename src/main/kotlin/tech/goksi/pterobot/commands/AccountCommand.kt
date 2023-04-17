@@ -155,7 +155,7 @@ private class Register : SimpleSubcommand(
             .setPlaceholder(ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.LastNamePlaceholder"))
             .build()
         modal = Modal.create("pterobot:register", ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.Name"))
-            .addActionRows(
+            .addComponents(
                 ActionRow.of(email),
                 ActionRow.of(username),
                 ActionRow.of(password),
