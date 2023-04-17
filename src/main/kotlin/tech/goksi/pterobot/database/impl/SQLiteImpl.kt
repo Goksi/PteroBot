@@ -1,21 +1,20 @@
 package tech.goksi.pterobot.database.impl
 
 import dev.minn.jda.ktx.util.SLF4J
+import tech.goksi.pterobot.database.ConnectionWrapper
 import tech.goksi.pterobot.database.DataStorage
 import tech.goksi.pterobot.entities.ApiKey
-import java.sql.Connection
-import java.sql.DriverManager
 import java.sql.SQLException
 import kotlin.system.exitProcess
 
 class SQLiteImpl : DataStorage {
-    private val connection: Connection
+    private val connectionWrapper: ConnectionWrapper
     private val logger by SLF4J
 
     init {
         Class.forName("org.sqlite.JDBC")
-        connection = DriverManager.getConnection("jdbc:sqlite:database.db")
-        val statement = connection.createStatement()
+        connectionWrapper = ConnectionWrapper.getConnection("SQLite", "database.db")
+        val statement = connectionWrapper.connection.createStatement()
         statement.addBatch(
             "create table if not exists Members(id integer not null primary key autoincrement, discordID bigint not null unique, apiID integer, foreign key(apiID) references Keys(id) on delete set null)"
         )
@@ -39,11 +38,10 @@ class SQLiteImpl : DataStorage {
     }
 
     override fun getApiKey(id: Long): ApiKey? {
-        val statement = connection.prepareStatement(
-            "select Keys.key, Keys.admin from Keys inner join Members on Keys.id = Members.apiID where Members.discordID = ?"
-        )
-        statement.setLong(1, id)
-        statement.use {
+        return connectionWrapper.withConnection(
+            query = "select Keys.key, Keys.admin from Keys inner join Members on Keys.id = Members.apiID where Members.discordID = ?",
+            id
+        ) {
             try {
                 val resultSet = it.executeQuery()
                 if (resultSet.next()) return ApiKey(resultSet.getString("key"), resultSet.getBoolean("admin"))
@@ -56,26 +54,23 @@ class SQLiteImpl : DataStorage {
 
     @Throws(SQLException::class)
     override fun link(id: Long, apiKey: ApiKey) {
-        val keyStatement = connection.prepareStatement(
-            "insert into Keys(\"key\", \"admin\") values (?, ?)"
-        )
-        val statement = connection.prepareStatement(
-            "insert into Members(discordID, apiID) values (?, last_insert_rowid()) on conflict(discordID) do update set apiID = last_insert_rowid()"
-        )
-        statement.setLong(1, id)
-        keyStatement.setString(1, apiKey.key)
-        keyStatement.setBoolean(2, apiKey.admin)
-        keyStatement.use { it.executeUpdate() }
-        statement.use { it.executeUpdate() } // should catch SQLException later in command
+        connectionWrapper.withConnection(
+            query = "insert into Keys(\"key\", \"admin\") values (?, ?)",
+            apiKey.key, apiKey.admin
+        ) { it.executeUpdate() }
+
+        /*TODO: probably should not relay on last_insert_rowid()*/
+        connectionWrapper.withConnection(
+            query = "insert into Members(discordID, apiID) values (?, last_insert_rowid()) on conflict(discordID) do update set apiID = last_insert_rowid()",
+            id
+        ) { it.executeUpdate() }
     }
 
     override fun unlink(id: Long) {
-        val statement = connection.prepareStatement(
-            "delete from Keys where id in (" +
-                "select apiID from Members where discordID = ? )"
-        )
-        statement.setLong(1, id)
-        statement.use {
+        connectionWrapper.withConnection(
+            query = "delete from Keys where id in ( select apiID from Members where discordID = ? )",
+            id
+        ) {
             try {
                 it.executeUpdate()
             } catch (exception: SQLException) {
@@ -85,11 +80,10 @@ class SQLiteImpl : DataStorage {
     }
 
     override fun getRegisteredAccounts(id: Long): Set<String> {
-        val statement = connection.prepareStatement(
-            "select username from Accounts inner join Members on Accounts.memberID = Members.id where Members.discordID = ?"
-        )
-        statement.setLong(1, id)
-        statement.use {
+        return connectionWrapper.withConnection(
+            query = "select username from Accounts inner join Members on Accounts.memberID = Members.id where Members.discordID = ?",
+            id
+        ) {
             try {
                 val resultSet = it.executeQuery()
                 return buildSet {
@@ -98,29 +92,32 @@ class SQLiteImpl : DataStorage {
                 }
             } catch (exception: SQLException) {
                 logger.error("Error while retrieving registered accounts of $id", exception)
+                return emptySet()
             }
         }
-        return emptySet()
     }
 
     override fun addRegisteredAccount(id: Long, accountName: String) {
-        val memberStatement = connection.prepareStatement(
-            "insert or ignore into Members(discordID) values (?)"
-        )
-        val accountStatement = connection.prepareStatement(
-            "insert into Accounts(memberID, username) values ((select id from members where discordID = ?),?)"
-        )
-        memberStatement.use { member ->
-            accountStatement.use { account ->
-                member.setLong(1, id)
-                account.setLong(1, id)
-                account.setString(2, accountName)
-                try {
-                    member.executeUpdate()
-                    account.executeUpdate()
-                } catch (exception: SQLException) {
-                    logger.error("Error while adding registered account to $id", exception)
-                }
+        connectionWrapper.withConnection(
+            query = "insert or ignore into Members(discordID) values (?)",
+            id
+        ) {
+            try {
+                it.executeUpdate()
+            } catch (exception: SQLException) {
+                logger.error("Error while adding member with discord id $id", exception)
+            }
+        }
+
+        connectionWrapper.withConnection(
+            query = "insert into Accounts(memberID, username) values ((select id from members where discordID = ?),?)",
+            id,
+            accountName
+        ) {
+            try {
+                it.executeUpdate()
+            } catch (exception: SQLException) {
+                logger.error("Error while adding account to user with id $id", exception)
             }
         }
     }
