@@ -28,10 +28,12 @@ import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.Common.getLogs
 import tech.goksi.pterobot.util.await
+import tech.goksi.pterobot.util.awaitEvent
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ThreadLocalRandom
 import kotlin.time.Duration.Companion.minutes
 
 private const val SERVER_PATH = "Messages.Commands.Server"
@@ -315,12 +317,39 @@ private class List(jda: JDA) : SimpleSubcommand(
     }
 }
 
-private class Create(jda: JDA) : SimpleSubcommand(
+private class Create(val jda: JDA) : SimpleSubcommand(
     name = "create",
     description = ConfigManager.config.getString("$SERVER_PATH.Create.Description"),
     baseCommand = "server"
 ) {
+    /*TODO: event waiter ?*/
     override suspend fun execute(event: SlashCommandInteractionEvent) {
+        val pteroMember = PteroMember(event.user.idLong)
 
+        if (!pteroMember.isPteroAdmin()) {
+            event.replyEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.NotAdmin"))
+                    .toEmbed()
+            ).setEphemeral(true).queue()
+            return
+        }
+        val pteroApplication = Common.getDefaultApplication()
+        val eggs = pteroApplication.retrieveEggs().await()
+        val randomId = ThreadLocalRandom.current().nextInt()
+        val selectMenu = StringSelectMenu(
+            customId = "pterobot:egg-selector:${event.user.idLong}:$randomId",
+            placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.EggMenuPlaceholder")
+        ) {
+            for (egg in eggs) option(egg.name, "${egg.retrieveNest().await().id}:${egg.id}", egg.dockerImage)
+        }
+        event.reply("")
+            .setActionRow(selectMenu)
+            .setEphemeral(true).queue()
+        val selectEggEvent =
+            jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:egg-selector:${event.user.idLong}:$randomId" }
+                ?: return
+        val (nestId, eggId) = selectEggEvent.selectedOptions[0].value.split(":")
+        val egg =
+        val createServerAction = pteroApplication.createServer().setEgg(egg)
     }
 }

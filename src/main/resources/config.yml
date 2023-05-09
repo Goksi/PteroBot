@@ -100,7 +100,9 @@ Messages:
         Modal:
           Name: "Send command"
           Placeholder: "Please input your command here"
-        Create:
-          Description: "Create new server on your panel !"
+      Create:
+        Description: "Create new server on your panel !"
+        NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
+        EggMenuPlaceholder: "Select egg !"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
