@@ -25,6 +25,7 @@ object EmbedManager {
         }
     }
 
+    /*TODO: maybe add config path here and also toEmbed ?*/
     fun getGenericSuccess(message: String): String {
         val rawGeneric by lazy {
             val file = File(EmbedType.GENERIC_SUCCESS.path)
