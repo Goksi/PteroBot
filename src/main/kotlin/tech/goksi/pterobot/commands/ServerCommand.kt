@@ -38,7 +38,7 @@ private const val SERVER_PATH = "Messages.Commands.Server"
 
 class ServerCommand(jda: JDA) : TopLevelCommand(
     name = "server",
-    subcommands = listOf(List(jda))
+    subcommands = listOf(List(jda), Create(jda))
 )
 
 private class List(jda: JDA) : SimpleSubcommand(
@@ -312,5 +312,15 @@ private class List(jda: JDA) : SimpleSubcommand(
         }
 
         return listOf(changeStateButton, restartButton, commandButton, requestLogsButton, refreshButton, closeButton)
+    }
+}
+
+private class Create(jda: JDA) : SimpleSubcommand(
+    name = "create",
+    description = ConfigManager.config.getString("$SERVER_PATH.Create.Description"),
+    baseCommand = "server"
+) {
+    override suspend fun execute(event: SlashCommandInteractionEvent) {
+
     }
 }
