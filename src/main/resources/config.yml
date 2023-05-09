@@ -100,5 +100,7 @@ Messages:
         Modal:
           Name: "Send command"
           Placeholder: "Please input your command here"
+        Create:
+          Description: "Create new server on your panel !"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
