@@ -349,7 +349,9 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:egg-selector:${event.user.idLong}:$randomId" }
                 ?: return
         val (nestId, eggId) = selectEggEvent.selectedOptions[0].value.split(":")
-        val egg =
-        val createServerAction = pteroApplication.createServer().setEgg(egg)
+        val egg = pteroApplication.retrieveEggById(nestId, eggId).await()
+        event.hook.deleteOriginal().queue()
+        val createServerAction = pteroApplication.createServer().startOnCompletion(true).setEgg(egg)
+        
     }
 }
