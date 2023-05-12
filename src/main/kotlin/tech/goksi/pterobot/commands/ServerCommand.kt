@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.utils.FileUpload
 import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
 import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
@@ -322,7 +323,6 @@ private class Create(val jda: JDA) : SimpleSubcommand(
     description = ConfigManager.config.getString("$SERVER_PATH.Create.Description"),
     baseCommand = "server"
 ) {
-    /*TODO: event waiter ?*/
     override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.user.idLong)
 
@@ -334,24 +334,94 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             return
         }
         val pteroApplication = Common.getDefaultApplication()
-        val eggs = pteroApplication.retrieveEggs().await()
+        val nodes = pteroApplication.retrieveNodes().await()
         val randomId = ThreadLocalRandom.current().nextInt()
-        val selectMenu = StringSelectMenu(
-            customId = "pterobot:egg-selector:${event.user.idLong}:$randomId",
-            placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.EggMenuPlaceholder")
-        ) {
-            for (egg in eggs) option(egg.name, "${egg.retrieveNest().await().id}:${egg.id}", egg.dockerImage)
+        /*Send node select menu*/
+        val nodeSelectMenu = createSelectMenu(
+            "pterobot:node-selector:${event.user.idLong}:$randomId",
+            ConfigManager.config.getString("$SERVER_PATH.Create.NodeMenuPlaceholder"),
+            nodes
+        ) { builder, node ->
+            builder.option(
+                node.name,
+                node.id,
+                "Max memory: ${node.memory}MB Allocated memory: ${node.allocatedMemory}MB"
+            )
         }
         event.reply("")
-            .setActionRow(selectMenu)
+            .setActionRow(nodeSelectMenu)
+            .setEphemeral(true).queue()
+        val selectNodeEvent =
+            jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
+                ?: return
+        val selectedNode = nodes.first { it.id == selectNodeEvent.selectedOptions[0].value }
+        /*Send allocation modal*/
+        val allocationModal = Modal(
+            id = "pterobot:allocation-modal:${event.user.idLong}:$randomId",
+            title = ConfigManager.config.getString("$SERVER_PATH.Create.AllocationModalTitle")
+        ) {
+            this.short(
+                id = "allocation",
+                label = "Port",
+                required = true,
+                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.AllocationModalPlaceholder"),
+                requiredLength = 4..5
+            )
+        }
+        selectNodeEvent.replyModal(allocationModal).queue()
+        selectNodeEvent.hook.deleteOriginal().queue()
+        val allocationModalEvent =
+            jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:allocation-modal:${event.user.idLong}:$randomId" }
+                ?: return
+        /*Parse port and get allocation object*/
+        val port = allocationModalEvent.getValue("allocation")!!.asString.toIntOrNull() ?: 0
+        val tempList = selectedNode.retrieveAllocationsByPort(port).await()
+        if (tempList.size == 0) {
+            allocationModalEvent.replyEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.AllocationNotFound"))
+                    .toEmbed()
+            ).setEphemeral(true).queue()
+            return
+        }
+        val allocation = tempList[0]
+        /*Send egg select menu*/
+        val eggs = pteroApplication.retrieveEggs().await()
+        val eggSelectMenu = createSelectMenu(
+            "pterobot:egg-selector:${event.user.idLong}:$randomId",
+            ConfigManager.config.getString("$SERVER_PATH.Create.EggMenuPlaceholder"),
+            eggs
+        ) { builder, egg ->
+            builder.option(
+                egg.name,
+                "${egg.retrieveNest().await().id}:${egg.id}",
+                egg.dockerImage
+            )
+        }
+        allocationModalEvent.reply("")
+            .setActionRow(eggSelectMenu)
             .setEphemeral(true).queue()
         val selectEggEvent =
             jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:egg-selector:${event.user.idLong}:$randomId" }
                 ?: return
         val (nestId, eggId) = selectEggEvent.selectedOptions[0].value.split(":")
         val egg = pteroApplication.retrieveEggById(nestId, eggId).await()
-        event.hook.deleteOriginal().queue()
-        val createServerAction = pteroApplication.createServer().startOnCompletion(true).setEgg(egg)
-        
+        selectEggEvent.hook.deleteOriginal().queue()
+        val createServerAction = pteroApplication.createServer()
+            .startOnCompletion(true)
+            .setEgg(egg)
+            .setAllocation(allocation)
+
+    }
+
+    private inline fun <reified T> createSelectMenu(
+        id: String,
+        placeholder: String,
+        items: kotlin.collections.List<T>,
+        option: (StringSelectMenu.Builder, T) -> Unit
+    ): StringSelectMenu {
+        val selectMenu = StringSelectMenu(customId = id, placeholder = placeholder) {
+            for (item in items) option(this, item)
+        }
+        return selectMenu
     }
 }
