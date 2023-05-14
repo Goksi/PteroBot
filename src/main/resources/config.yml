@@ -108,5 +108,8 @@ Messages:
         AllocationModalTitle: "Allocation port"
         AllocationModalPlaceholder: "Please type port here"
         AllocationNotFound: "Sorry, but desired allocation is not found !"
+        OwnerModalTitle: "Server owner"
+        OwnerModalPlaceholder: "Please type server owner email"
+        OwnerNotFound: "Sorry, but user with that email is not found !"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
