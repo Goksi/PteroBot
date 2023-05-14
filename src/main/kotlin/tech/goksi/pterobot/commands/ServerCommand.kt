@@ -360,7 +360,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             id = "pterobot:allocation-modal:${event.user.idLong}:$randomId",
             title = ConfigManager.config.getString("$SERVER_PATH.Create.AllocationModalTitle")
         ) {
-            this.short(
+            short(
                 id = "allocation",
                 label = "Port",
                 required = true,
@@ -375,15 +375,16 @@ private class Create(val jda: JDA) : SimpleSubcommand(
                 ?: return
         /*Parse port and get allocation object*/
         val port = allocationModalEvent.getValue("allocation")!!.asString.toIntOrNull() ?: 0
-        val tempList = selectedNode.retrieveAllocationsByPort(port).await()
-        if (tempList.size == 0) {
+        val tempAllocation = selectedNode.retrieveAllocationsByPort(port).await()
+        /*TODO: check multiple ips matching same port ?*/
+        if (tempAllocation.isEmpty()) {
             allocationModalEvent.replyEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.AllocationNotFound"))
                     .toEmbed()
             ).setEphemeral(true).queue()
             return
         }
-        val allocation = tempList[0]
+        val allocation = tempAllocation[0]
         /*Send egg select menu*/
         val eggs = pteroApplication.retrieveEggs().await()
         val eggSelectMenu = createSelectMenu(
@@ -406,10 +407,38 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         val (nestId, eggId) = selectEggEvent.selectedOptions[0].value.split(":")
         val egg = pteroApplication.retrieveEggById(nestId, eggId).await()
         selectEggEvent.hook.deleteOriginal().queue()
+        /*Send owner modal*/
+        val ownerModal = Modal(
+            id = "pterobot:owner-modal:${event.user.idLong}:$randomId",
+            title = ConfigManager.config.getString("$SERVER_PATH.Create.OwnerModalTitle")
+        ) {
+            short(
+                id = "owner",
+                label = "Email",
+                required = true,
+                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.OwnerModalPlaceholder")
+            )
+        }
+        selectEggEvent.replyModal(ownerModal).queue()
+        val selectOwnerEvent =
+            jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:owner-modal:${event.user.idLong}:$randomId" }
+                ?: return
+        val tempOwner =
+            pteroApplication.retrieveUsersByEmail(selectOwnerEvent.getValue("owner")!!.asString, false).await()
+        if (tempAllocation.isEmpty()) {
+            allocationModalEvent.replyEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.OwnerNotFound"))
+                    .toEmbed()
+            ).setEphemeral(true).queue()
+            return
+        }
+        val owner = tempOwner[0]
+        /*Send basic server info modal*/
         val createServerAction = pteroApplication.createServer()
             .startOnCompletion(true)
             .setEgg(egg)
             .setAllocation(allocation)
+            .setOwner(owner)
 
     }
 
