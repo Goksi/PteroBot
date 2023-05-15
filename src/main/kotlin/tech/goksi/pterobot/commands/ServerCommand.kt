@@ -434,6 +434,35 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         }
         val owner = tempOwner[0]
         /*Send basic server info modal*/
+        val serverInfoModal = Modal(
+            id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
+            title = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
+        ) {
+            short(
+                id = "name",
+                label = "Server name",
+                required = true,
+                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder")
+            )
+            paragraph(
+                id = "desc",
+                label = "Description",
+                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder")
+            )
+            short(
+                id = "memory",
+                label = "Memory",
+                required = true,
+                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder")
+            )
+            short(
+                id = "disk",
+                label = "Disk space",
+                required = true,
+                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder")
+            )
+        } // smh cant reply modal from modal event
+
         val createServerAction = pteroApplication.createServer()
             .startOnCompletion(true)
             .setEgg(egg)
