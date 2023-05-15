@@ -111,5 +111,8 @@ Messages:
         OwnerModalTitle: "Server owner"
         OwnerModalPlaceholder: "Please type server owner email"
         OwnerNotFound: "Sorry, but user with that email is not found !"
+        ServerInfoModalTitle: "Server info"
+        ServerInfoNamePlaceholder: "Please enter server name here"
+        ServerInfoDescriptionPlaceholder: "Please enter server description here"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
