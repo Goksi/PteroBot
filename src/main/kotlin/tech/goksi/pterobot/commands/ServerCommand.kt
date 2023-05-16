@@ -29,12 +29,10 @@ import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.Common.getLogs
 import tech.goksi.pterobot.util.await
-import tech.goksi.pterobot.util.awaitEvent
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.time.Duration.Companion.minutes
 
 private const val SERVER_PATH = "Messages.Commands.Server"
@@ -324,6 +322,9 @@ private class Create(val jda: JDA) : SimpleSubcommand(
     baseCommand = "server"
 ) {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
+        TODO("Not yet implemented")
+    }
+    /*override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.user.idLong)
 
         if (!pteroMember.isPteroAdmin()) {
@@ -336,7 +337,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         val pteroApplication = Common.getDefaultApplication()
         val nodes = pteroApplication.retrieveNodes().await()
         val randomId = ThreadLocalRandom.current().nextInt()
-        /*Send node select menu*/
+        *//*Send node select menu*//*
         val nodeSelectMenu = createSelectMenu(
             "pterobot:node-selector:${event.user.idLong}:$randomId",
             ConfigManager.config.getString("$SERVER_PATH.Create.NodeMenuPlaceholder"),
@@ -355,7 +356,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
                 ?: return
         val selectedNode = nodes.first { it.id == selectNodeEvent.selectedOptions[0].value }
-        /*Send allocation modal*/
+        *//*Send allocation modal*//*
         val allocationModal = Modal(
             id = "pterobot:allocation-modal:${event.user.idLong}:$randomId",
             title = ConfigManager.config.getString("$SERVER_PATH.Create.AllocationModalTitle")
@@ -373,10 +374,10 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         val allocationModalEvent =
             jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:allocation-modal:${event.user.idLong}:$randomId" }
                 ?: return
-        /*Parse port and get allocation object*/
+        *//*Parse port and get allocation object*//*
         val port = allocationModalEvent.getValue("allocation")!!.asString.toIntOrNull() ?: 0
         val tempAllocation = selectedNode.retrieveAllocationsByPort(port).await()
-        /*TODO: check multiple ips matching same port ?*/
+        *//*TODO: check multiple ips matching same port ?*//*
         if (tempAllocation.isEmpty()) {
             allocationModalEvent.replyEmbeds(
                 EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.AllocationNotFound"))
@@ -385,7 +386,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             return
         }
         val allocation = tempAllocation[0]
-        /*Send egg select menu*/
+        *//*Send egg select menu*//*
         val eggs = pteroApplication.retrieveEggs().await()
         val eggSelectMenu = createSelectMenu(
             "pterobot:egg-selector:${event.user.idLong}:$randomId",
@@ -407,7 +408,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         val (nestId, eggId) = selectEggEvent.selectedOptions[0].value.split(":")
         val egg = pteroApplication.retrieveEggById(nestId, eggId).await()
         selectEggEvent.hook.deleteOriginal().queue()
-        /*Send owner modal*/
+        *//*Send owner modal*//*
         val ownerModal = Modal(
             id = "pterobot:owner-modal:${event.user.idLong}:$randomId",
             title = ConfigManager.config.getString("$SERVER_PATH.Create.OwnerModalTitle")
@@ -433,7 +434,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             return
         }
         val owner = tempOwner[0]
-        /*Send basic server info modal*/
+        *//*Send basic server info modal*//*
         val serverInfoModal = Modal(
             id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
             title = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
@@ -469,7 +470,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             .setAllocation(allocation)
             .setOwner(owner)
 
-    }
+    }*/
 
     private inline fun <reified T> createSelectMenu(
         id: String,
