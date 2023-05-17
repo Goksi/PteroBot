@@ -5,8 +5,10 @@ import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
 import com.mattmalec.pterodactyl4j.exceptions.ServerException
 import dev.minn.jda.ktx.events.listener
+import dev.minn.jda.ktx.events.onButton
 import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.StringSelectMenu
+import dev.minn.jda.ktx.interactions.components.button
 import dev.minn.jda.ktx.interactions.components.option
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
@@ -19,9 +21,11 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.utils.FileUpload
+import okhttp3.internal.toLongOrDefault
 import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
 import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
 import tech.goksi.pterobot.entities.PteroMember
+import tech.goksi.pterobot.entities.ServerCreate
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
@@ -29,10 +33,12 @@ import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.Common.getLogs
 import tech.goksi.pterobot.util.await
+import tech.goksi.pterobot.util.awaitEvent
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ThreadLocalRandom
 import kotlin.time.Duration.Companion.minutes
 
 private const val SERVER_PATH = "Messages.Commands.Server"
@@ -286,7 +292,7 @@ private class List(jda: JDA) : SimpleSubcommand(
             emoji = Emoji.fromUnicode(getButtonSetting("CloseEmoji"))
         ) {
             it.deferEdit().queue()
-            it.hook.retrieveOriginal().queue { msg -> msg.delete().queue() }
+            it.hook.deleteOriginal().queue()
         }
         val refreshButton = event.jda.cooldownButton(
             style = ButtonStyle.valueOf(getButtonSetting("RefreshType")),
@@ -321,8 +327,91 @@ private class Create(val jda: JDA) : SimpleSubcommand(
     description = ConfigManager.config.getString("$SERVER_PATH.Create.Description"),
     baseCommand = "server"
 ) {
+    val closeButton = button(
+        id = "pterobot:server-create:close",
+        style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
+        label = getButtonSetting("Close"),
+        emoji = Emoji.fromUnicode(getButtonSetting("CloseEmoji"))
+    )
+
+    init {
+        jda.onButton("pterobot:server-create:close") {
+            it.hook.deleteOriginal().queue()
+            it.deferEdit().queue()
+        }
+    }
+
     override suspend fun execute(event: SlashCommandInteractionEvent) {
-        TODO("Not yet implemented")
+        val pteroMember = PteroMember(event.user.idLong)
+        if (!pteroMember.isPteroAdmin()) {
+            event.replyEmbeds(
+                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.NotAdmin"))
+                    .toEmbed()
+            ).setEphemeral(true).queue()
+            return
+        }
+        val randomId = ThreadLocalRandom.current().nextInt()
+        val serverCreation = ServerCreate()
+        val serverInfoButton = event.jda.button(
+            style = ButtonStyle.valueOf(getButtonSetting("ServerInfoType")),
+            label = getButtonSetting("ServerInfo"),
+            emoji = Emoji.fromUnicode(getButtonSetting("ServerInfoEmoji"))
+        ) { buttonEvent ->
+            val serverInfoModal = Modal(
+                id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
+                title = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
+            ) {
+                short(
+                    id = "name",
+                    label = "Server name",
+                    required = true,
+                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder"),
+                    value = if (serverCreation.serverName == ServerCreate.NOT_SET) null else serverCreation.serverName
+                )
+                paragraph(
+                    id = "desc",
+                    label = "Description",
+                    required = false,
+                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder"),
+                    value = if (serverCreation.serverDescription == ServerCreate.NOT_SET) null else serverCreation.serverDescription
+                )
+                short(
+                    id = "memory",
+                    label = "Memory",
+                    required = true,
+                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder"),
+                    value = if (serverCreation.memory == -1L) null else serverCreation.memory.toString()
+                )
+                short(
+                    id = "disk",
+                    label = "Disk space",
+                    required = true,
+                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder"),
+                    value = if (serverCreation.disk == -1L) null else serverCreation.disk.toString()
+                )
+            }
+            buttonEvent.replyModal(serverInfoModal).queue()
+            val serverInfoModalEvent =
+                buttonEvent.jda.awaitEvent<ModalInteractionEvent>() { it.modalId == "pterobot:server-info-modal:${event.user.idLong}:$randomId" }
+                    ?: return@button
+            val name = serverInfoModalEvent.getValue("name")!!.asString
+            serverCreation.serverName = name
+            val descTemp = serverInfoModalEvent.getValue("desc")!!.asString
+            val description = if (descTemp == "") ServerCreate.NOT_SET else descTemp
+            serverCreation.serverDescription = description
+            /*TODO check >= 0 and return message*/
+            val memory = serverInfoModalEvent.getValue("memory")!!.asString.toLongOrDefault(-1)
+            serverCreation.memory = memory
+            val disk = serverInfoModalEvent.getValue("disk")!!.asString.toLongOrDefault(-1)
+            serverCreation.disk = disk
+            serverInfoModalEvent.deferEdit().queue()
+
+            buttonEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
+        }
+
+        event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
+            .setActionRow(serverInfoButton, closeButton)
+            .setEphemeral(true).queue()
     }
     /*override suspend fun execute(event: SlashCommandInteractionEvent) {
         val pteroMember = PteroMember(event.user.idLong)
@@ -483,4 +572,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         }
         return selectMenu
     }
+
+    private fun getButtonSetting(setting: String) =
+        ConfigManager.config.getString("$SERVER_PATH.Create.Buttons.$setting")
 }
