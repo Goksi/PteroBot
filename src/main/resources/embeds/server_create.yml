@@ -1,0 +1,41 @@
+title: Create server
+color: 39129
+author:
+  name: PteroBot
+fields:
+  f1:
+    name: "Name"
+    value: "%serverName"
+    inline: true
+  f2:
+    name: "Description"
+    value: "%serverDescription"
+    inline: true
+  f3:
+    name: "Owner"
+    value: "%owner"
+    inline: true
+  f4:
+    name: "Egg"
+    value: "%egg"
+    inline: true
+  f5:
+    name: "Node"
+    value: "%node"
+    inline: true
+  f6:
+    name: "Allocation"
+    value: "%primaryAllocation"
+    inline: true
+  f7:
+    name: "Max memory"
+    value: "%memory"
+    inline: true
+  f8:
+    name: "Max disk"
+    value: "%disk"
+    inline: true
+footer:
+  text: PteroBot | Create server
+  icon_url: https://images.g2crowd.com/uploads/product/image/social_landscape/social_landscape_9f7bed1018bc7ad75c94da92c83c76de/pterodactyl-panel.png
+timestamp: %timestamp
