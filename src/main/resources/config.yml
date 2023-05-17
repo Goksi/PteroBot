@@ -114,5 +114,12 @@ Messages:
         ServerInfoModalTitle: "Server info"
         ServerInfoNamePlaceholder: "Please enter server name here"
         ServerInfoDescriptionPlaceholder: "Please enter server description here"
+        Buttons:
+          ServerInfo: "Add server info"
+          ServerInfoType: "PRIMARY"
+          ServerInfoEmoji: "➕"
+          Close: "Close"
+          CloseType: "DANGER"
+          CloseEmoji: "✖️"
   Embeds:
     UnexpectedError: "Unexpected error happened, check console for more details !"
