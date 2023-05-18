@@ -114,6 +114,8 @@ Messages:
         ServerInfoModalTitle: "Server info"
         ServerInfoNamePlaceholder: "Please enter server name here"
         ServerInfoDescriptionPlaceholder: "Please enter server description here"
+        ServerInfoMemoryPlaceholder: "Please enter server memory here"
+        ServerInfoDiskPlaceholder: "Please enter server disk here"
         InvalidMemory: "Sorry, but entered memory is incorrect !"
         InvalidDisk: "Sorry, but entered disk is incorrect !"
         Buttons:
