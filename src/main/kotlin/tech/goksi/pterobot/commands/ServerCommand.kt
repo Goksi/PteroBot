@@ -401,8 +401,22 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             serverCreation.serverDescription = description
             /*TODO check >= 0 and return message*/
             val memory = serverInfoModalEvent.getValue("memory")!!.asString.toLongOrDefault(-1)
+            if (memory < 0) {
+                buttonEvent.replyEmbeds(
+                    EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.InvalidMemory"))
+                        .toEmbed()
+                ).queue()
+                return@button
+            }
             serverCreation.memory = memory
             val disk = serverInfoModalEvent.getValue("disk")!!.asString.toLongOrDefault(-1)
+            if (disk < 0) {
+                buttonEvent.replyEmbeds(
+                    EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.InvalidDisk"))
+                        .toEmbed()
+                ).queue()
+                return@button
+            }
             serverCreation.disk = disk
             serverInfoModalEvent.deferEdit().queue()
 
