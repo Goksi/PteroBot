@@ -15,11 +15,13 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
+import net.dv8tion.jda.api.interactions.modals.Modal
 import net.dv8tion.jda.api.utils.FileUpload
 import okhttp3.internal.toLongOrDefault
 import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
@@ -322,7 +324,7 @@ private class List(jda: JDA) : SimpleSubcommand(
     }
 }
 
-private class Create(val jda: JDA) : SimpleSubcommand(
+private class Create(jda: JDA) : SimpleSubcommand(
     name = "create",
     description = ConfigManager.getString("$SERVER_PATH.Create.Description"),
     baseCommand = "server"
@@ -357,40 +359,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             label = getButtonSetting("ServerInfo"),
             emoji = Emoji.fromUnicode(getButtonSetting("ServerInfoEmoji"))
         ) { buttonEvent ->
-            val serverInfoModal = Modal(
-                id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
-                title = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
-            ) {
-                short(
-                    id = "name",
-                    label = "Server name",
-                    required = true,
-                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder"),
-                    value = if (serverCreation.serverName == ServerCreate.NOT_SET) null else serverCreation.serverName
-                )
-                paragraph(
-                    id = "desc",
-                    label = "Description",
-                    required = false,
-                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder"),
-                    value = if (serverCreation.serverDescription == ServerCreate.NOT_SET) null else serverCreation.serverDescription
-                )
-                short(
-                    id = "memory",
-                    label = "Memory",
-                    required = true,
-                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder"),
-                    value = if (serverCreation.memory == -1L) null else serverCreation.memory.toString()
-                )
-                short(
-                    id = "disk",
-                    label = "Disk space",
-                    required = true,
-                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder"),
-                    value = if (serverCreation.disk == -1L) null else serverCreation.disk.toString()
-                )
-            }
-            buttonEvent.replyModal(serverInfoModal).queue()
+            buttonEvent.replyModal(createServerInfoModal(serverCreation, buttonEvent, randomId)).queue()
             val serverInfoModalEvent =
                 buttonEvent.jda.awaitEvent<ModalInteractionEvent>() { it.modalId == "pterobot:server-info-modal:${event.user.idLong}:$randomId" }
                     ?: return@button
@@ -401,24 +370,24 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             serverCreation.serverDescription = description
             /*TODO check >= 0 and return message*/
             val memory = serverInfoModalEvent.getValue("memory")!!.asString.toLongOrDefault(-1)
+            var failure = false
             if (memory < 0) {
-                buttonEvent.replyEmbeds(
+                failure = true
+                serverInfoModalEvent.replyEmbeds(
                     EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.InvalidMemory"))
                         .toEmbed()
-                ).queue()
-                return@button
+                ).setEphemeral(true).queue()
             }
             serverCreation.memory = memory
             val disk = serverInfoModalEvent.getValue("disk")!!.asString.toLongOrDefault(-1)
-            if (disk < 0) {
-                buttonEvent.replyEmbeds(
+            if (disk < 0 && !failure) {
+                serverInfoModalEvent.replyEmbeds(
                     EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.InvalidDisk"))
                         .toEmbed()
-                ).queue()
-                return@button
+                ).setEphemeral(true).queue()
             }
             serverCreation.disk = disk
-            serverInfoModalEvent.deferEdit().queue()
+            if (!serverInfoModalEvent.isAcknowledged) serverInfoModalEvent.deferEdit().queue()
 
             buttonEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
         }
@@ -585,6 +554,46 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             for (item in items) option(this, item)
         }
         return selectMenu
+    }
+
+    private fun createServerInfoModal(
+        serverCreation: ServerCreate,
+        event: ButtonInteractionEvent,
+        randomId: Int
+    ): Modal {
+        return Modal(
+            id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
+            title = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
+        ) {
+            short(
+                id = "name",
+                label = "Server name",
+                required = true,
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder"),
+                value = if (serverCreation.serverName == ServerCreate.NOT_SET) null else serverCreation.serverName
+            )
+            paragraph(
+                id = "desc",
+                label = "Description",
+                required = false,
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder"),
+                value = if (serverCreation.serverDescription == ServerCreate.NOT_SET) null else serverCreation.serverDescription
+            )
+            short(
+                id = "memory",
+                label = "Memory",
+                required = true,
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder"),
+                value = if (serverCreation.memory == -1L) null else serverCreation.memory.toString()
+            )
+            short(
+                id = "disk",
+                label = "Disk space",
+                required = true,
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder"),
+                value = if (serverCreation.disk == -1L) null else serverCreation.disk.toString()
+            )
+        }
     }
 
     private fun getButtonSetting(setting: String) =
