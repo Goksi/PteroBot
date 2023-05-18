@@ -45,7 +45,7 @@ class PteroMember(private val discordID: Long) {
     }
 
     fun canRegisterMoreAccounts(): Boolean {
-        val amount = ConfigManager.config.getInt("BotInfo.MaxRegisteredAccounts")
+        val amount = ConfigManager.getInt("BotInfo.MaxRegisteredAccounts")
         return if (amount == 0) true
         else registeredAccounts.size < amount
     }

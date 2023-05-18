@@ -50,7 +50,7 @@ class ServerCommand(jda: JDA) : TopLevelCommand(
 
 private class List(jda: JDA) : SimpleSubcommand(
     name = "list",
-    description = ConfigManager.config.getString("$SERVER_PATH.List.Description"),
+    description = ConfigManager.getString("$SERVER_PATH.List.Description"),
     baseCommand = "server"
 ) {
     private val logger by SLF4J
@@ -63,12 +63,12 @@ private class List(jda: JDA) : SimpleSubcommand(
                 val server = serverMapping[id.split(":")[2]]!!.also { serverMapping.remove(id.split(":")[2]) }
                 server.sendCommand(it.getValue("command")!!.asString).executeAsync({ _ ->
                     it.replyEmbeds(
-                        EmbedManager.getGenericSuccess(ConfigManager.config.getString("$SERVER_PATH.List.SuccessCommand"))
+                        EmbedManager.getGenericSuccess(ConfigManager.getString("$SERVER_PATH.List.SuccessCommand"))
                             .toEmbed()
                     ).setEphemeral(true).queue()
                 }) { throwable ->
                     it.replyEmbeds(
-                        EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError"))
+                        EmbedManager.getGenericFailure(ConfigManager.getString("Embeds.UnexpectedError"))
                             .toEmbed()
                     ).setEphemeral(true).queue()
                     logger.error("Error while sending command to ${server.name}", throwable)
@@ -78,7 +78,7 @@ private class List(jda: JDA) : SimpleSubcommand(
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
-        event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
+        event.deferReply(ConfigManager.getBoolean("BotInfo.Ephemeral")).queue()
         val pteroMember = PteroMember(event.user)
         if (pteroMember.isLinked()) {
             val servers = try {
@@ -86,7 +86,7 @@ private class List(jda: JDA) : SimpleSubcommand(
             } catch (exception: LoginException) {
                 event.hook.sendMessageEmbeds(
                     EmbedManager
-                        .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotFound"))
+                        .getGenericFailure(ConfigManager.getString("$SERVER_PATH.List.NotFound"))
                         .toEmbed()
                 ).queue()
                 return
@@ -95,7 +95,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                 for (server in servers) {
                     this.option(label = server.name, value = server.identifier)
                 }
-                this.placeholder = ConfigManager.config.getString("$SERVER_PATH.List.MenuPlaceholder")
+                this.placeholder = ConfigManager.getString("$SERVER_PATH.List.MenuPlaceholder")
             }
             val response = EmbedManager.getServersCommand().toEmbed()
 
@@ -103,7 +103,7 @@ private class List(jda: JDA) : SimpleSubcommand(
         } else {
             event.hook.sendMessageEmbeds(
                 EmbedManager
-                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed()
+                    .getGenericFailure(ConfigManager.getString("$SERVER_PATH.List.NotLinked")).toEmbed()
             ).queue()
         }
     }
@@ -112,19 +112,19 @@ private class List(jda: JDA) : SimpleSubcommand(
         if (!event.componentId.startsWith("pterobot:servers-selector:")) return
         if (event.componentId.split(":")[2] != event.user.id) {
             event.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.WrongUser"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.List.WrongUser"))
                     .toEmbed()
             )
                 .setEphemeral(true).queue()
             return
         }
-        event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
+        event.deferReply(ConfigManager.getBoolean("BotInfo.Ephemeral")).queue()
         val pteroMember = PteroMember(event.user)
         event.message.delete().queue()
         if (!pteroMember.isLinked()) {
             event.hook.sendMessageEmbeds(
                 EmbedManager
-                    .getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NotLinked")).toEmbed()
+                    .getGenericFailure(ConfigManager.getString("$SERVER_PATH.List.NotLinked")).toEmbed()
             ).setEphemeral(true).queue()
             return
         }
@@ -132,7 +132,7 @@ private class List(jda: JDA) : SimpleSubcommand(
             pteroMember.getServerById(event.selectedOptions[0].value)
         } catch (exception: LoginException) {
             event.hook.sendMessageEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.WrongKey"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.List.WrongKey"))
                     .toEmbed()
             ).queue()
             return
@@ -141,7 +141,7 @@ private class List(jda: JDA) : SimpleSubcommand(
             ServerInfo(server)
         } catch (exception: ServerException) {
             event.hook.sendMessageEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NodeOffline"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.List.NodeOffline"))
                     .toEmbed()
             ).queue()
             return
@@ -152,7 +152,7 @@ private class List(jda: JDA) : SimpleSubcommand(
             .addActionRow(buttons.subList(5, buttons.size)).queue()
     }
 
-    private fun getButtonSetting(setting: String) = ConfigManager.config.getString("$SERVER_PATH.List.Buttons.$setting")
+    private fun getButtonSetting(setting: String) = ConfigManager.getString("$SERVER_PATH.List.Buttons.$setting")
 
     private fun getButtons(
         server: ClientServer,
@@ -171,7 +171,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                 server.setPower(PowerAction.STOP).executeAsync({
                     buttonEvent.hook.sendMessageEmbeds(
                         EmbedManager.getGenericSuccess(
-                            ConfigManager.config.getString(
+                            ConfigManager.getString(
                                 "$SERVER_PATH.List.SuccessStop"
                             )
                         ).toEmbed()
@@ -179,7 +179,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                         .setEphemeral(true).queue()
                 }) {
                     buttonEvent.hook.sendMessageEmbeds(
-                        EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError"))
+                        EmbedManager.getGenericFailure(ConfigManager.getString("Embeds.UnexpectedError"))
                             .toEmbed()
                     )
                         .setEphemeral(true).queue().also { _ ->
@@ -199,7 +199,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                 server.setPower(PowerAction.START).executeAsync({
                     buttonEvent.hook.sendMessageEmbeds(
                         EmbedManager.getGenericSuccess(
-                            ConfigManager.config.getString(
+                            ConfigManager.getString(
                                 "$SERVER_PATH.List.SuccessStart"
                             )
                         ).toEmbed()
@@ -207,7 +207,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                         .setEphemeral(true).queue()
                 }) {
                     buttonEvent.hook.sendMessageEmbeds(
-                        EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
+                        EmbedManager.getGenericFailure(ConfigManager.getString("Messages.Embeds.UnexpectedError"))
                             .toEmbed()
                     )
                         .setEphemeral(true).queue().also { _ ->
@@ -228,7 +228,7 @@ private class List(jda: JDA) : SimpleSubcommand(
             server.setPower(PowerAction.RESTART).executeAsync({
                 buttonEvent.hook.sendMessageEmbeds(
                     EmbedManager.getGenericSuccess(
-                        ConfigManager.config.getString(
+                        ConfigManager.getString(
                             "$SERVER_PATH.List.SuccessRestart"
                         )
                     ).toEmbed()
@@ -236,7 +236,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                     .setEphemeral(true).queue()
             }) {
                 buttonEvent.hook.sendMessageEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.config.getString("Embeds.UnexpectedError"))
+                    EmbedManager.getGenericFailure(ConfigManager.getString("Embeds.UnexpectedError"))
                         .toEmbed()
                 )
                     .setEphemeral(true).queue().also { _ ->
@@ -255,13 +255,13 @@ private class List(jda: JDA) : SimpleSubcommand(
         ) { buttonEvent ->
             val commandModal = Modal(
                 id = "pterobot:command:${server.identifier}",
-                title = ConfigManager.config.getString("$SERVER_PATH.List.Modal.Name")
+                title = ConfigManager.getString("$SERVER_PATH.List.Modal.Name")
             ) {
                 this.short(
                     id = "command",
                     label = "Command",
                     required = true,
-                    placeholder = ConfigManager.config.getString("$SERVER_PATH.List.Modal.Placeholder")
+                    placeholder = ConfigManager.getString("$SERVER_PATH.List.Modal.Placeholder")
                 )
             }
             buttonEvent.replyModal(commandModal).queue()
@@ -306,7 +306,7 @@ private class List(jda: JDA) : SimpleSubcommand(
                 ServerInfo(serverNew)
             } catch (exception: ServerException) {
                 it.editMessageEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.List.NodeOffline"))
+                    EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.List.NodeOffline"))
                         .toEmbed()
                 ).setActionRow(closeButton).queue()
                 return@cooldownButton
@@ -324,7 +324,7 @@ private class List(jda: JDA) : SimpleSubcommand(
 
 private class Create(val jda: JDA) : SimpleSubcommand(
     name = "create",
-    description = ConfigManager.config.getString("$SERVER_PATH.Create.Description"),
+    description = ConfigManager.getString("$SERVER_PATH.Create.Description"),
     baseCommand = "server"
 ) {
     val closeButton = button(
@@ -345,7 +345,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         val pteroMember = PteroMember(event.user.idLong)
         if (!pteroMember.isPteroAdmin()) {
             event.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.NotAdmin"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.NotAdmin"))
                     .toEmbed()
             ).setEphemeral(true).queue()
             return
@@ -359,34 +359,34 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         ) { buttonEvent ->
             val serverInfoModal = Modal(
                 id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
-                title = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
+                title = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
             ) {
                 short(
                     id = "name",
                     label = "Server name",
                     required = true,
-                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder"),
+                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder"),
                     value = if (serverCreation.serverName == ServerCreate.NOT_SET) null else serverCreation.serverName
                 )
                 paragraph(
                     id = "desc",
                     label = "Description",
                     required = false,
-                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder"),
+                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder"),
                     value = if (serverCreation.serverDescription == ServerCreate.NOT_SET) null else serverCreation.serverDescription
                 )
                 short(
                     id = "memory",
                     label = "Memory",
                     required = true,
-                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder"),
+                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder"),
                     value = if (serverCreation.memory == -1L) null else serverCreation.memory.toString()
                 )
                 short(
                     id = "disk",
                     label = "Disk space",
                     required = true,
-                    placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder"),
+                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder"),
                     value = if (serverCreation.disk == -1L) null else serverCreation.disk.toString()
                 )
             }
@@ -403,7 +403,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             val memory = serverInfoModalEvent.getValue("memory")!!.asString.toLongOrDefault(-1)
             if (memory < 0) {
                 buttonEvent.replyEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.InvalidMemory"))
+                    EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.InvalidMemory"))
                         .toEmbed()
                 ).queue()
                 return@button
@@ -412,7 +412,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             val disk = serverInfoModalEvent.getValue("disk")!!.asString.toLongOrDefault(-1)
             if (disk < 0) {
                 buttonEvent.replyEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.InvalidDisk"))
+                    EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.InvalidDisk"))
                         .toEmbed()
                 ).queue()
                 return@button
@@ -432,7 +432,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
 
         if (!pteroMember.isPteroAdmin()) {
             event.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.NotAdmin"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.NotAdmin"))
                     .toEmbed()
             ).setEphemeral(true).queue()
             return
@@ -443,7 +443,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         *//*Send node select menu*//*
         val nodeSelectMenu = createSelectMenu(
             "pterobot:node-selector:${event.user.idLong}:$randomId",
-            ConfigManager.config.getString("$SERVER_PATH.Create.NodeMenuPlaceholder"),
+            ConfigManager.getString("$SERVER_PATH.Create.NodeMenuPlaceholder"),
             nodes
         ) { builder, node ->
             builder.option(
@@ -462,13 +462,13 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         *//*Send allocation modal*//*
         val allocationModal = Modal(
             id = "pterobot:allocation-modal:${event.user.idLong}:$randomId",
-            title = ConfigManager.config.getString("$SERVER_PATH.Create.AllocationModalTitle")
+            title = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalTitle")
         ) {
             short(
                 id = "allocation",
                 label = "Port",
                 required = true,
-                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.AllocationModalPlaceholder"),
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalPlaceholder"),
                 requiredLength = 4..5
             )
         }
@@ -483,7 +483,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         *//*TODO: check multiple ips matching same port ?*//*
         if (tempAllocation.isEmpty()) {
             allocationModalEvent.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.AllocationNotFound"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.AllocationNotFound"))
                     .toEmbed()
             ).setEphemeral(true).queue()
             return
@@ -493,7 +493,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         val eggs = pteroApplication.retrieveEggs().await()
         val eggSelectMenu = createSelectMenu(
             "pterobot:egg-selector:${event.user.idLong}:$randomId",
-            ConfigManager.config.getString("$SERVER_PATH.Create.EggMenuPlaceholder"),
+            ConfigManager.getString("$SERVER_PATH.Create.EggMenuPlaceholder"),
             eggs
         ) { builder, egg ->
             builder.option(
@@ -514,13 +514,13 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         *//*Send owner modal*//*
         val ownerModal = Modal(
             id = "pterobot:owner-modal:${event.user.idLong}:$randomId",
-            title = ConfigManager.config.getString("$SERVER_PATH.Create.OwnerModalTitle")
+            title = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalTitle")
         ) {
             short(
                 id = "owner",
                 label = "Email",
                 required = true,
-                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.OwnerModalPlaceholder")
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalPlaceholder")
             )
         }
         selectEggEvent.replyModal(ownerModal).queue()
@@ -531,7 +531,7 @@ private class Create(val jda: JDA) : SimpleSubcommand(
             pteroApplication.retrieveUsersByEmail(selectOwnerEvent.getValue("owner")!!.asString, false).await()
         if (tempAllocation.isEmpty()) {
             allocationModalEvent.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$SERVER_PATH.Create.OwnerNotFound"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.OwnerNotFound"))
                     .toEmbed()
             ).setEphemeral(true).queue()
             return
@@ -540,30 +540,30 @@ private class Create(val jda: JDA) : SimpleSubcommand(
         *//*Send basic server info modal*//*
         val serverInfoModal = Modal(
             id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
-            title = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
+            title = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
         ) {
             short(
                 id = "name",
                 label = "Server name",
                 required = true,
-                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder")
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder")
             )
             paragraph(
                 id = "desc",
                 label = "Description",
-                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder")
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder")
             )
             short(
                 id = "memory",
                 label = "Memory",
                 required = true,
-                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder")
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder")
             )
             short(
                 id = "disk",
                 label = "Disk space",
                 required = true,
-                placeholder = ConfigManager.config.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder")
+                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder")
             )
         } // smh cant reply modal from modal event
 
@@ -588,5 +588,5 @@ private class Create(val jda: JDA) : SimpleSubcommand(
     }
 
     private fun getButtonSetting(setting: String) =
-        ConfigManager.config.getString("$SERVER_PATH.Create.Buttons.$setting")
+        ConfigManager.getString("$SERVER_PATH.Create.Buttons.$setting")
 }

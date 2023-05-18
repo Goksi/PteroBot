@@ -29,12 +29,12 @@ class PteroBot {
     /*TODO: DRY*/
     init {
         val tokenPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.Token"),
+            ConfigManager.getString("BotInfo.Token"),
             DEFAULT_NO_TOKEN_MSG,
             "You didn't provide your bot token, please input it right-now: "
         ) { readlnOrNull() }
         val guildPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.ServerID"),
+            ConfigManager.getString("BotInfo.ServerID"),
             DEFAULT_NO_ID_MSG,
             "You didn't provide your discord server id, please input it right-now: "
         ) {
@@ -47,7 +47,7 @@ class PteroBot {
             input
         }
         val appUrlPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.PterodactylUrl"),
+            ConfigManager.getString("BotInfo.PterodactylUrl"),
             DEFAULT_NO_URL_MSG,
             "You didn't provide your pterodactyl url, please input it right-now:"
         ) {
@@ -60,7 +60,7 @@ class PteroBot {
             input
         }
         val apiKeyPair = Checks.checkInput(
-            ConfigManager.config.getString("BotInfo.AdminApiKey"),
+            ConfigManager.getString("BotInfo.AdminApiKey"),
             DEFAULT_NO_API_KEY_MSG,
             "You didn't provide admin key for actions like register and node info, please input it right-now:"
         ) {
@@ -73,26 +73,26 @@ class PteroBot {
             input
         }
         if (tokenPair.second) {
-            ConfigManager.config.set("BotInfo.Token", tokenPair.first)
+            ConfigManager.set("BotInfo.Token", tokenPair.first)
         }
         if (guildPair.second) {
-            ConfigManager.config.set("BotInfo.ServerID", guildPair.first)
+            ConfigManager.set("BotInfo.ServerID", guildPair.first)
         }
         if (appUrlPair.second) {
-            ConfigManager.config.set("BotInfo.PterodactylUrl", appUrlPair.first)
+            ConfigManager.set("BotInfo.PterodactylUrl", appUrlPair.first)
         }
         if (apiKeyPair.second) {
-            ConfigManager.config.set("BotInfo.AdminApiKey", apiKeyPair.first)
+            ConfigManager.set("BotInfo.AdminApiKey", apiKeyPair.first)
         }
         ConfigManager.save()
         EmbedManager.init()
         jda = default(tokenPair.first!!, enableCoroutines = true, intents = listOf(GatewayIntent.GUILD_MESSAGES)) {
             disableCache(listOf(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.EMOJI, CacheFlag.SCHEDULED_EVENTS))
-            val statusStr = ConfigManager.config.getString("BotInfo.Status")?.uppercase() ?: "ONLINE"
+            val statusStr = ConfigManager.getString("BotInfo.Status")?.uppercase() ?: "ONLINE"
             setStatus(OnlineStatus.valueOf(statusStr))
-            if (ConfigManager.config.getBoolean("BotInfo.EnableActivity")) {
-                val activityString = ConfigManager.config.getString("BotInfo.ActivityName") ?: ""
-                val activityName = ConfigManager.config.getString("BotInfo.Activity") ?: ""
+            if (ConfigManager.getBoolean("BotInfo.EnableActivity")) {
+                val activityString = ConfigManager.getString("BotInfo.ActivityName") ?: ""
+                val activityName = ConfigManager.getString("BotInfo.Activity") ?: ""
                 setActivity(
                     when (activityName.uppercase()) {
                         "LISTENING" -> Activity.listening(activityString)

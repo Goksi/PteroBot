@@ -47,18 +47,18 @@ class NodeCommand : TopLevelCommand(
 
 private class Info : SimpleSubcommand(
     name = "info",
-    description = ConfigManager.config.getString("$NODE_PREFIX.Info.Description"),
+    description = ConfigManager.getString("$NODE_PREFIX.Info.Description"),
     options = listOf(
         OptionData(
             OptionType.INTEGER,
             "id",
-            ConfigManager.config.getString("$NODE_PREFIX.Info.OptionDescription"),
+            ConfigManager.getString("$NODE_PREFIX.Info.OptionDescription"),
             true
         ),
         OptionData(
             OptionType.BOOLEAN,
             "update",
-            ConfigManager.config.getString("$NODE_PREFIX.Info.OptionUpdateDescription"),
+            ConfigManager.getString("$NODE_PREFIX.Info.OptionUpdateDescription"),
             false
         )
     ),
@@ -86,14 +86,14 @@ private class Info : SimpleSubcommand(
                     is HttpException, is NotFoundException -> {
                         success = false
                         logger.debug("Thrown exception: ", exception)
-                        EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Info.NodeNotFound"))
+                        EmbedManager.getGenericFailure(ConfigManager.getString("$NODE_PREFIX.Info.NodeNotFound"))
                             .toEmbed()
                     } // shame that kotlin doesn't have multi catch
                     else -> throw exception
                 }
             }
         } else {
-            response = EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Info.NotAdmin"))
+            response = EmbedManager.getGenericFailure(ConfigManager.getString("$NODE_PREFIX.Info.NotAdmin"))
                 .toEmbed()
         }
         event.hook.sendMessageEmbeds(response).queue {
@@ -148,12 +148,12 @@ private class Info : SimpleSubcommand(
 
 private class Status : SimpleSubcommand(
     name = "status",
-    description = ConfigManager.config.getString("$NODE_PREFIX.Status.Description"),
+    description = ConfigManager.getString("$NODE_PREFIX.Status.Description"),
     options = listOf(
         OptionData(
             OptionType.BOOLEAN,
             "update",
-            ConfigManager.config.getString("$NODE_PREFIX.Status.OptionUpdateDescription"),
+            ConfigManager.getString("$NODE_PREFIX.Status.OptionUpdateDescription"),
             false
         )
     ),
@@ -163,7 +163,7 @@ private class Status : SimpleSubcommand(
         val pteroMember = PteroMember(event.member!!)
         if (pteroMember.isPteroAdmin()) {
             val update = event.getOption("update")?.asBoolean ?: false
-            event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
+            event.deferReply(ConfigManager.getBoolean("BotInfo.Ephemeral")).queue()
 
             event.hook.sendMessageEmbeds(withContext(NodeCommand.coroutineScope.coroutineContext) { getInfoEmbed() })
                 .queue {
@@ -180,7 +180,7 @@ private class Status : SimpleSubcommand(
                 }
         } else {
             event.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$NODE_PREFIX.Status.NotAdmin"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$NODE_PREFIX.Status.NotAdmin"))
                     .toEmbed()
             )
         }

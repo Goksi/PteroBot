@@ -14,7 +14,7 @@ enum class CooldownType(coolDownConfig: String) {
     LOGS_BTN("RequestLogs"),
     UNDEFINED("");
 
-    private val seconds: Long = ConfigManager.config.getLong("$BUTTON_CONFIG$coolDownConfig")
+    private val seconds: Long = ConfigManager.getLong("$BUTTON_CONFIG$coolDownConfig")
     val millis
         get() = seconds * 1000
 

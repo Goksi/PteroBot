@@ -11,7 +11,7 @@ import kotlin.system.exitProcess
 object ConfigManager {
     private val configFile: File = File("config.yml")
     private val logger by SLF4J
-    val config: YamlFile
+    private val config: YamlFile
 
     init {
         val inputStreamURL = ConfigManager::class.java.classLoader.getResource("config.yml")!!
@@ -30,7 +30,15 @@ object ConfigManager {
         }
     }
 
-    fun save() {
-        config.save(configFile)
-    }
+    fun getString(path: String): String = config.getString(path)
+
+    fun getBoolean(path: String) = config.getBoolean(path)
+
+    fun getInt(path: String) = config.getInt(path)
+
+    fun getLong(path: String) = config.getLong(path)
+
+    fun set(path: String, value: Any?) = config.set(path, value)
+
+    fun save() = config.save(configFile)
 }

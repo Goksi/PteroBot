@@ -37,12 +37,12 @@ class AccountCommand : TopLevelCommand(
 /*LINK SUBCOMMAND*/
 private class Link : SimpleSubcommand(
     name = "link",
-    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.Description"),
+    description = ConfigManager.getString("$ACCOUNT_PREFIX.Link.Description"),
     options = listOf(
         OptionData(
             OptionType.STRING,
             "apikey",
-            ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.OptionDescription"),
+            ConfigManager.getString("$ACCOUNT_PREFIX.Link.OptionDescription"),
             true
         )
     ),
@@ -66,21 +66,21 @@ private class Link : SimpleSubcommand(
                 pteroMember.link(ApiKey(key, account.isRootAdmin))
                 logger.info("User ${event.user.asTag} linked his discord with ${account.userName} pterodactyl account !")
                 EmbedManager.getGenericSuccess(
-                    ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkSuccess")
+                    ConfigManager.getString("$ACCOUNT_PREFIX.Link.LinkSuccess")
                         .replace("%pteroName", account.userName)
                 )
                     .toEmbed()
             } catch (exception: SQLException) {
                 logger.error("Failed to link ${event.user.idLong}", exception)
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("Messages.Embeds.UnexpectedError"))
                     .toEmbed()
             } catch (httpException: HttpException) {
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkWrongKey"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$ACCOUNT_PREFIX.Link.LinkWrongKey"))
                     .toEmbed() // its probably wrong key if we got here, add check maybe
             }
         } else {
             response =
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Link.LinkExist"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$ACCOUNT_PREFIX.Link.LinkExist"))
                     .toEmbed()
         }
         event.reply_(embeds = listOf(response)).queue()
@@ -90,7 +90,7 @@ private class Link : SimpleSubcommand(
 /*UNLINK SUBCOMMAND*/
 private class Unlink : SimpleSubcommand(
     name = "unlink",
-    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.Description"),
+    description = ConfigManager.getString("$ACCOUNT_PREFIX.Unlink.Description"),
     baseCommand = "account"
 ) {
 
@@ -105,7 +105,7 @@ private class Unlink : SimpleSubcommand(
             event.reply_(
                 embeds = listOf(
                     EmbedManager
-                        .getGenericSuccess(ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.SuccessUnlink"))
+                        .getGenericSuccess(ConfigManager.getString("$ACCOUNT_PREFIX.Unlink.SuccessUnlink"))
                         .toEmbed()
                 )
             ).queue()
@@ -113,7 +113,7 @@ private class Unlink : SimpleSubcommand(
             event.reply_(
                 embeds = listOf(
                     EmbedManager
-                        .getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Unlink.NotLinked"))
+                        .getGenericFailure(ConfigManager.getString("$ACCOUNT_PREFIX.Unlink.NotLinked"))
                         .toEmbed()
                 )
             ).queue()
@@ -124,7 +124,7 @@ private class Unlink : SimpleSubcommand(
 /*REGISTER SUBCOMMAND*/
 private class Register : SimpleSubcommand(
     name = "register",
-    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Description"),
+    description = ConfigManager.getString("$ACCOUNT_PREFIX.Register.Description"),
     baseCommand = "account"
 ) {
     private val modal: Modal
@@ -136,25 +136,25 @@ private class Register : SimpleSubcommand(
     init {
         val email = TextInput.create("email", "Email", TextInputStyle.SHORT)
             .setRequired(true).setRequiredRange(9, 100)
-            .setPlaceholder(ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.EmailPlaceholder")).build()
+            .setPlaceholder(ConfigManager.getString("$ACCOUNT_PREFIX.Register.Modal.EmailPlaceholder")).build()
         val username = TextInput.create("username", "Username", TextInputStyle.SHORT)
             .setRequired(true).setRequiredRange(3, 25)
-            .setPlaceholder(ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.UsernamePlaceholder"))
+            .setPlaceholder(ConfigManager.getString("$ACCOUNT_PREFIX.Register.Modal.UsernamePlaceholder"))
             .build()
         val password = TextInput.create("password", "Password", TextInputStyle.SHORT)
-            .setRequired(ConfigManager.config.getBoolean("$ACCOUNT_PREFIX.Register.PasswordRequired"))
+            .setRequired(ConfigManager.getBoolean("$ACCOUNT_PREFIX.Register.PasswordRequired"))
             .setRequiredRange(7, 30)
-            .setPlaceholder(ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.PasswordPlaceholder"))
+            .setPlaceholder(ConfigManager.getString("$ACCOUNT_PREFIX.Register.Modal.PasswordPlaceholder"))
             .build()
         val firstName = TextInput.create("firstName", "First Name", TextInputStyle.SHORT)
             .setRequired(true).setRequiredRange(3, 25)
-            .setPlaceholder(ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.FirstNamePlaceholder"))
+            .setPlaceholder(ConfigManager.getString("$ACCOUNT_PREFIX.Register.Modal.FirstNamePlaceholder"))
             .build()
         val lastName = TextInput.create("lastName", "Last Name", TextInputStyle.SHORT)
             .setRequired(true).setRequiredRange(3, 25)
-            .setPlaceholder(ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.LastNamePlaceholder"))
+            .setPlaceholder(ConfigManager.getString("$ACCOUNT_PREFIX.Register.Modal.LastNamePlaceholder"))
             .build()
-        modal = Modal.create("pterobot:register", ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Modal.Name"))
+        modal = Modal.create("pterobot:register", ConfigManager.getString("$ACCOUNT_PREFIX.Register.Modal.Name"))
             .addComponents(
                 ActionRow.of(email),
                 ActionRow.of(username),
@@ -166,7 +166,7 @@ private class Register : SimpleSubcommand(
     }
 
     override suspend fun execute(event: SlashCommandInteractionEvent) {
-        if (!ConfigManager.config.getBoolean("BotInfo.EnabledRegistration") &&
+        if (!ConfigManager.getBoolean("BotInfo.EnabledRegistration") &&
             !event.member!!.hasPermission(Permission.ADMINISTRATOR)
         ) {
             event.replyEmbeds(
@@ -180,7 +180,7 @@ private class Register : SimpleSubcommand(
         } else {
             event.replyEmbeds(
                 EmbedManager.getGenericFailure(
-                    ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.LimitReached")
+                    ConfigManager.getString("$ACCOUNT_PREFIX.Register.LimitReached")
                         .replace("%accounts", pteroMember.registeredAccounts.joinToString(","))
                 ).toEmbed()
             ).setEphemeral(true).queue()
@@ -189,12 +189,12 @@ private class Register : SimpleSubcommand(
 
     override suspend fun onModalInteraction(event: ModalInteractionEvent) {
         if (event.modalId != "pterobot:register") return
-        event.deferReply(ConfigManager.config.getBoolean("BotInfo.Ephemeral")).queue()
+        event.deferReply(ConfigManager.getBoolean("BotInfo.Ephemeral")).queue()
         val email = event.getValue("email")!!.asString
         if (!Checks.validEmail(email)) {
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericFailure(
-                    ConfigManager.config.getString(
+                    ConfigManager.getString(
                         "$ACCOUNT_PREFIX.Register.InvalidEmail"
                     )
                 ).toEmbed()
@@ -215,7 +215,7 @@ private class Register : SimpleSubcommand(
         userBuilder.executeAsync({
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericSuccess(
-                    ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.Success")!!
+                    ConfigManager.getString("$ACCOUNT_PREFIX.Register.Success")!!
                         .replace("%pteroName", it.userName)
                 ).toEmbed()
             ).queue()
@@ -229,12 +229,12 @@ private class Register : SimpleSubcommand(
                 ) // lvl pro string extraction
                 event.hook.sendMessageEmbeds(
                     EmbedManager.getGenericFailure(
-                        ConfigManager.config.getString("$ACCOUNT_PREFIX.Register.FieldTaken")
+                        ConfigManager.getString("$ACCOUNT_PREFIX.Register.FieldTaken")
                             .replace("%takenField", takenField)
                     ).toEmbed()
                 ).queue()
             } else event.hook.sendMessageEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("Messages.Embeds.UnexpectedError"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("Messages.Embeds.UnexpectedError"))
                     .toEmbed()
             ).queue()
         })
@@ -244,7 +244,7 @@ private class Register : SimpleSubcommand(
 /*INFO SUBCOMMAND*/
 private class AccInfo : SimpleSubcommand(
     name = "info",
-    description = ConfigManager.config.getString("$ACCOUNT_PREFIX.Info.Description"),
+    description = ConfigManager.getString("$ACCOUNT_PREFIX.Info.Description"),
     baseCommand = "account"
 ) {
     override suspend fun execute(event: SlashCommandInteractionEvent) {
@@ -252,7 +252,7 @@ private class AccInfo : SimpleSubcommand(
         event.deferReply().queue()
         if (!pteroMember.isLinked()) {
             event.hook.sendMessageEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.config.getString("$ACCOUNT_PREFIX.Info.NotLinked"))
+                EmbedManager.getGenericFailure(ConfigManager.getString("$ACCOUNT_PREFIX.Info.NotLinked"))
                     .toEmbed()
             ).queue()
             return

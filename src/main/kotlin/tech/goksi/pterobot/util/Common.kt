@@ -16,18 +16,18 @@ object Common {
     private val newLineRegex by lazy { "\r?\n?".toRegex() }
     fun createClient(apiKey: String?): PteroClient? {
         if (apiKey == null) return null
-        val appUrl = ConfigManager.config.getString("BotInfo.PterodactylUrl")
+        val appUrl = ConfigManager.getString("BotInfo.PterodactylUrl")
         return PteroBuilder.create(appUrl, apiKey).setEventManager(PteroEventManager()).buildClient()
     }
 
     private fun createApplication(apiKey: String): PteroApplication {
-        val appUrl = ConfigManager.config.getString("BotInfo.PterodactylUrl")
+        val appUrl = ConfigManager.getString("BotInfo.PterodactylUrl")
         return PteroBuilder.createApplication(appUrl, apiKey)
     }
 
     fun getDefaultApplication(): PteroApplication {
         val app by lazy {
-            createApplication(ConfigManager.config.getString("BotInfo.AdminApiKey"))
+            createApplication(ConfigManager.getString("BotInfo.AdminApiKey"))
         }
         return app
     }
