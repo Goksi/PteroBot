@@ -353,15 +353,16 @@ private class Create(jda: JDA) : SimpleSubcommand(
             return
         }
         val randomId = ThreadLocalRandom.current().nextInt()
+        val pteroApplication = Common.getDefaultApplication()
         val serverCreation = ServerCreate()
         val serverInfoButton = event.jda.button(
             style = ButtonStyle.valueOf(getButtonSetting("ServerInfoType")),
             label = getButtonSetting("ServerInfo"),
             emoji = Emoji.fromUnicode(getButtonSetting("ServerInfoEmoji"))
-        ) { buttonEvent ->
-            buttonEvent.replyModal(createServerInfoModal(serverCreation, buttonEvent, randomId)).queue()
+        ) { serverInfoBtnEvent ->
+            serverInfoBtnEvent.replyModal(createServerInfoModal(serverCreation, serverInfoBtnEvent, randomId)).queue()
             val serverInfoModalEvent =
-                buttonEvent.jda.awaitEvent<ModalInteractionEvent>() { it.modalId == "pterobot:server-info-modal:${event.user.idLong}:$randomId" }
+                serverInfoBtnEvent.jda.awaitEvent<ModalInteractionEvent>() { it.modalId == "pterobot:server-info-modal:${event.user.idLong}:$randomId" }
                     ?: return@button
             val name = serverInfoModalEvent.getValue("name")!!.asString
             serverCreation.serverName = name
@@ -389,11 +390,45 @@ private class Create(jda: JDA) : SimpleSubcommand(
             serverCreation.disk = disk
             if (!serverInfoModalEvent.isAcknowledged) serverInfoModalEvent.deferEdit().queue()
 
-            buttonEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
+            serverInfoBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
+        }
+
+        val ownerButton = event.jda.button(
+            style = ButtonStyle.valueOf(getButtonSetting("OwnerType")),
+            label = getButtonSetting("Owner"),
+            emoji = Emoji.fromUnicode(getButtonSetting("OwnerEmoji"))
+        ) { ownerBtnEvent ->
+            val modal = Modal(
+                id = "pterobot:server-owner-modal:${event.user.idLong}:$randomId",
+                title = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalTitle")
+            ) {
+                short(
+                    id = "email",
+                    label = "Owner",
+                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalPlaceholder")
+                )
+            }
+            ownerBtnEvent.replyModal(modal).queue()
+            val ownerModalEvent =
+                ownerBtnEvent.jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:server-owner-modal:${event.user.idLong}:$randomId" }
+                    ?: return@button
+            val email = ownerModalEvent.getValue("email")!!.asString
+            val tempList = pteroApplication.retrieveUsersByEmail(email, false).await()
+
+            if (tempList.isEmpty()) {
+                ownerModalEvent.replyEmbeds(
+                    EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.OwnerNotFound"))
+                        .toEmbed()
+                ).setEphemeral(true).queue()
+                return@button
+            }
+            serverCreation.setOwner(tempList[0])
+            ownerModalEvent.deferEdit().queue()
+            ownerBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
         }
 
         event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
-            .setActionRow(serverInfoButton, closeButton)
+            .setActionRow(serverInfoButton, ownerButton, closeButton)
             .setEphemeral(true).queue()
     }
     /*override suspend fun execute(event: SlashCommandInteractionEvent) {
@@ -555,6 +590,7 @@ private class Create(jda: JDA) : SimpleSubcommand(
         }
         return selectMenu
     }
+
 
     private fun createServerInfoModal(
         serverCreation: ServerCreate,

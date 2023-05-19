@@ -15,7 +15,7 @@ class ServerCreate {
     private var _node: Node? = null
     private var _primaryAllocation: Allocation? = null
     val owner
-        get() = _owner?.email ?: NOT_SET
+        get() = _owner?.userName ?: NOT_SET
     val egg
         get() = _egg?.name ?: NOT_SET
     val node
@@ -26,4 +26,8 @@ class ServerCreate {
     var serverDescription: String = NOT_SET
     var memory: Long = -1
     var disk: Long = -1
+
+    fun setOwner(user: ApplicationUser) {
+        this._owner = user
+    }
 }
