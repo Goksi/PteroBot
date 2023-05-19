@@ -109,7 +109,7 @@ object EmbedManager {
     private fun <T> getPlaceholderMap(entity: T): Map<String, String> {
         val fields = entity!!::class.members
             .filterIsInstance<KProperty1<*, *>>()
-            .map { it as KProperty1<T, *> }.filter { it.visibility != KVisibility.PRIVATE }
+            .map { it as KProperty1<T, *> }.filter { it.visibility != KVisibility.PRIVATE && !it.name.startsWith("_") }
         return buildMap {
             fields.forEach {
                 val value = when (val uncheckedVal = it.get(entity)) {
