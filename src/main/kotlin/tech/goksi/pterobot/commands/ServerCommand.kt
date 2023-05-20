@@ -362,7 +362,7 @@ private class Create(jda: JDA) : SimpleSubcommand(
         ) { serverInfoBtnEvent ->
             serverInfoBtnEvent.replyModal(createServerInfoModal(serverCreation, serverInfoBtnEvent, randomId)).queue()
             val serverInfoModalEvent =
-                serverInfoBtnEvent.jda.awaitEvent<ModalInteractionEvent>() { it.modalId == "pterobot:server-info-modal:${event.user.idLong}:$randomId" }
+                serverInfoBtnEvent.jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:server-info-modal:${event.user.idLong}:$randomId" }
                     ?: return@button
             val name = serverInfoModalEvent.getValue("name")!!.asString
             serverCreation.serverName = name
@@ -426,6 +426,8 @@ private class Create(jda: JDA) : SimpleSubcommand(
             ownerModalEvent.deferEdit().queue()
             ownerBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
         }
+
+
 
         event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
             .setActionRow(serverInfoButton, ownerButton, closeButton)

@@ -3,8 +3,16 @@ package tech.goksi.pterobot.entities
 import com.mattmalec.pterodactyl4j.application.entities.Node
 import tech.goksi.pterobot.NodeStatus
 import tech.goksi.pterobot.util.MemoryBar
+
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-data class NodeInfo(private val node: Node, private val nodeStatus: NodeStatus, val runningServers: Int, val ramUsed: Long, val diskUsed: Float, val cpuUsed: Double) {
+data class NodeInfo(
+    private val node: Node,
+    private val nodeStatus: NodeStatus,
+    val runningServers: Int,
+    val ramUsed: Long,
+    val diskUsed: Float,
+    val cpuUsed: Double
+) {
     val name = node.name!!
     val description = node.description ?: ""
     val location = node.retrieveLocation().execute().shortCode!!

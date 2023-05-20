@@ -88,11 +88,11 @@ class PteroBot {
         EmbedManager.init()
         jda = default(tokenPair.first!!, enableCoroutines = true, intents = listOf(GatewayIntent.GUILD_MESSAGES)) {
             disableCache(listOf(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.EMOJI, CacheFlag.SCHEDULED_EVENTS))
-            val statusStr = ConfigManager.getString("BotInfo.Status")?.uppercase() ?: "ONLINE"
+            val statusStr = ConfigManager.getString("BotInfo.Status").uppercase()
             setStatus(OnlineStatus.valueOf(statusStr))
             if (ConfigManager.getBoolean("BotInfo.EnableActivity")) {
-                val activityString = ConfigManager.getString("BotInfo.ActivityName") ?: ""
-                val activityName = ConfigManager.getString("BotInfo.Activity") ?: ""
+                val activityString = ConfigManager.getString("BotInfo.ActivityName")
+                val activityName = ConfigManager.getString("BotInfo.Activity")
                 setActivity(
                     when (activityName.uppercase()) {
                         "LISTENING" -> Activity.listening(activityString)
@@ -110,7 +110,7 @@ class PteroBot {
                 ServerCommand(jda)
             )
         }
-        val guild = jda.getGuildById(guildPair.first!!) // what if wrong guild id, silent fail for now ?
+        val guild = jda.getGuildById(guildPair.first) // what if wrong guild id, silent fail for now ?
         guild?.updateCommands()?.addCommands(commandData.buildData())?.queue()
         jda.addEventListener(NodeStatusDelete())
         commandData.registerListeners(jda)

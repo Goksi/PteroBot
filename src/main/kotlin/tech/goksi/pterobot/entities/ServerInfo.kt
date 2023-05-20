@@ -16,7 +16,8 @@ data class ServerInfo(private val server: ClientServer) {
     val name: String = server.name
     val node: String = server.node
     val primaryAllocation: String = server.primaryAllocation.fullAddress
-    val allocationAlias: String = "${server.primaryAllocation.alias ?: server.primaryAllocation.ip}:${server.primaryAllocation.port}"
+    val allocationAlias: String =
+        "${server.primaryAllocation.alias ?: server.primaryAllocation.ip}:${server.primaryAllocation.port}"
     private val utilization = try {
         server.retrieveUtilization().execute()
     } catch (exception: Exception) {

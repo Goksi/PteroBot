@@ -215,7 +215,7 @@ private class Register : SimpleSubcommand(
         userBuilder.executeAsync({
             event.hook.sendMessageEmbeds(
                 EmbedManager.getGenericSuccess(
-                    ConfigManager.getString("$ACCOUNT_PREFIX.Register.Success")!!
+                    ConfigManager.getString("$ACCOUNT_PREFIX.Register.Success")
                         .replace("%pteroName", it.userName)
                 ).toEmbed()
             ).queue()
