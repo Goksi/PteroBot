@@ -3,7 +3,9 @@ package tech.goksi.pterobot.manager
 import dev.minn.jda.ktx.util.SLF4J
 import org.simpleyaml.configuration.file.YamlConfiguration
 import org.simpleyaml.configuration.file.YamlFile
+import org.simpleyaml.configuration.serialization.ConfigurationSerialization
 import org.simpleyaml.utils.SupplierIO
+import tech.goksi.pterobot.entities.ButtonInfo
 import java.io.File
 import java.io.IOException
 import kotlin.system.exitProcess
@@ -28,6 +30,7 @@ object ConfigManager {
             logger.error("Error while loading configuration file, exiting program...", exception)
             exitProcess(1)
         }
+        ConfigurationSerialization.registerClass(ButtonInfo::class.java)
     }
 
     fun getString(path: String): String = config.getString(path)
@@ -37,6 +40,8 @@ object ConfigManager {
     fun getInt(path: String) = config.getInt(path)
 
     fun getLong(path: String) = config.getLong(path)
+
+    fun getButtonInfo(path: String) = config.get(path) as ButtonInfo
 
     fun set(path: String, value: Any?) = config.set(path, value)
 
