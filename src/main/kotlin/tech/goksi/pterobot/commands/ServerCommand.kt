@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.utils.FileUpload
 import okhttp3.internal.toLongOrDefault
 import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
 import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
+import tech.goksi.pterobot.entities.ButtonInfo
 import tech.goksi.pterobot.entities.PteroMember
 import tech.goksi.pterobot.entities.ServerCreate
 import tech.goksi.pterobot.entities.ServerInfo
@@ -446,7 +447,7 @@ private class Create(jda: JDA) : SimpleSubcommand(
             }
             nodeBtnEvent.reply("").setActionRow(nodeSelectMenu)
                 .setEphemeral(true)
-                .queue() //TODO: I don't like empty content, but afaik there is no way to send only select menu
+                .queue() // TODO: I don't like empty content, but afaik there is no way to send only select menu
 
             val selectNodeEvent =
                 nodeBtnEvent.jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
@@ -456,163 +457,13 @@ private class Create(jda: JDA) : SimpleSubcommand(
             selectNodeEvent.deferEdit().queue()
             selectNodeEvent.hook.deleteOriginal().queue()
             // TODO: should enable allocation button here
-            nodeBtnEvent.hook.editMessageEmbedsById(
-                nodeBtnEvent.message.id,
-                EmbedManager.getServerCreate(serverCreation).toEmbed()
-            ).queue() // kinda hack but meh
+            event.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
         }
 
         event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
             .setActionRow(serverInfoButton, ownerButton, nodeButton, closeButton)
             .setEphemeral(true).queue()
     }
-    /*override suspend fun execute(event: SlashCommandInteractionEvent) {
-        val pteroMember = PteroMember(event.user.idLong)
-
-        if (!pteroMember.isPteroAdmin()) {
-            event.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.NotAdmin"))
-                    .toEmbed()
-            ).setEphemeral(true).queue()
-            return
-        }
-        val pteroApplication = Common.getDefaultApplication()
-        val nodes = pteroApplication.retrieveNodes().await()
-        val randomId = ThreadLocalRandom.current().nextInt()
-        *//*Send node select menu*//*
-        val nodeSelectMenu = createSelectMenu(
-            "pterobot:node-selector:${event.user.idLong}:$randomId",
-            ConfigManager.getString("$SERVER_PATH.Create.NodeMenuPlaceholder"),
-            nodes
-        ) { builder, node ->
-            builder.option(
-                node.name,
-                node.id,
-                "Max memory: ${node.memory}MB Allocated memory: ${node.allocatedMemory}MB"
-            )
-        }
-        event.reply("")
-            .setActionRow(nodeSelectMenu)
-            .setEphemeral(true).queue()
-        val selectNodeEvent =
-            jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
-                ?: return
-        val selectedNode = nodes.first { it.id == selectNodeEvent.selectedOptions[0].value }
-        *//*Send allocation modal*//*
-        val allocationModal = Modal(
-            id = "pterobot:allocation-modal:${event.user.idLong}:$randomId",
-            title = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalTitle")
-        ) {
-            short(
-                id = "allocation",
-                label = "Port",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalPlaceholder"),
-                requiredLength = 4..5
-            )
-        }
-        selectNodeEvent.replyModal(allocationModal).queue()
-        selectNodeEvent.hook.deleteOriginal().queue()
-        val allocationModalEvent =
-            jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:allocation-modal:${event.user.idLong}:$randomId" }
-                ?: return
-        *//*Parse port and get allocation object*//*
-        val port = allocationModalEvent.getValue("allocation")!!.asString.toIntOrNull() ?: 0
-        val tempAllocation = selectedNode.retrieveAllocationsByPort(port).await()
-        *//*TODO: check multiple ips matching same port ?*//*
-        if (tempAllocation.isEmpty()) {
-            allocationModalEvent.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.AllocationNotFound"))
-                    .toEmbed()
-            ).setEphemeral(true).queue()
-            return
-        }
-        val allocation = tempAllocation[0]
-        *//*Send egg select menu*//*
-        val eggs = pteroApplication.retrieveEggs().await()
-        val eggSelectMenu = createSelectMenu(
-            "pterobot:egg-selector:${event.user.idLong}:$randomId",
-            ConfigManager.getString("$SERVER_PATH.Create.EggMenuPlaceholder"),
-            eggs
-        ) { builder, egg ->
-            builder.option(
-                egg.name,
-                "${egg.retrieveNest().await().id}:${egg.id}",
-                egg.dockerImage
-            )
-        }
-        allocationModalEvent.reply("")
-            .setActionRow(eggSelectMenu)
-            .setEphemeral(true).queue()
-        val selectEggEvent =
-            jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:egg-selector:${event.user.idLong}:$randomId" }
-                ?: return
-        val (nestId, eggId) = selectEggEvent.selectedOptions[0].value.split(":")
-        val egg = pteroApplication.retrieveEggById(nestId, eggId).await()
-        selectEggEvent.hook.deleteOriginal().queue()
-        *//*Send owner modal*//*
-        val ownerModal = Modal(
-            id = "pterobot:owner-modal:${event.user.idLong}:$randomId",
-            title = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalTitle")
-        ) {
-            short(
-                id = "owner",
-                label = "Email",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalPlaceholder")
-            )
-        }
-        selectEggEvent.replyModal(ownerModal).queue()
-        val selectOwnerEvent =
-            jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:owner-modal:${event.user.idLong}:$randomId" }
-                ?: return
-        val tempOwner =
-            pteroApplication.retrieveUsersByEmail(selectOwnerEvent.getValue("owner")!!.asString, false).await()
-        if (tempAllocation.isEmpty()) {
-            allocationModalEvent.replyEmbeds(
-                EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.OwnerNotFound"))
-                    .toEmbed()
-            ).setEphemeral(true).queue()
-            return
-        }
-        val owner = tempOwner[0]
-        *//*Send basic server info modal*//*
-        val serverInfoModal = Modal(
-            id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
-            title = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
-        ) {
-            short(
-                id = "name",
-                label = "Server name",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder")
-            )
-            paragraph(
-                id = "desc",
-                label = "Description",
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder")
-            )
-            short(
-                id = "memory",
-                label = "Memory",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder")
-            )
-            short(
-                id = "disk",
-                label = "Disk space",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder")
-            )
-        } // smh cant reply modal from modal event
-
-        val createServerAction = pteroApplication.createServer()
-            .startOnCompletion(true)
-            .setEgg(egg)
-            .setAllocation(allocation)
-            .setOwner(owner)
-
-    }*/
 
     private inline fun <reified T> createSelectMenu(
         id: String,
@@ -626,6 +477,22 @@ private class Create(jda: JDA) : SimpleSubcommand(
         return selectMenu
     }
 
+    private fun makeButton(
+        jda: JDA,
+        serverCreation: ServerCreate,
+        buttonInfo: ButtonInfo,
+        activate: String? = null,
+        listener: suspend (ButtonInteractionEvent) -> Boolean
+    ) = jda.button(label = buttonInfo.label, style = buttonInfo.style, emoji = buttonInfo.emoji) {
+        val success = listener(it)
+        if (!success) return@button
+        if (activate != null) {
+            // activate specific button
+        }
+        if (serverCreation.canCreate()) {
+            // activate create server button
+        }
+    }
 
     private fun createServerInfoModal(
         serverCreation: ServerCreate,
