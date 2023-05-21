@@ -30,4 +30,8 @@ class ServerCreate {
     fun setOwner(user: ApplicationUser) {
         this._owner = user
     }
+
+    fun setNode(node: Node) {
+        this._node = node
+    }
 }

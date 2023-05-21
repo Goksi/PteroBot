@@ -427,10 +427,43 @@ private class Create(jda: JDA) : SimpleSubcommand(
             ownerBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
         }
 
+        val nodeButton = event.jda.button(
+            style = ButtonStyle.valueOf(getButtonSetting("NodeType")),
+            label = getButtonSetting("Node"),
+            emoji = Emoji.fromUnicode(getButtonSetting("NodeEmoji"))
+        ) { nodeBtnEvent ->
+            val nodes = pteroApplication.retrieveNodes().await()
+            val nodeSelectMenu = createSelectMenu(
+                "pterobot:node-selector:${event.user.idLong}:$randomId",
+                ConfigManager.getString("$SERVER_PATH.Create.NodeMenuPlaceholder"),
+                nodes
+            ) { builder, node ->
+                builder.option(
+                    node.name,
+                    node.id,
+                    "Max memory: ${node.memory}MB Allocated memory: ${node.allocatedMemory}MB"
+                )
+            }
+            nodeBtnEvent.reply("").setActionRow(nodeSelectMenu)
+                .setEphemeral(true)
+                .queue() //TODO: I don't like empty content, but afaik there is no way to send only select menu
 
+            val selectNodeEvent =
+                nodeBtnEvent.jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
+                    ?: return@button
+            val selectedNode = nodes.first { it.id == selectNodeEvent.selectedOptions[0].value }
+            serverCreation.setNode(selectedNode)
+            selectNodeEvent.deferEdit().queue()
+            selectNodeEvent.hook.deleteOriginal().queue()
+            // TODO: should enable allocation button here
+            nodeBtnEvent.hook.editMessageEmbedsById(
+                nodeBtnEvent.message.id,
+                EmbedManager.getServerCreate(serverCreation).toEmbed()
+            ).queue() // kinda hack but meh
+        }
 
         event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
-            .setActionRow(serverInfoButton, ownerButton, closeButton)
+            .setActionRow(serverInfoButton, ownerButton, nodeButton, closeButton)
             .setEphemeral(true).queue()
     }
     /*override suspend fun execute(event: SlashCommandInteractionEvent) {
