@@ -4,6 +4,7 @@ import com.mattmalec.pterodactyl4j.PowerAction
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
 import com.mattmalec.pterodactyl4j.exceptions.ServerException
+import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.events.onButton
 import dev.minn.jda.ktx.interactions.components.Modal
@@ -370,7 +371,6 @@ private class Create(jda: JDA) : SimpleSubcommand(
             val descTemp = serverInfoModalEvent.getValue("desc")!!.asString
             val description = if (descTemp == "") ServerCreate.NOT_SET else descTemp
             serverCreation.serverDescription = description
-            /*TODO check >= 0 and return message*/
             val memory = serverInfoModalEvent.getValue("memory")!!.asString.toLongOrDefault(-1)
             var failure = false
             if (memory < 0) {
@@ -461,7 +461,7 @@ private class Create(jda: JDA) : SimpleSubcommand(
         }
 
         event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
-            .setActionRow(serverInfoButton, ownerButton, nodeButton, closeButton)
+            .setComponents(ActionRow.of(serverInfoButton, ownerButton, nodeButton, closeButton))
             .setEphemeral(true).queue()
     }
 
@@ -477,8 +477,10 @@ private class Create(jda: JDA) : SimpleSubcommand(
         return selectMenu
     }
 
+    /*TODO: handle rows*/
     private fun makeButton(
         jda: JDA,
+        slashCommandEvent: SlashCommandInteractionEvent,
         serverCreation: ServerCreate,
         buttonInfo: ButtonInfo,
         activate: String? = null,
@@ -486,12 +488,15 @@ private class Create(jda: JDA) : SimpleSubcommand(
     ) = jda.button(label = buttonInfo.label, style = buttonInfo.style, emoji = buttonInfo.emoji) {
         val success = listener(it)
         if (!success) return@button
-        if (activate != null) {
-            // activate specific button
+        val embeds = slashCommandEvent.hook.retrieveOriginal().await().buttons
+        val modified = embeds.map { button ->
+            if (button.id!!.contains(
+                    activate ?: "none"
+                ) || (button.id!!.contains("make-server") && serverCreation.canCreate())
+            ) return@map button.asEnabled()
+            else return@map button
         }
-        if (serverCreation.canCreate()) {
-            // activate create server button
-        }
+        slashCommandEvent.hook.editOriginalComponents(ActionRow.of(modified)).queue()
     }
 
     private fun createServerInfoModal(
