@@ -36,9 +36,13 @@ class ServerCreate {
         this._node = node
     }
 
+    fun removeAllocation() {
+        _primaryAllocation = null
+    }
+
     fun canCreate(): Boolean {
         return isSet(owner) && isSet(egg) && isSet(node) && isSet(primaryAllocation) && isSet(serverName) &&
-            memory != -1L && disk != -1L
+                memory != -1L && disk != -1L
     }
 
     private fun isSet(text: String) = text != NOT_SET
