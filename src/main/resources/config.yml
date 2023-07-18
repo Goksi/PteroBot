@@ -1,3 +1,4 @@
+# TODO: refactor buttons
 BotInfo:
   Token: "YOUR TOKEN HERE"
   ServerID: "YOUR DISCORD SERVER ID HERE"
