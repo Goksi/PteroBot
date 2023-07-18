@@ -428,10 +428,26 @@ private class Create(jda: JDA) : SimpleSubcommand(
             ownerBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
         }
 
-        val nodeButton = event.jda.button(
-            style = ButtonStyle.valueOf(getButtonSetting("NodeType")),
-            label = getButtonSetting("Node"),
-            emoji = Emoji.fromUnicode(getButtonSetting("NodeEmoji"))
+        val allocationButton = makeButton(
+            event.jda,
+            event,
+            serverCreation,
+            "SUCCESS",
+            "Add Allocation",
+            getButtonSetting("OwnerEmoji"),
+            enabled = false
+        ) { allocationBtnEvent ->
+            return@makeButton false
+        }
+
+        val nodeButton = makeButton(
+            event.jda,
+            event,
+            serverCreation,
+            getButtonSetting("NodeType"),
+            getButtonSetting("Node"),
+            getButtonSetting("NodeEmoji"),
+            allocationButton.id
         ) { nodeBtnEvent ->
             val nodes = pteroApplication.retrieveNodes().await()
             val nodeSelectMenu = createSelectMenu(
@@ -451,17 +467,18 @@ private class Create(jda: JDA) : SimpleSubcommand(
 
             val selectNodeEvent =
                 nodeBtnEvent.jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
-                    ?: return@button
+                    ?: return@makeButton false;
             val selectedNode = nodes.first { it.id == selectNodeEvent.selectedOptions[0].value }
             serverCreation.setNode(selectedNode)
             selectNodeEvent.deferEdit().queue()
             selectNodeEvent.hook.deleteOriginal().queue()
-            // TODO: should enable allocation button here
+            if (serverCreation.node != selectedNode.name) serverCreation.removeAllocation()
             event.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
+            return@makeButton true
         }
-
+        val buttons = listOf(serverInfoButton, ownerButton, nodeButton, allocationButton, closeButton)
         event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
-            .setComponents(ActionRow.of(serverInfoButton, ownerButton, nodeButton, closeButton))
+            .setComponents(buttons.chunked(4) { ActionRow.of(it) })
             .setEphemeral(true).queue()
     }
 
@@ -477,27 +494,51 @@ private class Create(jda: JDA) : SimpleSubcommand(
         return selectMenu
     }
 
-    /*TODO: handle rows*/
     private fun makeButton(
         jda: JDA,
         slashCommandEvent: SlashCommandInteractionEvent,
         serverCreation: ServerCreate,
         buttonInfo: ButtonInfo,
         activate: String? = null,
+        enabled: Boolean = true,
         listener: suspend (ButtonInteractionEvent) -> Boolean
-    ) = jda.button(label = buttonInfo.label, style = buttonInfo.style, emoji = buttonInfo.emoji) {
+    ) = jda.button(label = buttonInfo.label, style = buttonInfo.style, emoji = buttonInfo.emoji, disabled = !enabled) {
         val success = listener(it)
         if (!success) return@button
         val embeds = slashCommandEvent.hook.retrieveOriginal().await().buttons
         val modified = embeds.map { button ->
-            if (button.id!!.contains(
-                    activate ?: "none"
-                ) || (button.id!!.contains("make-server") && serverCreation.canCreate())
+            if (button.id!! == (activate
+                    ?: "none") || (button.id!!.contains("make-server") && serverCreation.canCreate())
             ) return@map button.asEnabled()
             else return@map button
         }
-        slashCommandEvent.hook.editOriginalComponents(ActionRow.of(modified)).queue()
+        slashCommandEvent.hook.editOriginalComponents(modified.chunked(4) { buttons -> ActionRow.of(buttons) }).queue()
     }
+
+    /*TODO: compatibility until we fully switch to YAML serializable ButtonInfo class*/
+    private fun makeButton(
+        jda: JDA,
+        slashCommandEvent: SlashCommandInteractionEvent,
+        serverCreation: ServerCreate,
+        buttonStyle: String,
+        buttonLabel: String,
+        buttonEmoji: String,
+        activate: String? = null,
+        enabled: Boolean = true,
+        listener: suspend (ButtonInteractionEvent) -> Boolean
+    ) = makeButton(
+        jda,
+        slashCommandEvent,
+        serverCreation,
+        ButtonInfo(
+            buttonLabel,
+            ButtonStyle.valueOf(buttonStyle),
+            Emoji.fromUnicode(buttonEmoji)
+        ),
+        activate,
+        enabled,
+        listener
+    )
 
     private fun createServerInfoModal(
         serverCreation: ServerCreate,
