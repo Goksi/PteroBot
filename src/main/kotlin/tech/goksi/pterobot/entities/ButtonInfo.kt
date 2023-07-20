@@ -24,5 +24,4 @@ data class ButtonInfo(val label: String, val style: ButtonStyle, val emoji: Emoj
         map["emoji"] = emoji.formatted // check
         return map
     }
-
 }
