@@ -6,6 +6,8 @@ import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient
 import dev.minn.jda.ktx.util.SLF4J
 import kotlinx.coroutines.*
+import net.dv8tion.jda.api.interactions.components.ActionRow
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 import tech.goksi.pterobot.events.handlers.PteroEventManager
 import tech.goksi.pterobot.manager.ConfigManager
 
@@ -63,5 +65,9 @@ object Common {
         task.cancel()
         wss.shutdown()
         return stringBuilder.toString()
+    }
+
+    fun List<Button>.toActionRow(): List<ActionRow> {
+        return this.chunked(4) { ActionRow.of(it) }
     }
 }
