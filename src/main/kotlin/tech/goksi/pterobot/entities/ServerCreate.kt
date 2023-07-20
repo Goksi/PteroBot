@@ -36,9 +36,15 @@ class ServerCreate {
         this._node = node
     }
 
+    fun setAllocation(allocation: Allocation) {
+        _primaryAllocation = allocation
+    }
+
     fun removeAllocation() {
         _primaryAllocation = null
     }
+
+    fun getNode() = _node
 
     fun canCreate(): Boolean {
         return isSet(owner) && isSet(egg) && isSet(node) && isSet(primaryAllocation) && isSet(serverName) &&

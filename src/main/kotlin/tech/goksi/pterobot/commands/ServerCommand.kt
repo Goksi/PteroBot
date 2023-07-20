@@ -36,6 +36,7 @@ import tech.goksi.pterobot.manager.EmbedManager
 import tech.goksi.pterobot.manager.EmbedManager.toEmbed
 import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.Common.getLogs
+import tech.goksi.pterobot.util.Common.toActionRow
 import tech.goksi.pterobot.util.await
 import tech.goksi.pterobot.util.awaitEvent
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
@@ -406,7 +407,7 @@ private class Create(jda: JDA) : SimpleSubcommand(
                 short(
                     id = "email",
                     label = "Owner",
-                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalPlaceholder")
+                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalPlaceholder"),
                 )
             }
             ownerBtnEvent.replyModal(modal).queue()
@@ -432,12 +433,45 @@ private class Create(jda: JDA) : SimpleSubcommand(
             event.jda,
             event,
             serverCreation,
-            "SUCCESS",
-            "Add Allocation",
-            getButtonSetting("OwnerEmoji"),
+            getButtonSetting("AllocationType"),
+            getButtonSetting("Allocation"),
+            getButtonSetting("AllocationEmoji"),
             enabled = false
         ) { allocationBtnEvent ->
-            return@makeButton false
+            val modal = Modal(
+                id = "pterobot:server-allocation-modal:${event.user.idLong}:$randomId",
+                title = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalTitle")
+            ) {
+                short(
+                    id = "port",
+                    label = "Port",
+                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalPlaceholder")
+                )
+            }
+            allocationBtnEvent.replyModal(modal).queue()
+            val allocationModalEvent =
+                allocationBtnEvent.jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:server-allocation-modal:${event.user.idLong}:$randomId" }
+                    ?: return@makeButton false
+            val port = try {
+                allocationModalEvent.getValue("port")!!.asString.toInt()
+            } catch (_: NumberFormatException) {
+                // TODO: bad port
+                return@makeButton false
+            }
+            val allocations = serverCreation.getNode()!!.retrieveAllocationsByPort(port).await()
+            if (allocations.isEmpty()) {
+                // TODO: no port like that
+                return@makeButton false
+            }
+            val allocation = allocations[0]
+            if (allocation.isAssigned) {
+                // TODO: ne moze, vec se koristi
+                return@makeButton false
+            }
+            serverCreation.setAllocation(allocation)
+            allocationModalEvent.deferEdit().queue()
+            allocationBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
+            return@makeButton true
         }
 
         val nodeButton = makeButton(
@@ -467,7 +501,7 @@ private class Create(jda: JDA) : SimpleSubcommand(
 
             val selectNodeEvent =
                 nodeBtnEvent.jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
-                    ?: return@makeButton false;
+                    ?: return@makeButton false
             val selectedNode = nodes.first { it.id == selectNodeEvent.selectedOptions[0].value }
             serverCreation.setNode(selectedNode)
             selectNodeEvent.deferEdit().queue()
@@ -478,7 +512,7 @@ private class Create(jda: JDA) : SimpleSubcommand(
         }
         val buttons = listOf(serverInfoButton, ownerButton, nodeButton, allocationButton, closeButton)
         event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
-            .setComponents(buttons.chunked(4) { ActionRow.of(it) })
+            .setComponents(buttons.toActionRow())
             .setEphemeral(true).queue()
     }
 
@@ -507,12 +541,14 @@ private class Create(jda: JDA) : SimpleSubcommand(
         if (!success) return@button
         val embeds = slashCommandEvent.hook.retrieveOriginal().await().buttons
         val modified = embeds.map { button ->
-            if (button.id!! == (activate
-                    ?: "none") || (button.id!!.contains("make-server") && serverCreation.canCreate())
+            if (button.id!! == (
+                        activate
+                            ?: "none"
+                        ) || (button.id!!.contains("make-server") && serverCreation.canCreate())
             ) return@map button.asEnabled()
             else return@map button
         }
-        slashCommandEvent.hook.editOriginalComponents(modified.chunked(4) { buttons -> ActionRow.of(buttons) }).queue()
+        slashCommandEvent.hook.editOriginalComponents(modified.toActionRow()).queue()
     }
 
     /*TODO: compatibility until we fully switch to YAML serializable ButtonInfo class*/
