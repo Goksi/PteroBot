@@ -6,7 +6,7 @@ import com.mattmalec.pterodactyl4j.application.entities.Node
 import com.mattmalec.pterodactyl4j.entities.Allocation
 
 @Suppress("MemberVisibilityCanBePrivate")
-class ServerCreate {
+class ServerCreateInfo {
     companion object {
         const val NOT_SET = "N/A"
     }
@@ -37,7 +37,11 @@ class ServerCreate {
     }
 
     fun setAllocation(allocation: Allocation) {
-        _primaryAllocation = allocation
+        this._primaryAllocation = allocation
+    }
+
+    fun setEgg(egg: ApplicationEgg) {
+        this._egg = egg;
     }
 
     fun removeAllocation() {

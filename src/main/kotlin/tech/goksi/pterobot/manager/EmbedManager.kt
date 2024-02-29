@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import tech.goksi.pterobot.EmbedType
 import tech.goksi.pterobot.entities.AccountInfo
 import tech.goksi.pterobot.entities.NodeInfo
-import tech.goksi.pterobot.entities.ServerCreate
+import tech.goksi.pterobot.entities.ServerCreateInfo
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.util.EmbedParser
 import java.io.File
@@ -67,13 +67,12 @@ object EmbedManager {
         return rawServerInfo.replacePlaceholders(getPlaceholderMap(server))
     }
 
-    /*TODO: finish*/
-    fun getServerCreate(serverCreate: ServerCreate): String {
+    fun getServerCreate(serverCreateInfo: ServerCreateInfo): String {
         val rawServerCreate by lazy {
             val file = File(EmbedType.SERVER_CREATE.path)
             file.readText()
         }
-        return rawServerCreate.replacePlaceholders(getPlaceholderMap(serverCreate))
+        return rawServerCreate.replacePlaceholders(getPlaceholderMap(serverCreateInfo))
     }
 
     fun getAccountInfo(accountInfo: AccountInfo): String {
