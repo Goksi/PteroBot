@@ -4,10 +4,13 @@ import com.mattmalec.pterodactyl4j.PteroBuilder
 import com.mattmalec.pterodactyl4j.application.entities.PteroApplication
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.client.entities.PteroClient
+import dev.minn.jda.ktx.interactions.components.StringSelectMenu
 import dev.minn.jda.ktx.util.SLF4J
 import kotlinx.coroutines.*
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
+import tech.goksi.pterobot.entities.ButtonInfo
 import tech.goksi.pterobot.events.handlers.PteroEventManager
 import tech.goksi.pterobot.manager.ConfigManager
 
@@ -70,4 +73,26 @@ object Common {
     fun List<Button>.toActionRow(): List<ActionRow> {
         return this.chunked(4) { ActionRow.of(it) }
     }
+
+    inline fun <reified T> createSelectMenu(
+        id: String,
+        placeholder: String,
+        items: Collection<T>,
+        format: (StringSelectMenu.Builder, T) -> Unit
+    ): StringSelectMenu {
+        val selectMenu = StringSelectMenu(
+            customId = id,
+            placeholder = ConfigManager.getString(placeholder)
+        ) {
+            for (item in items) format(this, item)
+        }
+        return selectMenu
+    }
+
+    fun button(id: String, buttonInfo: ButtonInfo) = dev.minn.jda.ktx.interactions.components.button(
+        id = id,
+        emoji = buttonInfo.emoji,
+        style = buttonInfo.style,
+        label = buttonInfo.label
+    )
 }
