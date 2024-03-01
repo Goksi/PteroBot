@@ -106,7 +106,9 @@ Messages:
         NotAdmin: "Sorry, your linked pterodactyl key doesn't seems to have admin permissions !"
         Node:
           MenuPlaceholder: "Select node !"
-        EggMenuPlaceholder: "Select egg !"
+        Egg:
+          NestPlaceholder: "Select nest !"
+          EggPlaceholder: "Select egg !"
         Allocation:
           ModalTitle: "Allocation port"
           ModalPlaceholder: "Please type port here"
@@ -142,6 +144,10 @@ Messages:
             Label: "Set allocation"
             Style: "PRIMARY"
             Emoji: "🕸"
+          Egg:
+            Label: "Set egg"
+            Style: "PRIMARY"
+            Emoji: "🥚"
           Close:
             Label: "Close"
             Style: "DANGER"
