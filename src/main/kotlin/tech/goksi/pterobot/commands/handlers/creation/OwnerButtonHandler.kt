@@ -35,7 +35,7 @@ class OwnerButtonHandler(
     override suspend fun execute(event: ButtonInteractionEvent): Boolean {
         val id = ThreadLocalRandom.current().nextInt()
         event.replyModal(createModal(id)).queue()
-        val modalEvent = jda.awaitEvent<ModalInteractionEvent> { it.modalId == "$MODAL_ID.$id" } ?: return false
+        val modalEvent = jda.awaitEvent<ModalInteractionEvent> { it.modalId == "$MODAL_ID:$id" } ?: return false
         val ownerEmail = modalEvent.getValue("email")!!.asString
         val pteroApplication = Common.getDefaultApplication()
         val emailMatch = pteroApplication.retrieveUsersByEmail(ownerEmail, false).await()

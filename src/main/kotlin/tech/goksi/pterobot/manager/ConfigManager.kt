@@ -1,6 +1,7 @@
 package tech.goksi.pterobot.manager
 
 import dev.minn.jda.ktx.util.SLF4J
+import org.simpleyaml.configuration.MemorySection
 import org.simpleyaml.configuration.file.YamlConfiguration
 import org.simpleyaml.configuration.file.YamlFile
 import org.simpleyaml.configuration.serialization.ConfigurationSerialization
@@ -41,7 +42,10 @@ object ConfigManager {
 
     fun getLong(path: String) = config.getLong(path)
 
-    fun getButtonInfo(path: String) = config.get(path) as ButtonInfo
+    fun getButtonInfo(path: String): ButtonInfo {
+        val section = config.get(path) as MemorySection
+        return ButtonInfo.deserialize(section.getValues(false))
+    }
 
     fun set(path: String, value: Any?) = config.set(path, value)
 

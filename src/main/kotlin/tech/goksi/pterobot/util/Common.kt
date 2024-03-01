@@ -82,7 +82,7 @@ object Common {
     ): StringSelectMenu {
         val selectMenu = StringSelectMenu(
             customId = id,
-            placeholder = ConfigManager.getString(placeholder)
+            placeholder = placeholder
         ) {
             for (item in items) format(this, item)
         }
