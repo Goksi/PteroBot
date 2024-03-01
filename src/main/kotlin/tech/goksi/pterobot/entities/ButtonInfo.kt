@@ -10,8 +10,8 @@ data class ButtonInfo(val label: String, val style: ButtonStyle, val emoji: Emoj
         @JvmStatic
         fun deserialize(map: MutableMap<String, Any>): ButtonInfo {
             return ButtonInfo(
-                map["label"] as String,
-                ButtonStyle.valueOf(map["style"] as String),
+                map["Label"] as String,
+                ButtonStyle.valueOf(map["Style"] as String),
                 Emoji.fromUnicode(map["Emoji"] as String)
             )
         }
@@ -19,9 +19,9 @@ data class ButtonInfo(val label: String, val style: ButtonStyle, val emoji: Emoj
 
     override fun serialize(): MutableMap<String, Any> {
         val map: MutableMap<String, Any> = HashMap()
-        map["label"] = label
-        map["style"] = style.toString()
-        map["emoji"] = emoji.formatted // check
+        map["Label"] = label
+        map["Style"] = style.toString()
+        map["Emoji"] = emoji.formatted // check
         return map
     }
 }
