@@ -27,6 +27,7 @@ class ServerCreateInfo {
     var serverDescription: String = NOT_SET
     var memory: Long = -1
     var disk: Long = -1
+    var dockerImage: String? = null
 
     fun setOwner(user: ApplicationUser) {
         this._owner = user

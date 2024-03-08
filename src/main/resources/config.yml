@@ -109,6 +109,7 @@ Messages:
         Egg:
           NestPlaceholder: "Select nest !"
           EggPlaceholder: "Select egg !"
+          ImagePlaceholder: "Select docker image !"
         Allocation:
           ModalTitle: "Allocation port"
           ModalPlaceholder: "Please type port here"

@@ -4,12 +4,9 @@ import com.mattmalec.pterodactyl4j.PowerAction
 import com.mattmalec.pterodactyl4j.client.entities.ClientServer
 import com.mattmalec.pterodactyl4j.exceptions.LoginException
 import com.mattmalec.pterodactyl4j.exceptions.ServerException
-import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
-import dev.minn.jda.ktx.events.onButton
 import dev.minn.jda.ktx.interactions.components.Modal
 import dev.minn.jda.ktx.interactions.components.StringSelectMenu
-import dev.minn.jda.ktx.interactions.components.button
 import dev.minn.jda.ktx.interactions.components.option
 import dev.minn.jda.ktx.util.SLF4J
 import net.dv8tion.jda.api.JDA
@@ -21,15 +18,12 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
-import net.dv8tion.jda.api.interactions.modals.Modal
 import net.dv8tion.jda.api.utils.FileUpload
-import okhttp3.internal.toLongOrDefault
+import tech.goksi.pterobot.commands.handlers.creation.*
 import tech.goksi.pterobot.commands.manager.abs.SimpleSubcommand
 import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
-import tech.goksi.pterobot.entities.ButtonInfo
 import tech.goksi.pterobot.entities.PteroMember
-import tech.goksi.pterobot.entities.ServerCreate
+import tech.goksi.pterobot.entities.ServerCreateInfo
 import tech.goksi.pterobot.entities.ServerInfo
 import tech.goksi.pterobot.manager.ConfigManager
 import tech.goksi.pterobot.manager.EmbedManager
@@ -38,12 +32,10 @@ import tech.goksi.pterobot.util.Common
 import tech.goksi.pterobot.util.Common.getLogs
 import tech.goksi.pterobot.util.Common.toActionRow
 import tech.goksi.pterobot.util.await
-import tech.goksi.pterobot.util.awaitEvent
 import tech.goksi.pterobot.util.cooldown.CooldownManager.cooldownButton
 import tech.goksi.pterobot.util.cooldown.CooldownType
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.time.Duration.Companion.minutes
 
 private const val SERVER_PATH = "Messages.Commands.Server"
@@ -332,15 +324,13 @@ private class Create(jda: JDA) : SimpleSubcommand(
     description = ConfigManager.getString("$SERVER_PATH.Create.Description"),
     baseCommand = "server"
 ) {
-    val closeButton = button(
-        id = "pterobot:server-create:close",
-        style = ButtonStyle.valueOf(getButtonSetting("CloseType")),
-        label = getButtonSetting("Close"),
-        emoji = Emoji.fromUnicode(getButtonSetting("CloseEmoji"))
-    )
-
+    /*TODO: only one open per user ?*/
     init {
-        jda.onButton("pterobot:server-create:close") {
+        jda.listener<ButtonInteractionEvent> {
+            if (!it.componentId.startsWith("pterobot:server-create:close")) return@listener
+            val userId = it.user.id
+            val allowedUserId = it.componentId.split(":")[3]
+            if (userId != allowedUserId) return@listener
             it.hook.deleteOriginal().queue()
             it.deferEdit().queue()
         }
@@ -355,267 +345,61 @@ private class Create(jda: JDA) : SimpleSubcommand(
             ).setEphemeral(true).queue()
             return
         }
-        val randomId = ThreadLocalRandom.current().nextInt()
-        val pteroApplication = Common.getDefaultApplication()
-        val serverCreation = ServerCreate()
-        val serverInfoButton = event.jda.button(
-            style = ButtonStyle.valueOf(getButtonSetting("ServerInfoType")),
-            label = getButtonSetting("ServerInfo"),
-            emoji = Emoji.fromUnicode(getButtonSetting("ServerInfoEmoji"))
-        ) { serverInfoBtnEvent ->
-            serverInfoBtnEvent.replyModal(createServerInfoModal(serverCreation, serverInfoBtnEvent, randomId)).queue()
-            val serverInfoModalEvent =
-                serverInfoBtnEvent.jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:server-info-modal:${event.user.idLong}:$randomId" }
-                    ?: return@button
-            val name = serverInfoModalEvent.getValue("name")!!.asString
-            serverCreation.serverName = name
-            val descTemp = serverInfoModalEvent.getValue("desc")!!.asString
-            val description = if (descTemp == "") ServerCreate.NOT_SET else descTemp
-            serverCreation.serverDescription = description
-            val memory = serverInfoModalEvent.getValue("memory")!!.asString.toLongOrDefault(-1)
-            var failure = false
-            if (memory < 0) {
-                failure = true
-                serverInfoModalEvent.replyEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.InvalidMemory"))
-                        .toEmbed()
-                ).setEphemeral(true).queue()
-            }
-            serverCreation.memory = memory
-            val disk = serverInfoModalEvent.getValue("disk")!!.asString.toLongOrDefault(-1)
-            if (disk < 0 && !failure) {
-                serverInfoModalEvent.replyEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.InvalidDisk"))
-                        .toEmbed()
-                ).setEphemeral(true).queue()
-            }
-            serverCreation.disk = disk
-            if (!serverInfoModalEvent.isAcknowledged) serverInfoModalEvent.deferEdit().queue()
-
-            serverInfoBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
-        }
-
-        val ownerButton = event.jda.button(
-            style = ButtonStyle.valueOf(getButtonSetting("OwnerType")),
-            label = getButtonSetting("Owner"),
-            emoji = Emoji.fromUnicode(getButtonSetting("OwnerEmoji"))
-        ) { ownerBtnEvent ->
-            val modal = Modal(
-                id = "pterobot:server-owner-modal:${event.user.idLong}:$randomId",
-                title = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalTitle")
-            ) {
-                short(
-                    id = "email",
-                    label = "Owner",
-                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.OwnerModalPlaceholder"),
-                )
-            }
-            ownerBtnEvent.replyModal(modal).queue()
-            val ownerModalEvent =
-                ownerBtnEvent.jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:server-owner-modal:${event.user.idLong}:$randomId" }
-                    ?: return@button
-            val email = ownerModalEvent.getValue("email")!!.asString
-            val tempList = pteroApplication.retrieveUsersByEmail(email, false).await()
-
-            if (tempList.isEmpty()) {
-                ownerModalEvent.replyEmbeds(
-                    EmbedManager.getGenericFailure(ConfigManager.getString("$SERVER_PATH.Create.OwnerNotFound"))
-                        .toEmbed()
-                ).setEphemeral(true).queue()
-                return@button
-            }
-            serverCreation.setOwner(tempList[0])
-            ownerModalEvent.deferEdit().queue()
-            ownerBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
-        }
-
-        val allocationButton = makeButton(
+        val serverCreateInfo = ServerCreateInfo()
+        val serverInfoHandler = ServerInfoButtonHandler(
             event.jda,
-            event,
-            serverCreation,
-            getButtonSetting("AllocationType"),
-            getButtonSetting("Allocation"),
-            getButtonSetting("AllocationEmoji"),
-            enabled = false
-        ) { allocationBtnEvent ->
-            val modal = Modal(
-                id = "pterobot:server-allocation-modal:${event.user.idLong}:$randomId",
-                title = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalTitle")
-            ) {
-                short(
-                    id = "port",
-                    label = "Port",
-                    placeholder = ConfigManager.getString("$SERVER_PATH.Create.AllocationModalPlaceholder")
-                )
-            }
-            allocationBtnEvent.replyModal(modal).queue()
-            val allocationModalEvent =
-                allocationBtnEvent.jda.awaitEvent<ModalInteractionEvent> { it.modalId == "pterobot:server-allocation-modal:${event.user.idLong}:$randomId" }
-                    ?: return@makeButton false
-            val port = try {
-                allocationModalEvent.getValue("port")!!.asString.toInt()
-            } catch (_: NumberFormatException) {
-                // TODO: bad port
-                return@makeButton false
-            }
-            val allocations = serverCreation.getNode()!!.retrieveAllocationsByPort(port).await()
-            if (allocations.isEmpty()) {
-                // TODO: no port like that
-                return@makeButton false
-            }
-            val allocation = allocations[0]
-            if (allocation.isAssigned) {
-                // TODO: ne moze, vec se koristi
-                return@makeButton false
-            }
-            serverCreation.setAllocation(allocation)
-            allocationModalEvent.deferEdit().queue()
-            allocationBtnEvent.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
-            return@makeButton true
-        }
-
-        val nodeButton = makeButton(
+            ConfigManager.getButtonInfo(getButtonInfoPath("ServerInfo")),
+            event.user,
+            "",
+            serverCreateInfo
+        )
+        val ownerHandler = OwnerButtonHandler(
             event.jda,
-            event,
-            serverCreation,
-            getButtonSetting("NodeType"),
-            getButtonSetting("Node"),
-            getButtonSetting("NodeEmoji"),
-            allocationButton.id
-        ) { nodeBtnEvent ->
-            val nodes = pteroApplication.retrieveNodes().await()
-            val nodeSelectMenu = createSelectMenu(
-                "pterobot:node-selector:${event.user.idLong}:$randomId",
-                ConfigManager.getString("$SERVER_PATH.Create.NodeMenuPlaceholder"),
-                nodes
-            ) { builder, node ->
-                builder.option(
-                    node.name,
-                    node.id,
-                    "Max memory: ${node.memory}MB Allocated memory: ${node.allocatedMemory}MB"
-                )
-            }
-            nodeBtnEvent.reply("").setActionRow(nodeSelectMenu)
-                .setEphemeral(true)
-                .queue() // TODO: I don't like empty content, but afaik there is no way to send only select menu
-
-            val selectNodeEvent =
-                nodeBtnEvent.jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "pterobot:node-selector:${event.user.idLong}:$randomId" }
-                    ?: return@makeButton false
-            val selectedNode = nodes.first { it.id == selectNodeEvent.selectedOptions[0].value }
-            serverCreation.setNode(selectedNode)
-            selectNodeEvent.deferEdit().queue()
-            selectNodeEvent.hook.deleteOriginal().queue()
-            if (serverCreation.node != selectedNode.name) serverCreation.removeAllocation()
-            event.hook.editOriginalEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed()).queue()
-            return@makeButton true
-        }
-        val buttons = listOf(serverInfoButton, ownerButton, nodeButton, allocationButton, closeButton)
-        event.replyEmbeds(EmbedManager.getServerCreate(serverCreation).toEmbed())
+            ConfigManager.getButtonInfo(getButtonInfoPath("Owner")),
+            event.user,
+            "",
+            serverCreateInfo
+        )
+        val allocationHandler = AllocationButtonHandler(
+            event.jda,
+            ConfigManager.getButtonInfo(getButtonInfoPath("Allocation")),
+            event.user,
+            "",
+            serverCreateInfo
+        )
+        val nodeHandler = NodeButtonHandler(
+            event.jda,
+            ConfigManager.getButtonInfo(getButtonInfoPath("Node")),
+            event.user,
+            "",
+            serverCreateInfo,
+            allocationHandler.button.id!!
+        )
+        val eggHandler = EggButtonHandler(
+            event.jda,
+            ConfigManager.getButtonInfo(getButtonInfoPath("Egg")),
+            event.user,
+            "",
+            serverCreateInfo
+        )
+        val closeButton = Common.button(
+            id = "pterobot:server-create:close:${event.user.id}",
+            buttonInfo = ConfigManager.getButtonInfo(getButtonInfoPath("Close"))
+        )
+        val buttons =
+            listOf(
+                serverInfoHandler.button,
+                ownerHandler.button,
+                nodeHandler.button,
+                allocationHandler.button,
+                eggHandler.button,
+                closeButton
+            )
+        event.replyEmbeds(EmbedManager.getServerCreate(serverCreateInfo).toEmbed())
             .setComponents(buttons.toActionRow())
-            .setEphemeral(true).queue()
+            .queue()
     }
 
-    private inline fun <reified T> createSelectMenu(
-        id: String,
-        placeholder: String,
-        items: kotlin.collections.List<T>,
-        option: (StringSelectMenu.Builder, T) -> Unit
-    ): StringSelectMenu {
-        val selectMenu = StringSelectMenu(customId = id, placeholder = placeholder) {
-            for (item in items) option(this, item)
-        }
-        return selectMenu
-    }
-
-    private fun makeButton(
-        jda: JDA,
-        slashCommandEvent: SlashCommandInteractionEvent,
-        serverCreation: ServerCreate,
-        buttonInfo: ButtonInfo,
-        activate: String? = null,
-        enabled: Boolean = true,
-        listener: suspend (ButtonInteractionEvent) -> Boolean
-    ) = jda.button(label = buttonInfo.label, style = buttonInfo.style, emoji = buttonInfo.emoji, disabled = !enabled) {
-        val success = listener(it)
-        if (!success) return@button
-        val embeds = slashCommandEvent.hook.retrieveOriginal().await().buttons
-        val modified = embeds.map { button ->
-            if (button.id!! == (
-                        activate
-                            ?: "none"
-                        ) || (button.id!!.contains("make-server") && serverCreation.canCreate())
-            ) return@map button.asEnabled()
-            else return@map button
-        }
-        slashCommandEvent.hook.editOriginalComponents(modified.toActionRow()).queue()
-    }
-
-    /*TODO: compatibility until we fully switch to YAML serializable ButtonInfo class*/
-    private fun makeButton(
-        jda: JDA,
-        slashCommandEvent: SlashCommandInteractionEvent,
-        serverCreation: ServerCreate,
-        buttonStyle: String,
-        buttonLabel: String,
-        buttonEmoji: String,
-        activate: String? = null,
-        enabled: Boolean = true,
-        listener: suspend (ButtonInteractionEvent) -> Boolean
-    ) = makeButton(
-        jda,
-        slashCommandEvent,
-        serverCreation,
-        ButtonInfo(
-            buttonLabel,
-            ButtonStyle.valueOf(buttonStyle),
-            Emoji.fromUnicode(buttonEmoji)
-        ),
-        activate,
-        enabled,
-        listener
-    )
-
-    private fun createServerInfoModal(
-        serverCreation: ServerCreate,
-        event: ButtonInteractionEvent,
-        randomId: Int
-    ): Modal {
-        return Modal(
-            id = "pterobot:server-info-modal:${event.user.idLong}:$randomId",
-            title = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoModalTitle")
-        ) {
-            short(
-                id = "name",
-                label = "Server name",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoNamePlaceholder"),
-                value = if (serverCreation.serverName == ServerCreate.NOT_SET) null else serverCreation.serverName
-            )
-            paragraph(
-                id = "desc",
-                label = "Description",
-                required = false,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDescriptionPlaceholder"),
-                value = if (serverCreation.serverDescription == ServerCreate.NOT_SET) null else serverCreation.serverDescription
-            )
-            short(
-                id = "memory",
-                label = "Memory",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoMemoryPlaceholder"),
-                value = if (serverCreation.memory == -1L) null else serverCreation.memory.toString()
-            )
-            short(
-                id = "disk",
-                label = "Disk space",
-                required = true,
-                placeholder = ConfigManager.getString("$SERVER_PATH.Create.ServerInfoDiskPlaceholder"),
-                value = if (serverCreation.disk == -1L) null else serverCreation.disk.toString()
-            )
-        }
-    }
-
-    private fun getButtonSetting(setting: String) =
-        ConfigManager.getString("$SERVER_PATH.Create.Buttons.$setting")
+    private fun getButtonInfoPath(buttonPath: String) =
+        "$SERVER_PATH.Create.Buttons.$buttonPath"
 }
