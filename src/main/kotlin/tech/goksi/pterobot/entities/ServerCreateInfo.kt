@@ -42,7 +42,7 @@ class ServerCreateInfo {
     }
 
     fun setEgg(egg: ApplicationEgg) {
-        this._egg = egg;
+        this._egg = egg
     }
 
     fun removeAllocation() {

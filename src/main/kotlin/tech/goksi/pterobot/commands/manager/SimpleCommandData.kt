@@ -7,11 +7,7 @@ import tech.goksi.pterobot.commands.manager.abs.StandaloneCommand
 import tech.goksi.pterobot.commands.manager.abs.TopLevelCommand
 
 class SimpleCommandData {
-    private val commands: MutableList<CommandBase>
-
-    init {
-        commands = ArrayList()
-    }
+    private val commands: MutableList<CommandBase> = ArrayList()
 
     fun addCommands(vararg commands: CommandBase) {
         this.commands.addAll(commands)
