@@ -60,26 +60,30 @@ class EggButtonHandler(
             jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "$EGG_SELECTION_ID:$id" } ?: return false
         val egg = eggs.first { it.id == eggSelectEvent.selectedOptions[0].value }
         val dockerImages = egg.dockerImages
-        val dockerImageMenu = createSelectMenu(
-            id = "$IMAGE_SELECTION_ID:$id",
-            placeholder = ConfigManager.getString("$CONFIG_PATH.ImagePlaceholder"),
-            dockerImages
-        ) { builder, dockerImage ->
-            builder.option(
-                dockerImage.name + if (dockerImage.image == egg.dockerImage) " (Default)" else "",
-                dockerImage.image,
-                dockerImage.image
-            )
-        }
-        eggSelectEvent.reply("").setEphemeral(true).setActionRow(dockerImageMenu).queue()
         nestSelectEvent.hook.deleteOriginal().queue()
-        val dockerImageSelectEvent =
-            jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "$IMAGE_SELECTION_ID:$id" } ?: return false
-        val dockerImage = dockerImages.first { it.image == dockerImageSelectEvent.selectedOptions[0].value }
+        if (dockerImages.size > 1) {
+            val dockerImageMenu = createSelectMenu(
+                id = "$IMAGE_SELECTION_ID:$id",
+                placeholder = ConfigManager.getString("$CONFIG_PATH.ImagePlaceholder"),
+                dockerImages
+            ) { builder, dockerImage ->
+                builder.option(
+                    dockerImage.name + if (dockerImage.image == egg.dockerImage) " (Default)" else "",
+                    dockerImage.image,
+                    dockerImage.image
+                )
+            }
+            eggSelectEvent.reply("").setEphemeral(true).setActionRow(dockerImageMenu).queue()
+            val dockerImageSelectEvent =
+                jda.awaitEvent<StringSelectInteractionEvent> { it.componentId == "$IMAGE_SELECTION_ID:$id" }
+                    ?: return false
+            val dockerImage = dockerImages.first { it.image == dockerImageSelectEvent.selectedOptions[0].value }
+            serverCreateInfo.dockerImage = dockerImage.image
+            dockerImageSelectEvent.deferEdit().queue()
+            eggSelectEvent.hook.deleteOriginal().queue()
+        }
+        if (!eggSelectEvent.isAcknowledged) eggSelectEvent.deferEdit().queue()
         serverCreateInfo.setEgg(egg)
-        serverCreateInfo.dockerImage = dockerImage.image
-        dockerImageSelectEvent.deferEdit().queue()
-        eggSelectEvent.hook.deleteOriginal().queue()
         return true
     }
 }
